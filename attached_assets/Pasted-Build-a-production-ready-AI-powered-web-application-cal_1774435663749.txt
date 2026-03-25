@@ -1,0 +1,352 @@
+Build a **production-ready, AI-powered web application** called **"VidVault AI"** — a next-generation "Second Brain for Videos".
+
+The app must combine:
+
+* Video bookmarking (like YouTube)
+* Knowledge management (like Notion)
+* AI assistant (like ChatGPT)
+
+---
+
+# 🎯 CORE VISION
+
+Users should be able to:
+
+1. Paste any video URL
+2. Instantly save it as a smart card
+3. Organize it into folders/tags
+4. Use AI to transform video into knowledge (notes, PPT, MCQs, etc.)
+5. Search and retrieve insights instantly
+
+---
+
+# 🎨 UI/UX DESIGN REQUIREMENTS (VERY IMPORTANT)
+
+## Overall Design Style:
+
+* Modern SaaS
+* Dark mode first
+* Glassmorphism + soft shadows
+* Smooth animations (Framer Motion)
+* Minimal but premium (Notion + Spotify inspired)
+
+## Layout:
+
+* Left Sidebar (fixed)
+* Top Navigation Bar
+* Main Content Grid
+* Right AI Sidebar (toggle)
+
+---
+
+## 🧭 SIDEBAR (LEFT)
+
+Include:
+
+* Logo + App Name
+* Navigation:
+
+  * Dashboard
+  * All Videos
+  * Folders
+  * Favorites
+  * AI Assistant
+* “+ New Folder” button
+* Collapsible sections
+
+---
+
+## 🔝 TOP BAR
+
+* Global AI Search (semantic search)
+* “Paste URL” quick input
+* Notifications icon
+* User profile dropdown
+
+---
+
+## 🏠 DASHBOARD UI
+
+Features:
+
+* Stats cards:
+
+  * Total videos
+  * Total learning time
+  * Recently added
+* Sections:
+
+  * Continue Watching
+  * Recently Saved
+  * AI Recommended
+
+Each section should use **horizontal scroll cards**
+
+---
+
+## 🎴 VIDEO CARD COMPONENT (CORE UI)
+
+Each card must include:
+
+* Thumbnail (with duration overlay)
+* Title (2-line clamp)
+* Tags (chips)
+* Folder label
+
+### Hover Interaction:
+
+* Scale + shadow
+* Show overlay actions:
+
+  * ▶ Play
+  * 🤖 AI
+  * 📁 Move
+  * ⭐ Favorite
+
+### Click Action:
+
+* Open detailed view
+
+---
+
+## 📁 FOLDER SYSTEM UI
+
+* Nested folders (tree structure like Notion)
+* Drag & drop support
+* Breadcrumb navigation
+* Tag-based filtering system
+
+---
+
+## 🎥 VIDEO DETAIL PAGE
+
+Layout:
+
+* Left:
+
+  * Video player
+* Right (tabs):
+
+  * Notes
+  * Transcript
+  * AI Insights
+
+### Features:
+
+* Timestamp bookmarks
+* Highlight sections
+* Add personal notes
+
+---
+
+## 🤖 AI SIDEBAR (RIGHT PANEL)
+
+* Slide-in panel
+* Chat interface (like ChatGPT)
+* Context-aware:
+
+  * Works on selected video/folder
+
+### Actions:
+
+* Summarize video
+* Generate notes
+* Create:
+
+  * PPT outline
+  * MCQs
+  * Flashcards
+  * Blog/article
+
+### Output UI:
+
+* Cards with copy/download buttons
+
+---
+
+## 🔍 SMART SEARCH
+
+* Semantic search (vector embeddings)
+* Search across:
+
+  * Titles
+  * Notes
+  * AI outputs
+
+---
+
+## ⚡ MICRO-INTERACTIONS
+
+* Card hover animation
+* Skeleton loaders
+* Smooth transitions
+* AI typing animation
+* Drag & drop animations
+
+---
+
+# ⚙️ TECH STACK
+
+Frontend:
+
+* Next.js (App Router)
+* React
+* Tailwind CSS
+* ShadCN UI
+* Framer Motion
+
+Backend:
+
+* Next.js API routes OR Node.js + Express
+
+Database:
+
+* PostgreSQL (Prisma ORM)
+
+AI:
+
+* OpenAI API (GPT + embeddings)
+
+Video Data:
+
+* YouTube Data API (mandatory)
+
+Storage:
+
+* AWS S3 / Supabase Storage
+
+Auth:
+
+* NextAuth (Google + Email)
+
+---
+
+# 🧱 DATABASE SCHEMA
+
+Tables:
+
+* users
+* videos
+* folders
+* tags
+* notes
+* ai_outputs
+
+Relations:
+
+* User → Videos
+* Video → Folder
+* Video → Tags
+* Video → AI Outputs
+
+---
+
+# 🔄 CORE FLOWS
+
+## Flow 1: Add Video
+
+* User pastes URL
+* Backend fetches metadata
+* Save to DB
+* Show as card
+
+## Flow 2: AI Generation
+
+* User clicks “AI”
+* Send video data → OpenAI
+* Store output
+* Display in sidebar
+
+## Flow 3: Organization
+
+* Drag card → folder
+* Add tags
+* Filter/search
+
+---
+
+# 🚀 PERFORMANCE
+
+* Lazy loading
+* Infinite scroll
+* Background AI processing (queue)
+* Debounced search
+
+---
+
+# 🔐 SECURITY
+
+* JWT auth
+* Input validation
+* Rate limiting
+
+---
+
+# 📱 MOBILE UX
+
+* Bottom navigation
+* Swipe gestures
+* Responsive grid
+
+---
+
+# 🎯 MVP PRIORITY
+
+Build in phases:
+
+## Phase 1:
+
+* Auth
+* Add video (YouTube)
+* Card UI
+* Folder system
+
+## Phase 2:
+
+* AI summary
+* Notes
+* Tags
+
+## Phase 3:
+
+* Advanced AI (PPT, MCQ)
+* Search
+* Extension
+
+---
+
+# 🎁 BONUS FEATURES
+
+* Browser extension (1-click save)
+* Playlist import
+* Collaboration (shared folders)
+* Export (PDF, DOCX)
+
+---
+
+# 🧠 FINAL GOAL
+
+The app should feel like:
+👉 “Notion for videos + ChatGPT + YouTube library”
+
+It must be:
+
+* Fast
+* Beautiful
+* Addictive to use
+
+---
+
+Generate:
+
+1. Full frontend (components + pages)
+2. Backend APIs
+3. Database schema (Prisma)
+4. AI integration
+5. Deployment steps
+
+Ensure:
+
+* Clean modular code
+* Scalable architecture
+* Production-ready UI/UX
