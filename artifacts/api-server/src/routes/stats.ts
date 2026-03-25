@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { videosTable, foldersTable, tagsTable, videoTagsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 
 const router = Router();
 

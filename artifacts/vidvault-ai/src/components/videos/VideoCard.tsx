@@ -1,4 +1,5 @@
 import { Play, Sparkles, FolderDown, Star, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUI } from "@/contexts/ui-context";
@@ -32,7 +33,11 @@ export function VideoCard({ video }: VideoCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col bg-card/40 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-primary/40 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(99,102,241,0.15)] hover:-translate-y-1">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      className="group relative flex flex-col bg-card/40 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-primary/40 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(99,102,241,0.15)]">
       <div className="relative aspect-video w-full overflow-hidden bg-secondary">
         {video.thumbnail ? (
           <img 
@@ -107,6 +112,6 @@ export function VideoCard({ video }: VideoCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
