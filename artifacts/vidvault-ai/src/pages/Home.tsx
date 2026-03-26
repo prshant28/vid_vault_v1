@@ -62,8 +62,9 @@ export default function Home() {
         <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">
           //SYSTEM_STATUS
         </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
-          YOUR VAULT
+        <h1 className="font-black text-white uppercase"
+          style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
+          Your Vault
         </h1>
         <p className="text-[#555] text-sm font-mono-ui">
           KNOWLEDGE_BASE // ACTIVE
@@ -85,7 +86,8 @@ export default function Home() {
               <p className="font-mono-ui text-[10px] uppercase tracking-widest mb-1" style={{ color: card.accent + "80" }}>
                 {card.label}
               </p>
-              <p className="text-5xl font-black text-white leading-none">
+              <p className="font-black text-white leading-none"
+                style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", fontFamily: "'Alegreya Sans SC', serif" }}>
                 {card.value.toString().padStart(2, "0")}
               </p>
             </div>
