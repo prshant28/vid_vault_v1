@@ -10,6 +10,53 @@ import {
 } from "@workspace/db";
 import { eq, and, ilike, inArray, sql } from "drizzle-orm";
 
+async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: string; title: string; description?: string}>> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return [];
+
+  const videos: Array<{id: string; title: string; description?: string}> = [];
+  let pageToken = undefined;
+
+  try {
+    while (videos.length < 500) {
+      const url = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
+      url.searchParams.set("key", apiKey);
+      url.searchParams.set("playlistId", playlistId);
+      url.searchParams.set("part", "snippet");
+      url.searchParams.set("maxResults", "50");
+      if (pageToken) url.searchParams.set("pageToken", pageToken);
+
+      const resp = await fetch(url.toString());
+      if (!resp.ok) break;
+
+      const data = (await resp.json()) as {
+        items?: Array<{snippet?: {resourceId?: {videoId?: string}; title?: string; description?: string}}>;
+        nextPageToken?: string;
+      };
+
+      if (!data.items) break;
+
+      for (const item of data.items) {
+        const videoId = item.snippet?.resourceId?.videoId;
+        if (videoId) {
+          videos.push({
+            id: videoId,
+            title: item.snippet?.title || "Untitled",
+            description: item.snippet?.description || undefined,
+          });
+        }
+      }
+
+      if (!data.nextPageToken) break;
+      pageToken = data.nextPageToken;
+    }
+  } catch {
+    // Silently fail and return what we have
+  }
+
+  return videos;
+}
+
 const router = Router();
 
 async function fetchVideoMeta(url: string) {
@@ -226,6 +273,114 @@ router.post("/videos", async (req, res) => {
     .returning();
 
   res.status(201).json({ ...video, tags: [], folderName: null });
+});
+
+router.post("/videos/playlist", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const userId = req.user.id;
+  const { url, folderName: customFolderName } = req.body as { url: string; folderName?: string };
+
+  if (!url) {
+    res.status(400).json({ error: "Playlist URL is required" });
+    return;
+  }
+
+  // Extract playlist ID from URL
+  const playlistMatch = url.match(/(?:youtube\.com\/playlist\?list=|youtube\.com\/watch\?.*list=)([a-zA-Z0-9_-]+)/);
+  if (!playlistMatch) {
+    res.status(400).json({ error: "Invalid YouTube playlist URL" });
+    return;
+  }
+
+  const playlistId = playlistMatch[1];
+
+  try {
+    // Get playlist info to get the name
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    let playlistTitle = customFolderName || "Imported Playlist";
+
+    if (apiKey) {
+      try {
+        const playlistResp = await fetch(
+          `https://www.googleapis.com/youtube/v3/playlists?id=${playlistId}&part=snippet&key=${apiKey}`,
+        );
+        if (playlistResp.ok) {
+          const playlistData = (await playlistResp.json()) as {
+            items?: Array<{snippet?: {title?: string}}>;
+          };
+          const title = playlistData.items?.[0]?.snippet?.title;
+          if (title && !customFolderName) {
+            playlistTitle = title;
+          }
+        }
+      } catch {
+        // Continue with default name
+      }
+    }
+
+    // Create folder for this playlist
+    const [folder] = await db
+      .insert(foldersTable)
+      .values({
+        userId,
+        name: playlistTitle,
+        color: "#6366f1",
+      })
+      .returning();
+
+    // Extract all videos from playlist
+    const playlistVideos = await extractPlaylistVideos(playlistId);
+
+    if (playlistVideos.length === 0) {
+      res.status(400).json({ error: "No videos found in playlist or playlist is private" });
+      return;
+    }
+
+    // Fetch metadata and insert videos
+    const importedVideos = [];
+    for (const pv of playlistVideos) {
+      try {
+        const videoUrl = `https://www.youtube.com/watch?v=${pv.id}`;
+        const meta = await fetchVideoMeta(videoUrl);
+
+        const [video] = await db
+          .insert(videosTable)
+          .values({
+            userId,
+            url: videoUrl,
+            title: meta.title,
+            thumbnail: meta.thumbnail,
+            duration: meta.duration,
+            channelName: meta.channelName,
+            description: meta.description || pv.description || null,
+            folderId: folder.id,
+            viewCount: meta.viewCount,
+            publishedAt: meta.publishedAt,
+          })
+          .returning();
+
+        importedVideos.push(video);
+      } catch {
+        // Continue on error for individual videos
+      }
+    }
+
+    res.status(201).json({
+      folder: {
+        id: folder.id,
+        name: folder.name,
+        videosCount: importedVideos.length,
+      },
+      videos: importedVideos,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Playlist import error");
+    res.status(500).json({ error: "Failed to import playlist" });
+  }
 });
 
 router.get("/videos/:videoId", async (req, res) => {
