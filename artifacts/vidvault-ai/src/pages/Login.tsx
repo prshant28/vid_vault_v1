@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useInView } from "framer-motion";
 import {
-  Mail, Lock, Loader2, ArrowUpRight, Sparkles, Brain, FileText,
-  CheckSquare, Youtube, Folder, Tag, Zap, BookOpen, BarChart3, Download
+  Mail, Lock, Loader2, ArrowUpRight, Youtube, Folder, Tag, Zap,
+  BookOpen, BarChart3, Download, Play, Pause, Volume2, Maximize,
+  CheckCircle2, Sparkles, Brain, FileText, CheckSquare, ChevronRight
 } from "lucide-react";
 
 type AuthMode = "landing" | "register" | "login-manual";
@@ -15,8 +16,8 @@ function Counter({ to, color = "#fff" }: { to: number; color?: string }) {
   const [n, setN] = useState(0);
   useEffect(() => {
     let v = 0;
-    const step = Math.max(1, Math.ceil(to / 50));
-    const t = setInterval(() => { v = Math.min(v + step, to); setN(v); if (v >= to) clearInterval(t); }, 25);
+    const step = Math.max(1, Math.ceil(to / 55));
+    const t = setInterval(() => { v = Math.min(v + step, to); setN(v); if (v >= to) clearInterval(t); }, 22);
     return () => clearInterval(t);
   }, [to]);
   return <span style={{ color }}>{n}</span>;
@@ -44,8 +45,8 @@ function MonoInput({ type = "text", placeholder, value, onChange, icon: Icon }: 
       {Icon && <Icon className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${focused ? "text-[#8b5cf6]" : "text-[#333]"}`} />}
       <input type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        className="w-full h-11 text-sm text-white placeholder:text-[#252525] focus:outline-none font-sans"
-        style={{ background: "#0c0c0e", border: `1px solid ${focused ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.06)"}`, padding: Icon ? "0 12px 0 38px" : "0 12px", boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.07)" : "none" }} />
+        className="w-full h-11 text-sm text-white placeholder:text-[#252525] focus:outline-none transition-all"
+        style={{ fontFamily: "'Raleway', sans-serif", background: "#0c0c0e", border: `1px solid ${focused ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.06)"}`, borderRadius: 8, padding: Icon ? "0 12px 0 38px" : "0 12px", boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.07)" : "none" }} />
     </div>
   );
 }
@@ -55,19 +56,19 @@ function MonolithBtn({ children, onClick, size = "md", type = "button", disabled
   type?: "button" | "submit"; disabled?: boolean; fullWidth?: boolean;
 }) {
   const [hov, setHov] = useState(false);
-  const pad = { sm: "7px 16px", md: "11px 22px", lg: "12px 28px" }[size];
-  const fs = { sm: "10px", md: "11px", lg: "12px" }[size];
+  const pad = { sm: "8px 18px", md: "12px 26px", lg: "14px 32px" }[size];
+  const fs = { sm: "11px", md: "12px", lg: "13px" }[size];
   return (
-    <motion.button type={type} onClick={onClick} disabled={disabled} whileTap={{ scale: 0.97 }}
+    <motion.button type={type} onClick={onClick} disabled={disabled} whileTap={{ scale: 0.96 }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      className="font-mono-ui uppercase tracking-[0.07em] font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 flex-shrink-0"
-      style={{ padding: pad, fontSize: fs, width: fullWidth ? "100%" : undefined, minHeight: size === "lg" ? 46 : size === "md" ? 42 : 34, background: hov ? "#8b5cf6" : "#fff", color: hov ? "#fff" : "#000", clipPath: "polygon(6% 0px,100% 0px,100% 76%,94% 100%,0px 100%,0px 24%)", transition: "background 0.2s,color 0.2s" }}
+      className="font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 flex-shrink-0 uppercase tracking-[0.07em]"
+      style={{ padding: pad, fontSize: fs, width: fullWidth ? "100%" : undefined, minHeight: size === "lg" ? 50 : size === "md" ? 44 : 36, fontFamily: "'Raleway', sans-serif", background: hov ? "#8b5cf6" : "#fff", color: hov ? "#fff" : "#000", clipPath: "polygon(6% 0px,100% 0px,100% 76%,94% 100%,0px 100%,0px 24%)", transition: "background 0.2s,color 0.2s,box-shadow 0.2s", boxShadow: hov ? "0 8px 30px rgba(139,92,246,0.35)" : "none" }}
     >{children}</motion.button>
   );
 }
 
 /* ══════════════════════════════════════════════
-   LEFT SIDEBAR NAV (CampusConnect style)
+   LEFT SIDEBAR
 ══════════════════════════════════════════════ */
 const NAV_ITEMS: { id: NavSection; label: string }[] = [
   { id: "SAVE", label: "SAVE" },
@@ -81,336 +82,385 @@ function LeftSidebar({ active, onNav }: { active: NavSection; onNav: (id: NavSec
   return (
     <aside className="fixed left-0 top-0 bottom-0 z-40 flex flex-col items-center"
       style={{ width: 36, background: "#0a0a0b", borderRight: "1px solid rgba(255,255,255,0.04)" }}>
-      {/* Logo */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-        className="w-9 h-9 bg-white flex items-center justify-center font-black text-black text-[11px] font-mono-ui flex-shrink-0 mt-3 cursor-default">
-        VV
+        className="w-9 h-9 bg-white flex items-center justify-center font-black text-black text-[11px] flex-shrink-0 mt-3 cursor-default"
+        style={{ fontFamily: "'Raleway', sans-serif", borderRadius: 4 }}>VV
       </motion.div>
-
-      {/* Nav links — vertical rotated */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+      <div className="flex-1 flex flex-col items-center justify-center gap-7">
         {NAV_ITEMS.map((item, i) => (
-          <motion.button key={item.id}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.08 }}
+          <motion.button key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.08 }}
             onClick={() => onNav(item.id)}
-            className="font-mono-ui text-[8px] uppercase tracking-[0.25em] cursor-pointer transition-colors duration-200 hover:text-white"
-            style={{
-              writingMode: "vertical-rl",
-              transform: "rotate(180deg)",
-              color: active === item.id ? "#8b5cf6" : "#2a2a2a",
-              letterSpacing: "0.22em",
-            }}
-          >
-            {item.label}
-          </motion.button>
+            className="font-mono-ui text-[8px] uppercase tracking-[0.25em] cursor-pointer transition-all duration-200 hover:text-white"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", color: active === item.id ? "#8b5cf6" : "#2a2a2a" }}
+          >{item.label}</motion.button>
         ))}
       </div>
-
-      {/* Status dot */}
-      <motion.div className="mb-4 w-1.5 h-1.5 rounded-full bg-green-500"
-        animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity }} />
+      <motion.div className="mb-4 w-2 h-2 rounded-full bg-green-500 flex-shrink-0"
+        animate={{ opacity: [1, 0.3, 1], scale: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }} />
     </aside>
   );
 }
 
 /* ══════════════════════════════════════════════
-   TOP BAR (CampusConnect style — flat)
+   TOP BAR
 ══════════════════════════════════════════════ */
 function TopBar({ onLogin, onRegister }: { onLogin: () => void; onRegister: () => void }) {
   return (
     <motion.header initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
       className="flex items-center justify-between px-6 sm:px-10 h-14 sm:h-16 flex-shrink-0"
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <span className="font-black text-white uppercase tracking-[0.1em] text-sm font-mono-ui">
+      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <span className="font-black text-white uppercase tracking-[0.08em] text-sm"
+        style={{ fontFamily: "'Raleway', sans-serif" }}>
         VIDVAULT<span className="text-[#8b5cf6]"> AI</span>
       </span>
       <div className="flex items-center gap-4 sm:gap-6">
         <button onClick={onLogin}
-          className="font-mono-ui text-[10px] uppercase tracking-widest text-[#444] hover:text-white transition-colors">
-          LOG IN
-        </button>
-        <motion.button onClick={onRegister} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-          className="font-mono-ui text-[10px] uppercase tracking-widest text-white px-5 h-9 flex items-center"
-          style={{ border: "1px solid rgba(255,255,255,0.3)", clipPath: "polygon(4% 0,100% 0,100% 78%,96% 100%,0 100%,0 22%)" }}>
-          GET STARTED
-        </motion.button>
+          className="text-[11px] uppercase tracking-widest text-[#444] hover:text-white transition-colors font-semibold"
+          style={{ fontFamily: "'Raleway', sans-serif" }}>LOG IN</button>
+        <motion.button onClick={onRegister} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+          className="text-[11px] uppercase tracking-widest text-white px-5 h-9 flex items-center font-bold"
+          style={{ fontFamily: "'Raleway', sans-serif", border: "1px solid rgba(255,255,255,0.28)", clipPath: "polygon(4% 0,100% 0,100% 78%,96% 100%,0 100%,0 22%)", transition: "border-color 0.2s, background 0.2s" }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(139,92,246,0.6)"}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.28)"}
+        >GET STARTED</motion.button>
       </div>
     </motion.header>
   );
 }
 
 /* ══════════════════════════════════════════════
-   LIVE RADAR CARD — animated workflow demo
+   ANIMATED VIDEO PLAYER MOCK — landing hero right panel
+   Shows the full VidVault workflow: paste → load → AI → outputs
 ══════════════════════════════════════════════ */
-const DEMO_PHASES = [
-  { phase: "INPUT", label: "PASTE_URL", desc: "youtube.com/watch?v=dQw4w9Wg..." },
-  { phase: "FETCH", label: "FETCHING_META", desc: "Downloading transcript & metadata..." },
-  { phase: "AI_PROCESS", label: "AI_ANALYZING", desc: "GPT processing 18,432 tokens..." },
-  { phase: "OUTPUT", label: "OUTPUTS_READY", desc: "6 artifacts generated successfully" },
+const VIDEO_DEMOS = [
+  { title: "The Complete React 19 Guide", channel: "Fireship", views: "1.2M views", duration: "18:42", color: "#1a1a3e", bar: "#8b5cf6" },
+  { title: "System Design: Scale to Millions", channel: "ByteByteGo", views: "847K views", duration: "32:15", color: "#1a2e1a", bar: "#10b981" },
+  { title: "OpenAI GPT-5 Full Tutorial", channel: "AI Explained", views: "2.1M views", duration: "44:08", color: "#2e1a1a", bar: "#ef4444" },
+];
+const AI_TASKS = [
+  { label: "AI Summary", icon: FileText, color: "#8b5cf6", result: "847-word structured summary" },
+  { label: "Flashcard Deck", icon: Brain, color: "#06b6d4", result: "14 spaced-repetition cards" },
+  { label: "MCQ Set", icon: CheckSquare, color: "#22c55e", result: "12 auto-graded questions" },
+  { label: "Blog Article", icon: FileText, color: "#f59e0b", result: "1,200-word SEO article" },
+  { label: "PPT Outline", icon: BarChart3, color: "#ec4899", result: "8-slide deck structure" },
+  { label: "Key Insights", icon: Sparkles, color: "#a78bfa", result: "Top 9 actionable takeaways" },
 ];
 
-const TASKS = [
-  { label: "TRANSCRIPT_EXTRACT", color: "#22c55e" },
-  { label: "AI_SUMMARY", color: "#8b5cf6" },
-  { label: "FLASHCARD_SET", color: "#06b6d4" },
-  { label: "MCQ_GENERATION", color: "#f59e0b" },
-  { label: "PPT_OUTLINE", color: "#ec4899" },
-  { label: "KEY_INSIGHTS", color: "#8b5cf6" },
-];
+type DemoPhase = "url" | "loading" | "player" | "ai" | "done";
 
-function LiveBarChart() {
-  const [bars, setBars] = useState(() => Array.from({ length: 14 }, () => Math.random() * 55 + 20));
+function VideoPlayerMock() {
+  const [videoIdx, setVideoIdx] = useState(0);
+  const [phase, setPhase] = useState<DemoPhase>("url");
+  const [urlText, setUrlText] = useState("");
+  const [progress, setProgress] = useState(22);
+  const [tasksDone, setTasksDone] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const video = VIDEO_DEMOS[videoIdx];
+  const URL_FULL = `youtube.com/watch?v=dQw4w9WgXcQ`;
+
+  // Master cycle controller
   useEffect(() => {
+    const seq: Array<[DemoPhase, number]> = [
+      ["url", 0],
+      ["loading", 2400],
+      ["player", 4200],
+      ["ai", 6500],
+      ["done", 11500],
+    ];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    seq.forEach(([p, delay]) => {
+      timers.push(setTimeout(() => setPhase(p), delay));
+    });
+    timers.push(setTimeout(() => {
+      setVideoIdx(prev => (prev + 1) % VIDEO_DEMOS.length);
+      setPhase("url"); setUrlText(""); setProgress(22); setTasksDone(0);
+    }, 15000));
+    return () => timers.forEach(clearTimeout);
+  }, [videoIdx]);
+
+  // URL typing animation
+  useEffect(() => {
+    if (phase !== "url") return;
+    setUrlText("");
+    let i = 0;
     const t = setInterval(() => {
-      setBars(prev => prev.map(b => {
-        const next = b + (Math.random() - 0.45) * 28;
-        return Math.max(12, Math.min(100, next));
-      }));
-    }, 500);
+      setUrlText(URL_FULL.slice(0, ++i));
+      if (i >= URL_FULL.length) clearInterval(t);
+    }, 55);
     return () => clearInterval(t);
-  }, []);
-  return (
-    <div className="flex items-end gap-[3px] h-full w-full">
-      {bars.map((h, i) => (
-        <motion.div key={i} animate={{ height: `${h}%` }} transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="flex-1 rounded-sm min-w-[3px]"
-          style={{ background: i % 4 === 0 ? "rgba(139,92,246,0.95)" : i % 4 === 1 ? "rgba(139,92,246,0.5)" : i % 4 === 2 ? "rgba(139,92,246,0.25)" : "rgba(139,92,246,0.12)" }} />
-      ))}
-    </div>
-  );
-}
+  }, [phase, videoIdx]);
 
-function CornerBracket({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
-  const s: Record<string, React.CSSProperties> = {
-    tl: { top: 6, left: 6, borderTop: "1.5px solid rgba(139,92,246,0.5)", borderLeft: "1.5px solid rgba(139,92,246,0.5)" },
-    tr: { top: 6, right: 6, borderTop: "1.5px solid rgba(139,92,246,0.5)", borderRight: "1.5px solid rgba(139,92,246,0.5)" },
-    bl: { bottom: 6, left: 6, borderBottom: "1.5px solid rgba(139,92,246,0.5)", borderLeft: "1.5px solid rgba(139,92,246,0.5)" },
-    br: { bottom: 6, right: 6, borderBottom: "1.5px solid rgba(139,92,246,0.5)", borderRight: "1.5px solid rgba(139,92,246,0.5)" },
-  };
-  return <div className="absolute w-3.5 h-3.5" style={s[pos]} />;
-}
+  // Progress bar
+  useEffect(() => {
+    if (phase !== "player" && phase !== "ai" && phase !== "done") return;
+    const t = setInterval(() => setProgress(p => Math.min(p + 0.3, 98)), 120);
+    return () => clearInterval(t);
+  }, [phase]);
 
-function VaultRadarCard() {
+  // AI tasks reveal
+  useEffect(() => {
+    if (phase !== "ai") { if (phase === "url" || phase === "loading") setTasksDone(0); return; }
+    setTasksDone(0);
+    let i = 0;
+    const t = setInterval(() => { i++; setTasksDone(i); if (i >= AI_TASKS.length) clearInterval(t); }, 700);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  // 3D tilt
   const cardRef = useRef<HTMLDivElement>(null);
   const rotX = useMotionValue(0);
   const rotY = useMotionValue(0);
-  const springX = useSpring(rotX, { stiffness: 100, damping: 22 });
-  const springY = useSpring(rotY, { stiffness: 100, damping: 22 });
-
-  const [phaseIdx, setPhaseIdx] = useState(0);
-  const [taskProgress, setTaskProgress] = useState<number[]>(TASKS.map(() => 0));
-  const [allDone, setAllDone] = useState(false);
-  const [tick, setTick] = useState(0);
-
-  // Cycle phases every 5s
-  useEffect(() => {
-    const t = setInterval(() => {
-      setPhaseIdx(p => {
-        const next = (p + 1) % DEMO_PHASES.length;
-        if (next === 0) { setTaskProgress(TASKS.map(() => 0)); setAllDone(false); }
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(t);
+  const sX = useSpring(rotX, { stiffness: 90, damping: 20 });
+  const sY = useSpring(rotY, { stiffness: 90, damping: 20 });
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const r = cardRef.current?.getBoundingClientRect(); if (!r) return;
+    rotX.set(-((e.clientY - r.top - r.height / 2) / (r.height / 2)) * 6);
+    rotY.set(((e.clientX - r.left - r.width / 2) / (r.width / 2)) * 6);
   }, []);
-
-  // Animate task progress bars during AI_PROCESS phase
-  useEffect(() => {
-    if (DEMO_PHASES[phaseIdx].phase !== "AI_PROCESS") return;
-    setTaskProgress(TASKS.map(() => 0));
-    const t = setInterval(() => {
-      setTaskProgress(prev => {
-        const next = prev.map((v, i) => Math.min(100, v + Math.random() * 18 + (i < 2 ? 5 : 0)));
-        if (next.every(v => v >= 100)) { setAllDone(true); clearInterval(t); }
-        return next;
-      });
-    }, 180);
-    return () => clearInterval(t);
-  }, [phaseIdx]);
-
-  // Tick for live clock
-  useEffect(() => {
-    const t = setInterval(() => setTick(p => p + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-    const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-    rotX.set(-dy * 7); rotY.set(dx * 7);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => { rotX.set(0); rotY.set(0); }, []);
-
-  const phase = DEMO_PHASES[phaseIdx];
-  const isProcessing = phase.phase === "AI_PROCESS";
-  const isOutput = phase.phase === "OUTPUT";
-  const isInput = phase.phase === "INPUT";
+  const onMouseLeave = useCallback(() => { rotX.set(0); rotY.set(0); }, []);
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-3 sm:p-6" style={{ perspective: "1200px" }}>
-      <motion.div ref={cardRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
-        style={{ rotateX: springX, rotateY: springY, transformStyle: "preserve-3d" }}
-        className="w-full" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <div className="relative overflow-hidden"
-          style={{ background: "rgba(12,12,16,0.96)", border: "1px solid rgba(139,92,246,0.22)", borderRadius: 10, backdropFilter: "blur(20px)", boxShadow: "0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 80px rgba(139,92,246,0.04)", padding: "14px 16px" }}>
+    <div className="w-full h-full flex items-center justify-center p-4 sm:p-6 lg:p-8" style={{ perspective: "1100px" }}>
+      <motion.div ref={cardRef} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}
+        style={{ rotateX: sX, rotateY: sY, transformStyle: "preserve-3d" }}
+        className="w-full max-w-[520px]"
+        initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}>
+
+        {/* Outer card */}
+        <div className="overflow-hidden relative"
+          style={{ background: "rgba(10,10,14,0.97)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 18, boxShadow: "0 28px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 100px rgba(139,92,246,0.05)" }}>
 
           {/* Grid bg */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.035]"
-            style={{ backgroundImage: "linear-gradient(rgba(139,92,246,1) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,1) 1px,transparent 1px)", backgroundSize: "22px 22px" }} />
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+            style={{ backgroundImage: "linear-gradient(rgba(139,92,246,1) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,1) 1px,transparent 1px)", backgroundSize: "24px 24px" }} />
 
           {/* Scan line */}
-          <motion.div className="absolute left-0 right-0 h-px pointer-events-none z-10"
-            style={{ background: "linear-gradient(90deg,transparent,rgba(139,92,246,0.6),transparent)" }}
-            animate={{ top: ["0%", "100%", "0%"] }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }} />
+          <motion.div className="absolute left-0 right-0 h-px pointer-events-none z-20"
+            style={{ background: "linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)" }}
+            animate={{ top: ["0%", "100%", "0%"] }} transition={{ duration: 5.5, repeat: Infinity, ease: "linear" }} />
 
-          <CornerBracket pos="tl" /><CornerBracket pos="tr" />
-          <CornerBracket pos="bl" /><CornerBracket pos="br" />
-
-          {/* Header row */}
-          <div className="flex items-start justify-between mb-3 relative z-10">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <motion.div className="w-2 h-2 rounded-full"
-                  style={{ background: isInput ? "#ef4444" : isProcessing ? "#f59e0b" : "#22c55e" }}
-                  animate={{ opacity: [1, 0.3, 1], scale: [1, 0.8, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-                <span className="font-mono-ui text-[10px] sm:text-[11px] font-bold text-white uppercase tracking-[0.06em]">
-                  LIVE_RADAR_SCANNING
-                </span>
-                <span className="font-mono-ui text-[8px] text-[#333] ml-1">[{String(tick % 60).padStart(2, "0")}s]</span>
-              </div>
-              <p className="font-mono-ui text-[8px] text-[#2a2a2a] uppercase tracking-[0.18em] ml-4">
-                LOC: VIDVAULT_AI_NODE_1
-              </p>
+          {/* App top bar */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05] relative z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full" style={{ background: "#ef4444" }} />
+              <div className="w-2 h-2 rounded-full" style={{ background: "#f59e0b" }} />
+              <div className="w-2 h-2 rounded-full" style={{ background: "#22c55e" }} />
             </div>
-            <div className="px-2 py-1 flex-shrink-0" style={{ border: "1px solid rgba(139,92,246,0.35)" }}>
-              <span className="font-mono-ui text-[8px] text-[#8b5cf6] uppercase tracking-widest">SECURE_P2P_E2EE</span>
-            </div>
-          </div>
-
-          {/* Phase indicator tabs */}
-          <div className="flex gap-1 mb-3 relative z-10">
-            {DEMO_PHASES.map((p, i) => (
-              <div key={p.phase} className="flex-1 h-0.5 rounded-full transition-all duration-500"
-                style={{ background: i <= phaseIdx ? "#8b5cf6" : "rgba(139,92,246,0.12)" }} />
-            ))}
-          </div>
-
-          {/* Phase status */}
-          <motion.div key={phaseIdx} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-            className="mb-3 relative z-10 px-2.5 py-1.5 flex items-center gap-2"
-            style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.12)", borderRadius: 4 }}>
-            <span className="font-mono-ui text-[8px] text-[#8b5cf6] uppercase tracking-widest flex-shrink-0">[{phase.label}]</span>
-            <span className="font-mono-ui text-[8px] text-[#444] truncate">{phase.desc}</span>
-          </motion.div>
-
-          {/* ── Body ── */}
-          <div className="flex gap-3 relative z-10">
-
-            {/* LEFT: stats + task list */}
-            <div className="flex flex-col gap-2 flex-shrink-0" style={{ minWidth: 100 }}>
-              {/* Stat counters */}
-              <div className="flex flex-col gap-1.5">
-                <div>
-                  <div className="text-2xl font-black leading-none"><Counter to={24} color="#ffffff" /></div>
-                  <p className="font-mono-ui text-[7px] text-[#333] uppercase tracking-widest mt-0.5">VIDEOS_SAVED</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-black leading-none"><Counter to={11} color="#22c55e" /></div>
-                  <p className="font-mono-ui text-[7px] text-[#333] uppercase tracking-widest mt-0.5">FOLDERS_ACTIVE</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-black leading-none"><Counter to={89} color="#8b5cf6" /></div>
-                  <p className="font-mono-ui text-[7px] text-[#333] uppercase tracking-widest mt-0.5">AI_RUNS_TOTAL</p>
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT: chart + task progress */}
-            <div className="flex-1 flex flex-col gap-2 min-w-0">
-
-              {/* Bar chart */}
-              <div className="relative overflow-hidden" style={{ background: "rgba(6,6,9,0.8)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 5, padding: "8px 8px 6px", height: 80 }}>
-                <LiveBarChart />
-                <div className="absolute bottom-1.5 right-2">
-                  <span className="font-mono-ui text-[6px] text-[#222] uppercase tracking-widest">AI_DATA_STREAM</span>
-                </div>
-              </div>
-
-              {/* Task progress bars */}
-              <div className="flex flex-col gap-1">
-                {TASKS.map((task, i) => (
-                  <div key={task.label} className="flex items-center gap-1.5">
-                    <span className="font-mono-ui text-[6px] uppercase tracking-widest w-24 truncate flex-shrink-0"
-                      style={{ color: taskProgress[i] > 0 ? task.color : "#2a2a2a" }}>
-                      {task.label}
+            <div className="flex-1 mx-3">
+              <div className="flex items-center gap-2 px-3 h-7 max-w-[260px] mx-auto"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6 }}>
+                <Youtube className="w-3 h-3 text-red-500 flex-shrink-0" />
+                <AnimatePresence mode="wait">
+                  {phase === "url" ? (
+                    <span key="typing" className="font-mono-ui text-[9px] text-[#666] truncate">
+                      {urlText}<span className="text-[#8b5cf6] animate-pulse">|</span>
                     </span>
-                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      <motion.div className="h-full rounded-full"
-                        animate={{ width: `${taskProgress[i]}%` }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        style={{ background: `linear-gradient(90deg, ${task.color}cc, ${task.color})` }} />
+                  ) : (
+                    <motion.span key="url" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      className="font-mono-ui text-[9px] text-[#555] truncate">
+                      {URL_FULL}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <motion.div className="w-1.5 h-1.5 rounded-full"
+                style={{ background: phase === "ai" || phase === "done" ? "#22c55e" : "#333" }}
+                animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />
+              <span className="font-mono-ui text-[8px] uppercase tracking-widest"
+                style={{ color: phase === "ai" || phase === "done" ? "#22c55e" : "#2a2a2a" }}>
+                {phase === "url" ? "IDLE" : phase === "loading" ? "FETCHING" : phase === "player" ? "READY" : phase === "ai" ? "ANALYZING" : "COMPLETE"}
+              </span>
+            </div>
+          </div>
+
+          {/* Main content area */}
+          <div className="relative z-10">
+
+            {/* Loading phase */}
+            <AnimatePresence>
+              {phase === "loading" && (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center py-12 gap-4">
+                  <motion.div className="w-10 h-10 border-2 border-[#8b5cf6] border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+                  <span className="font-mono-ui text-[10px] text-[#444] uppercase tracking-widest">
+                    <TypedText text="Fetching transcript & metadata..." />
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* URL phase placeholder */}
+            {phase === "url" && (
+              <div className="flex flex-col items-center justify-center py-10 gap-3">
+                <div className="w-12 h-12 flex items-center justify-center"
+                  style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: 12 }}>
+                  <Youtube className="w-6 h-6 text-[#2a2a2a]" />
+                </div>
+                <span className="font-mono-ui text-[10px] text-[#222] uppercase tracking-widest">PASTE YOUTUBE URL ABOVE</span>
+              </div>
+            )}
+
+            {/* Video player + AI panel */}
+            <AnimatePresence>
+              {(phase === "player" || phase === "ai" || phase === "done") && (
+                <motion.div key="content" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+
+                  {/* Video frame */}
+                  <div className="relative mx-3 mt-3 overflow-hidden"
+                    style={{ borderRadius: 10, background: video.color, aspectRatio: "16/9" }}>
+
+                    {/* Fake video content */}
+                    <div className="absolute inset-0"
+                      style={{ background: `linear-gradient(135deg, ${video.color}, #0a0a0b 70%)` }} />
+                    <div className="absolute inset-0 opacity-[0.04]"
+                      style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.08, 1], opacity: [0.15, 0.25, 0.15] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className="w-16 h-16 rounded-full flex items-center justify-center"
+                        style={{ background: video.bar, filter: "blur(20px)" }} />
+                      <motion.button
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        animate={{ scale: isPlaying ? [1, 1.05, 1] : 1 }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute w-12 h-12 flex items-center justify-center"
+                        style={{ background: "rgba(0,0,0,0.7)", borderRadius: 12, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                        {isPlaying
+                          ? <Pause className="w-5 h-5 text-white" />
+                          : <Play className="w-5 h-5 text-white fill-white ml-0.5" />}
+                      </motion.button>
                     </div>
-                    <span className="font-mono-ui text-[6px] w-6 text-right flex-shrink-0"
-                      style={{ color: taskProgress[i] >= 100 ? task.color : "#2a2a2a" }}>
-                      {taskProgress[i] >= 100 ? "✓" : isProcessing ? `${Math.round(taskProgress[i])}%` : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Footer */}
-          <div className="mt-3 pt-2 border-t flex items-center justify-between relative z-10"
-            style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-            <div className="flex items-center gap-3">
-              <AnimatePresence>
-                {isOutput && (
-                  <motion.div key="done" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                    <span className="font-mono-ui text-[8px] text-green-500 uppercase tracking-widest">6_OUTPUTS_READY</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {!isOutput && ["SUMMARY", "FLASHCARD", "MCQ"].map((l, i) => (
-                <div key={l} className="flex items-center gap-1">
-                  <div className="w-1 h-1 rounded-full"
-                    style={{ background: taskProgress[i] >= 100 ? "#22c55e" : "#222" }} />
-                  <span className="font-mono-ui text-[7px] uppercase tracking-widest"
-                    style={{ color: taskProgress[i] >= 100 ? "#444" : "#1e1e1e" }}>{l}</span>
-                </div>
-              ))}
-            </div>
-            <span className="font-mono-ui text-[7px] text-[#1a1a1a] uppercase">VV_CORE_v2.0</span>
+                    {/* AI overlay badge during AI phase */}
+                    <AnimatePresence>
+                      {(phase === "ai" || phase === "done") && (
+                        <motion.div key="ai-badge" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                          className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1"
+                          style={{ background: "rgba(139,92,246,0.85)", borderRadius: 6, backdropFilter: "blur(4px)" }}>
+                          <motion.div className="w-1.5 h-1.5 rounded-full bg-white"
+                            animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.7, repeat: Infinity }} />
+                          <span className="font-mono-ui text-[8px] text-white uppercase tracking-widest">AI ANALYZING</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Video controls bar */}
+                    <div className="absolute bottom-0 left-0 right-0 px-3 py-2"
+                      style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.9))" }}>
+                      <div className="w-full h-1 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.15)" }}>
+                        <motion.div className="h-full rounded-full" animate={{ width: `${progress}%` }}
+                          transition={{ duration: 0.5 }} style={{ background: video.bar }} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setIsPlaying(!isPlaying)} className="text-white hover:text-white/80">
+                          {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-white" />}
+                        </button>
+                        <span className="font-mono-ui text-[9px] text-white/70 flex-1">
+                          {Math.floor(progress / 100 * 18)}:{String(Math.floor((progress / 100 * 42) % 60)).padStart(2, "0")} / {video.duration}
+                        </span>
+                        <Volume2 className="w-3 h-3 text-white/60" />
+                        <Maximize className="w-3 h-3 text-white/60" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Video info */}
+                  <div className="px-4 py-2.5 border-b border-white/[0.05]">
+                    <p className="font-bold text-xs text-white leading-snug truncate" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      {video.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="font-mono-ui text-[9px] text-[#555]">{video.channel}</span>
+                      <span className="text-[#2a2a2a] font-mono-ui text-[8px]">•</span>
+                      <span className="font-mono-ui text-[9px] text-[#444]">{video.views}</span>
+                    </div>
+                  </div>
+
+                  {/* AI outputs */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-3 h-3 text-[#8b5cf6]" />
+                      <span className="font-mono-ui text-[9px] text-[#8b5cf6] uppercase tracking-widest">AI_GENERATION_SUITE</span>
+                      {phase === "done" && (
+                        <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                          className="ml-auto font-mono-ui text-[8px] text-green-500 flex items-center gap-1">
+                          <CheckCircle2 className="w-2.5 h-2.5" />ALL DONE
+                        </motion.span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {AI_TASKS.map((task, i) => {
+                        const done = i < tasksDone;
+                        const active = i === tasksDone && phase === "ai";
+                        return (
+                          <motion.div key={task.label}
+                            initial={{ opacity: 0, x: -8 }} animate={{ opacity: done || active ? 1 : 0.25, x: 0 }}
+                            transition={{ delay: i * 0.05, duration: 0.3 }}
+                            className="flex items-center gap-2 px-2 py-1.5"
+                            style={{ background: done ? `${task.color}0d` : "rgba(255,255,255,0.02)", border: `1px solid ${done ? `${task.color}30` : "rgba(255,255,255,0.04)"}`, borderRadius: 7, transition: "all 0.3s" }}>
+                            {done ? (
+                              <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: task.color }} />
+                            ) : active ? (
+                              <motion.div className="w-3 h-3 rounded-full flex-shrink-0"
+                                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                                transition={{ duration: 0.6, repeat: Infinity }}
+                                style={{ background: task.color }} />
+                            ) : (
+                              <task.icon className="w-3 h-3 flex-shrink-0 text-[#2a2a2a]" />
+                            )}
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[9px] font-semibold truncate" style={{ color: done ? "#bbb" : "#333", fontFamily: "'Raleway', sans-serif" }}>
+                                {task.label}
+                              </span>
+                              {done && (
+                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                  className="font-mono-ui text-[7px] truncate" style={{ color: task.color }}>
+                                  {task.result}
+                                </motion.span>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
+
+        {/* 3D shadow layer */}
+        <div className="absolute inset-0 -z-10 rounded-[18px]"
+          style={{ background: "rgba(139,92,246,0.08)", transform: "translateZ(-24px) scale(0.94)", filter: "blur(3px)" }} />
       </motion.div>
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════
-   AUTH VISUAL — knowledge graph
+   AUTH VISUAL
 ══════════════════════════════════════════════ */
 function VaultAuthVisual() {
   const nodes = [
-    { x: "50%", y: "38%", label: "VIDEO", size: 52, primary: true },
-    { x: "25%", y: "24%", label: "NOTES", size: 36, primary: false },
-    { x: "74%", y: "22%", label: "AI", size: 40, primary: false },
-    { x: "20%", y: "60%", label: "TAGS", size: 32, primary: false },
-    { x: "76%", y: "60%", label: "MCQ", size: 34, primary: false },
-    { x: "50%", y: "70%", label: "FLASH", size: 30, primary: false },
+    { x: "50%", y: "38%", label: "VIDEO", size: 56, primary: true },
+    { x: "25%", y: "24%", label: "NOTES", size: 40, primary: false },
+    { x: "74%", y: "22%", label: "AI", size: 44, primary: false },
+    { x: "20%", y: "60%", label: "TAGS", size: 36, primary: false },
+    { x: "76%", y: "60%", label: "MCQ", size: 38, primary: false },
+    { x: "50%", y: "70%", label: "FLASH", size: 34, primary: false },
   ];
   return (
     <div className="relative w-full h-full overflow-hidden">
       <motion.div className="absolute rounded-full pointer-events-none"
-        style={{ width: 280, height: 280, top: "24%", left: "50%", translateX: "-50%", background: "#8b5cf6", filter: "blur(110px)", opacity: 0.06 }}
+        style={{ width: 300, height: 300, top: "24%", left: "50%", translateX: "-50%", background: "#8b5cf6", filter: "blur(120px)", opacity: 0.06 }}
         animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 5, repeat: Infinity }} />
-      {[260, 360, 460].map((d, i) => (
+      {[280, 380, 480].map((d, i) => (
         <motion.div key={d} className="absolute rounded-full pointer-events-none"
           style={{ width: d, height: d, top: "38%", left: "50%", translateX: "-50%", translateY: "-50%", border: `1px solid rgba(139,92,246,${0.07 - i * 0.02})` }}
           animate={{ rotate: i % 2 === 0 ? 360 : -360 }} transition={{ duration: 18 + i * 5, repeat: Infinity, ease: "linear" }} />
@@ -419,10 +469,10 @@ function VaultAuthVisual() {
         <motion.div key={node.label} className="absolute flex flex-col items-center gap-1"
           style={{ left: node.x, top: node.y, translateX: "-50%", translateY: "-50%" }}
           initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1, y: [0, node.primary ? -7 : -4, 0] }}
+          animate={{ opacity: 1, scale: 1, y: [0, node.primary ? -8 : -4, 0] }}
           transition={{ opacity: { delay: 0.2 + i * 0.1 }, scale: { delay: 0.2 + i * 0.1 }, y: { duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 } }}>
-          <div className="flex items-center justify-center font-mono-ui font-black"
-            style={{ width: node.size, height: node.size, background: node.primary ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "#111113", border: `1px solid ${node.primary ? "rgba(139,92,246,0.6)" : "rgba(139,92,246,0.14)"}`, clipPath: "polygon(10% 0%,100% 0%,100% 90%,90% 100%,0% 100%,0% 10%)", boxShadow: node.primary ? "0 0 22px rgba(139,92,246,0.28)" : "none", color: node.primary ? "#fff" : "#8b5cf6", fontSize: node.primary ? "10px" : "7px" }}>
+          <div className="flex items-center justify-center font-black"
+            style={{ width: node.size, height: node.size, fontFamily: "'Raleway', sans-serif", background: node.primary ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "#111113", border: `1px solid ${node.primary ? "rgba(139,92,246,0.6)" : "rgba(139,92,246,0.14)"}`, borderRadius: node.primary ? 12 : 8, boxShadow: node.primary ? "0 0 28px rgba(139,92,246,0.3)" : "none", color: node.primary ? "#fff" : "#8b5cf6", fontSize: node.primary ? "11px" : "8px" }}>
             {node.label.slice(0, 3)}
           </div>
           <span className="font-mono-ui text-[7px] text-[#2a2a2a] uppercase tracking-widest">{node.label}</span>
@@ -445,39 +495,42 @@ function FeaturesSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const cards = [
-    { icon: Youtube, title: "SAVE VIDEOS", desc: "Paste any YouTube URL or playlist. Import up to 500 videos instantly." },
-    { icon: Folder, title: "SMART FOLDERS", desc: "Organize with nested folders and color-coded tags. Zero friction." },
-    { icon: Sparkles, title: "AI GENERATION", desc: "6 AI tools: summaries, flashcards, MCQ, outlines, insights, blog posts." },
-    { icon: Download, title: "EXPORT ANYWHERE", desc: "Export to PDF, Markdown, JSON, PPT, or share a public link." },
-    { icon: Brain, title: "FLASHCARD DECKS", desc: "Auto-generated spaced-repetition flashcards from any video." },
-    { icon: BarChart3, title: "KNOWLEDGE GRAPH", desc: "Visual graph of your saved videos, tags, and AI connections." },
+    { icon: Youtube, title: "SAVE VIDEOS", desc: "Paste any YouTube URL or playlist. Import up to 500 videos instantly with metadata.", color: "#ef4444" },
+    { icon: Folder, title: "SMART FOLDERS", desc: "Organize with nested folders and color-coded tags. Zero friction.", color: "#f59e0b" },
+    { icon: Sparkles, title: "AI GENERATION", desc: "6 AI tools: summaries, flashcards, MCQ, outlines, insights, blog posts.", color: "#8b5cf6" },
+    { icon: Download, title: "EXPORT ANYWHERE", desc: "Export to PDF, Markdown, JSON, PPT, or share a public link.", color: "#06b6d4" },
+    { icon: Brain, title: "FLASHCARD DECKS", desc: "Auto-generated spaced-repetition flashcards from any video.", color: "#10b981" },
+    { icon: BarChart3, title: "KNOWLEDGE GRAPH", desc: "Visual graph of your saved videos, tags, and AI connections.", color: "#ec4899" },
   ];
   return (
     <section ref={ref} className="py-20 sm:py-28 px-8 sm:px-14">
       <SectionLabel>CORE_FEATURES</SectionLabel>
       <div className="overflow-hidden mb-12">
-        <motion.h2
-          initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black uppercase text-white leading-[0.9]"
-          style={{ fontSize: "clamp(2rem, 4.5vw, 4.5rem)", letterSpacing: "-0.02em" }}>
+        <motion.h2 initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="font-black uppercase text-white leading-[0.88]"
+          style={{ fontSize: "clamp(2.2rem, 5vw, 5rem)", letterSpacing: "-0.02em", fontFamily: "'Raleway', sans-serif" }}>
           THE CORE<br /><span className="text-outline-strong">PROTOCOLS.</span>
         </motion.h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((card, i) => (
           <motion.div key={card.title}
-            initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
-            className="group p-5 cursor-default transition-all duration-300 hover:border-[rgba(139,92,246,0.25)]"
-            style={{ background: "#0d0d10", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 flex items-center justify-center" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.15)" }}>
-                <card.icon className="w-4 h-4 text-[#8b5cf6]" />
+            initial={{ opacity: 0, y: 28 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.08 + i * 0.08, duration: 0.5 }}
+            className="card-interactive group p-6 cursor-default relative overflow-hidden">
+            {/* Accent glow */}
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{ background: `radial-gradient(circle, ${card.color}20 0%, transparent 70%)`, transform: "translate(30%, -30%)" }} />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"
+                style={{ background: `${card.color}15`, border: `1px solid ${card.color}30`, borderRadius: 10 }}>
+                <card.icon className="w-5 h-5" style={{ color: card.color }} />
               </div>
-              <span className="font-mono-ui text-[9px] font-bold uppercase tracking-widest text-white">{card.title}</span>
+              <span className="font-black text-[11px] uppercase tracking-widest text-white" style={{ fontFamily: "'Raleway', sans-serif" }}>{card.title}</span>
             </div>
-            <p className="font-mono-ui text-[9px] text-[#444] leading-relaxed">{card.desc}</p>
+            <p className="font-mono-ui text-[10px] text-[#444] leading-relaxed">{card.desc}</p>
+            <ChevronRight className="w-3 h-3 text-[#222] absolute bottom-4 right-4 group-hover:text-[#8b5cf6] transition-colors" />
           </motion.div>
         ))}
       </div>
@@ -500,27 +553,27 @@ function AIToolsSection() {
     <section ref={ref} className="py-20 sm:py-28 px-8 sm:px-14" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
       <SectionLabel>AI_GENERATION_SUITE</SectionLabel>
       <div className="overflow-hidden mb-12">
-        <motion.h2
-          initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black uppercase text-white leading-[0.9]"
-          style={{ fontSize: "clamp(2rem, 4.5vw, 4.5rem)", letterSpacing: "-0.02em" }}>
+        <motion.h2 initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="font-black uppercase text-white leading-[0.88]"
+          style={{ fontSize: "clamp(2.2rem, 5vw, 5rem)", letterSpacing: "-0.02em", fontFamily: "'Raleway', sans-serif" }}>
           6 AI TOOLS.<br /><span className="text-outline-strong">ONE VAULT.</span>
         </motion.h2>
       </div>
       <div className="space-y-px">
         {tools.map((tool, i) => (
           <motion.div key={tool.id}
-            initial={{ opacity: 0, x: -20 }} animate={inView ? { opacity: 1, x: 0 } : {}}
+            initial={{ opacity: 0, x: -24 }} animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ delay: 0.05 + i * 0.07, duration: 0.45 }}
-            className="flex items-center gap-6 px-5 py-4 group cursor-default transition-all duration-200 hover:bg-white/[0.02]"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-            <span className="font-mono-ui text-[9px] font-black w-6 flex-shrink-0" style={{ color: tool.color }}>{tool.id}</span>
-            <div className="w-px h-6 flex-shrink-0" style={{ background: `${tool.color}40` }} />
-            <span className="font-mono-ui text-xs font-bold uppercase tracking-widest text-white w-32 sm:w-40 flex-shrink-0">{tool.label}</span>
-            <span className="font-mono-ui text-[9px] text-[#444] flex-1 hidden sm:block">{tool.desc}</span>
-            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `${tool.color}15` }}>
-              <ArrowUpRight className="w-3 h-3" style={{ color: tool.color }} />
+            className="flex items-center gap-6 px-5 py-4 group cursor-default transition-all duration-200 hover:bg-white/[0.025]"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", borderRadius: 4 }}>
+            <span className="font-mono-ui text-[10px] font-black w-7 flex-shrink-0" style={{ color: tool.color }}>{tool.id}</span>
+            <div className="w-px h-6 flex-shrink-0" style={{ background: `${tool.color}50` }} />
+            <span className="font-black text-sm uppercase tracking-widest text-white w-36 sm:w-44 flex-shrink-0" style={{ fontFamily: "'Raleway', sans-serif" }}>{tool.label}</span>
+            <span className="font-mono-ui text-[10px] text-[#444] flex-1 hidden sm:block">{tool.desc}</span>
+            <div className="w-7 h-7 flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
+              style={{ background: `${tool.color}18`, borderRadius: 6 }}>
+              <ArrowUpRight className="w-3.5 h-3.5" style={{ color: tool.color }} />
             </div>
           </motion.div>
         ))}
@@ -533,50 +586,42 @@ function HowItWorksSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const steps = [
-    { n: "01", title: "PASTE URL", desc: "Drop any YouTube link or playlist URL into VidVault.", icon: Youtube },
-    { n: "02", title: "AI PROCESSES", desc: "Our engine extracts transcript, metadata, and sends to GPT for deep analysis.", icon: Zap },
-    { n: "03", title: "GET KNOWLEDGE", desc: "Download 6 AI-generated artifacts — ready to study, share, or publish.", icon: BookOpen },
+    { n: "01", title: "PASTE URL", desc: "Drop any YouTube link or playlist URL. We support single videos and full playlists up to 500 items.", icon: Youtube, color: "#8b5cf6" },
+    { n: "02", title: "AI PROCESSES", desc: "Our engine extracts transcript & metadata, then sends to GPT for deep structured analysis.", icon: Zap, color: "#06b6d4" },
+    { n: "03", title: "GET KNOWLEDGE", desc: "Download 6 AI artifacts — summaries, flashcards, MCQs, articles, outlines, and insights.", icon: BookOpen, color: "#10b981" },
   ];
   return (
     <section ref={ref} className="py-20 sm:py-28 px-8 sm:px-14" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
       <SectionLabel>WORKFLOW</SectionLabel>
       <div className="overflow-hidden mb-16">
-        <motion.h2
-          initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black uppercase text-white leading-[0.9]"
-          style={{ fontSize: "clamp(2rem, 4.5vw, 4.5rem)", letterSpacing: "-0.02em" }}>
+        <motion.h2 initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="font-black uppercase text-white leading-[0.88]"
+          style={{ fontSize: "clamp(2.2rem, 5vw, 5rem)", letterSpacing: "-0.02em", fontFamily: "'Raleway', sans-serif" }}>
           THREE STEPS.<br /><span className="text-outline-strong">INFINITE KNOWLEDGE.</span>
         </motion.h2>
       </div>
-      <div className="relative">
-        {/* Connector line */}
-        <motion.div className="absolute top-8 left-0 right-0 h-px hidden lg:block"
-          initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}}
-          transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent)", transformOrigin: "left" }} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {steps.map((step, i) => (
-            <motion.div key={step.n}
-              initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.15 + i * 0.12, duration: 0.5 }}
-              className="relative">
-              <div className="flex items-start gap-4">
-                <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                  <div className="w-16 h-16 flex items-center justify-center relative"
-                    style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}>
-                    <step.icon className="w-6 h-6 text-[#8b5cf6]" />
-                    <span className="absolute -top-1.5 -right-1.5 font-mono-ui text-[8px] font-black text-black bg-white px-1">{step.n}</span>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-black text-white uppercase tracking-tight text-lg mb-2">{step.title}</h3>
-                  <p className="font-mono-ui text-[10px] text-[#444] leading-relaxed">{step.desc}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {steps.map((step, i) => (
+          <motion.div key={step.n}
+            initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.12 + i * 0.12, duration: 0.5 }}
+            className="card-interactive group p-6 relative overflow-hidden">
+            {/* Number */}
+            <div className="text-[60px] font-black absolute -top-2 -right-2 opacity-[0.04] pointer-events-none select-none leading-none"
+              style={{ fontFamily: "'Raleway', sans-serif", color: step.color }}>{step.n}</div>
+            <div className="w-14 h-14 flex items-center justify-center mb-5 relative"
+              style={{ background: `${step.color}12`, border: `1px solid ${step.color}28`, borderRadius: 12 }}>
+              <step.icon className="w-7 h-7" style={{ color: step.color }} />
+              <span className="absolute -top-1.5 -right-1.5 font-black text-black text-[9px] px-1.5 py-0.5"
+                style={{ background: "#fff", borderRadius: 4, fontFamily: "'Raleway', sans-serif" }}>{step.n}</span>
+            </div>
+            <h3 className="font-black text-white uppercase text-lg mb-2 tracking-tight" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              {step.title}
+            </h3>
+            <p className="font-mono-ui text-[10px] text-[#444] leading-relaxed">{step.desc}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
@@ -590,24 +635,23 @@ function GetStartedSection({ onRegister }: { onRegister: () => void }) {
       <div className="max-w-2xl">
         <SectionLabel>START_NOW</SectionLabel>
         <div className="overflow-hidden mb-6">
-          <motion.h2
-            initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="font-black uppercase text-white leading-[0.9]"
-            style={{ fontSize: "clamp(2rem, 4.5vw, 4.5rem)", letterSpacing: "-0.02em" }}>
+          <motion.h2 initial={{ y: 60, opacity: 0 }} animate={inView ? { y: 0, opacity: 1 } : {}}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="font-black uppercase text-white leading-[0.88]"
+            style={{ fontSize: "clamp(2.2rem, 5vw, 5rem)", letterSpacing: "-0.02em", fontFamily: "'Raleway', sans-serif" }}>
             BUILD YOUR<br /><span className="text-outline-strong">SECOND BRAIN.</span>
           </motion.h2>
         </div>
         <motion.p initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 0.3 }}
-          className="font-mono-ui text-[10px] text-[#444] mb-8 leading-relaxed max-w-md">
+          className="font-mono-ui text-[11px] text-[#444] mb-8 leading-relaxed max-w-md">
           Join thousands of students and creators who use VidVault AI to turn YouTube into structured, searchable knowledge.
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.4 }}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <MonolithBtn onClick={onRegister} size="lg">
-            CREATE FREE ACCOUNT <ArrowUpRight className="w-4 h-4 ml-1 inline" />
+            CREATE FREE ACCOUNT <ArrowUpRight className="w-4 h-4" />
           </MonolithBtn>
-          <span className="font-mono-ui text-[9px] text-[#222] uppercase tracking-widest sm:ml-2">NO CREDIT CARD REQUIRED</span>
+          <span className="font-mono-ui text-[9px] text-[#1e1e1e] uppercase tracking-widest">NO CREDIT CARD REQUIRED</span>
         </motion.div>
       </div>
     </section>
@@ -636,20 +680,12 @@ export default function Login() {
     setActiveNav(id);
   };
 
-  // IntersectionObserver for active nav highlight
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute("data-section") as NavSection;
-            if (id) setActiveNav(id);
-          }
-        });
-      },
+      entries => entries.forEach(e => { if (e.isIntersecting) { const id = e.target.getAttribute("data-section") as NavSection; if (id) setActiveNav(id); } }),
       { threshold: 0.3 }
     );
-    Object.entries(sectionRefs.current).forEach(([, el]) => { if (el) observer.observe(el); });
+    Object.values(sectionRefs.current).forEach(el => { if (el) observer.observe(el); });
     return () => observer.disconnect();
   }, [mode]);
 
@@ -682,14 +718,13 @@ export default function Login() {
   };
 
   const textVars = {
-    hidden: { y: 60, opacity: 0 },
-    visible: (i: number) => ({ y: 0, opacity: 1, transition: { delay: 0.12 + i * 0.1, duration: 0.55, ease: [0.22, 1, 0.36, 1] as any } }),
+    hidden: { y: 70, opacity: 0 },
+    visible: (i: number) => ({ y: 0, opacity: 1, transition: { delay: 0.1 + i * 0.11, duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } }),
   };
 
   return (
     <div className="flex relative" style={{ background: "#0a0a0b", color: "#e0e0e0", minHeight: "100vh" }}>
-      {/* Cursor glow */}
-      <motion.div className="fixed w-[320px] h-[320px] rounded-full pointer-events-none z-0"
+      <motion.div className="fixed w-[340px] h-[340px] rounded-full pointer-events-none z-0"
         style={{ x: glowX, y: glowY, background: "radial-gradient(circle,rgba(139,92,246,0.05) 0%,transparent 70%)" }} />
 
       <AnimatePresence mode="wait">
@@ -699,71 +734,65 @@ export default function Login() {
           <motion.div key="landing" className="flex w-full min-h-screen"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
 
-            {/* Fixed left sidebar */}
             <LeftSidebar active={activeNav} onNav={scrollToSection} />
 
-            {/* Main scroll area */}
             <div className="flex-1 flex flex-col overflow-y-auto" style={{ marginLeft: 36 }}>
-
-              {/* Top bar */}
               <TopBar onLogin={() => setMode("login-manual")} onRegister={() => setMode("register")} />
 
-              {/* Global grid */}
               <div className="grid-mesh absolute inset-0 pointer-events-none z-0" style={{ left: 36 }} />
 
-              {/* ─── HERO SECTION ─── */}
-              <section
-                id="save" data-section="SAVE"
-                ref={el => { sectionRefs.current.SAVE = el; }}
+              {/* ─── HERO ─── */}
+              <section data-section="SAVE" ref={el => { sectionRefs.current.SAVE = el; }}
                 className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)] relative z-10">
 
                 {/* Left text */}
-                <div className="flex flex-col justify-center px-8 sm:px-14 py-12 lg:py-0 lg:w-[52%] flex-shrink-0">
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-14 py-14 lg:py-0 lg:w-[50%] flex-shrink-0">
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
                     <span className="badge-mono mb-5 block w-fit">AI_POWERED // SECOND_BRAIN</span>
                   </motion.div>
 
-                  <div className="space-y-[0.04em]">
+                  <div className="space-y-[0.03em]">
                     {["SAVE.", "ANALYZE.", "MASTER."].map((word, i) => (
                       <div key={word} className="overflow-hidden">
                         <motion.h1 custom={i} variants={textVars} initial="hidden" animate="visible"
                           className={`font-black leading-[0.88] uppercase ${i === 1 ? "text-outline-strong" : "text-white"}`}
-                          style={{ fontSize: "clamp(2.5rem, 7vw, 6.5rem)", letterSpacing: "-0.02em" }}>
+                          style={{ fontSize: "clamp(3rem, 7.5vw, 7.5rem)", letterSpacing: "-0.025em", fontFamily: "'Raleway', sans-serif" }}>
                           {word}
                         </motion.h1>
                       </div>
                     ))}
                   </div>
 
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-                    className="mt-5 text-[#444] text-xs leading-relaxed max-w-[340px] font-mono-ui">
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.48 }}
+                    className="mt-5 text-[#555] leading-relaxed max-w-[360px] font-mono-ui"
+                    style={{ fontSize: "11px" }}>
                     <TypedText text="Save YouTube videos. Generate AI summaries, flashcards & MCQs. Build your knowledge vault." startDelay={600} />
                   </motion.p>
 
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
-                    className="mt-5 flex items-center gap-5 sm:gap-8">
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.53 }}
+                    className="mt-6 flex items-center gap-6 sm:gap-9">
                     {[
                       { label: "AI_TOOLS", value: 6, suffix: "+" },
                       { label: "EXPORT_FMT", value: 5, suffix: "" },
                       { label: "MAX_VIDEOS", value: 500, suffix: "+" },
                     ].map(s => (
                       <div key={s.label} className="flex flex-col">
-                        <span className="text-xl sm:text-2xl font-black text-white font-mono-ui leading-none">
+                        <span className="font-black text-white leading-none" style={{ fontSize: "clamp(1.4rem, 2.5vw, 2.2rem)", fontFamily: "'Raleway', sans-serif" }}>
                           <Counter to={s.value} />{s.suffix}
                         </span>
-                        <span className="font-mono-ui text-[7px] text-[#222] uppercase tracking-widest mt-0.5">{s.label}</span>
+                        <span className="font-mono-ui text-[7px] text-[#222] uppercase tracking-widest mt-1">{s.label}</span>
                       </div>
                     ))}
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62 }}
-                    className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+                    className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <MonolithBtn onClick={() => setMode("register")} size="md">
-                      START FOR FREE <ArrowUpRight className="w-3 h-3 ml-1 inline" />
+                      START FOR FREE <ArrowUpRight className="w-3.5 h-3.5" />
                     </MonolithBtn>
                     <button onClick={handleReplitLogin}
-                      className="h-11 px-5 font-mono-ui text-[10px] uppercase tracking-widest text-[#555] hover:text-white transition-all flex items-center justify-center"
-                      style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+                      className="h-11 px-6 uppercase tracking-widest text-[#555] hover:text-white transition-all flex items-center justify-center font-semibold"
+                      style={{ fontSize: "11px", fontFamily: "'Raleway', sans-serif", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 0 }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.18)"}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"}
                     >SIGN IN WITH REPLIT</button>
@@ -778,74 +807,67 @@ export default function Login() {
                   </motion.p>
                 </div>
 
-                {/* Right: radar card */}
-                <div className="flex-1 border-l lg:flex hidden items-center justify-center overflow-hidden"
+                {/* Right — video player */}
+                <div className="flex-1 border-l hidden lg:flex items-center overflow-hidden"
                   style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                  <VaultRadarCard />
+                  <VideoPlayerMock />
                 </div>
 
-                {/* Mobile card */}
-                <div className="lg:hidden border-t px-4 py-4" style={{ borderColor: "rgba(255,255,255,0.04)", minHeight: 340 }}>
-                  <VaultRadarCard />
+                {/* Mobile video player */}
+                <div className="lg:hidden border-t px-4 py-4" style={{ borderColor: "rgba(255,255,255,0.04)", minHeight: 360 }}>
+                  <VideoPlayerMock />
                 </div>
               </section>
 
-              {/* ─── FEATURES ─── */}
+              {/* Scrollable sections */}
               <div ref={el => { sectionRefs.current.FEATURES = el; }} data-section="FEATURES">
                 <FeaturesSection />
               </div>
-
-              {/* ─── AI TOOLS ─── */}
               <div ref={el => { sectionRefs.current.AI_TOOLS = el; }} data-section="AI_TOOLS">
                 <AIToolsSection />
               </div>
-
-              {/* ─── HOW IT WORKS ─── */}
               <div ref={el => { sectionRefs.current.HOW_IT_WORKS = el; }} data-section="HOW_IT_WORKS">
                 <HowItWorksSection />
               </div>
-
-              {/* ─── GET STARTED ─── */}
               <div ref={el => { sectionRefs.current.GET_STARTED = el; }} data-section="GET_STARTED">
                 <GetStartedSection onRegister={() => setMode("register")} />
               </div>
 
-              {/* Footer */}
               <footer className="px-8 sm:px-14 py-6 border-t flex items-center justify-between"
                 style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                <span className="font-mono-ui text-[8px] text-[#1e1e1e] uppercase tracking-widest">© 2026 VIDVAULT AI — ALL RIGHTS RESERVED</span>
-                <span className="font-mono-ui text-[8px] text-[#1e1e1e] uppercase tracking-widest">VV_CORE_v2.0</span>
+                <span className="font-mono-ui text-[8px] text-[#1a1a1a] uppercase tracking-widest">© 2026 VIDVAULT AI</span>
+                <span className="font-mono-ui text-[8px] text-[#1a1a1a] uppercase tracking-widest">VV_CORE_v2.0</span>
               </footer>
             </div>
           </motion.div>
         )}
 
-        {/* ══════════ AUTH FORMS ══════════ */}
+        {/* ══════════ AUTH ══════════ */}
         {(mode === "register" || mode === "login-manual") && (
           <motion.div key="auth" className="flex w-full min-h-screen"
             initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
 
-            {/* Auth left */}
             <div className="flex flex-col flex-1 lg:max-w-[50%]">
               <header className="flex items-center justify-between px-8 sm:px-10 h-14 sm:h-16 flex-shrink-0"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-white flex items-center justify-center font-black text-black text-[11px] font-mono-ui">VV</div>
-                  <span className="font-black text-white uppercase tracking-[0.1em] text-xs font-mono-ui hidden sm:block">
-                    VIDVAULT<span className="text-[#8b5cf6]"> AI</span>
-                  </span>
+                  <div className="w-8 h-8 bg-white flex items-center justify-center font-black text-black text-[11px] flex-shrink-0"
+                    style={{ fontFamily: "'Raleway', sans-serif", borderRadius: 4 }}>VV</div>
+                  <span className="font-black text-white uppercase tracking-[0.1em] text-sm hidden sm:block"
+                    style={{ fontFamily: "'Raleway', sans-serif" }}>VIDVAULT<span className="text-[#8b5cf6]"> AI</span></span>
                 </div>
                 <button onClick={() => { setMode("landing"); setError(""); }}
-                  className="text-[#333] font-mono-ui text-[9px] uppercase tracking-widest hover:text-white transition-colors">
+                  className="font-mono-ui text-[9px] uppercase tracking-widest hover:text-white transition-colors text-[#333]">
                   ← BACK
                 </button>
               </header>
 
               <div className="flex-1 flex items-center justify-center px-8 py-10">
                 <div className="w-full max-w-sm">
-                  <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-7">
+                  <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-8">
                     <span className="badge-mono mb-3 block w-fit">{mode === "register" ? "CREATE_ACCOUNT" : "SIGN_IN"}</span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+                    <h2 className="font-black text-white uppercase tracking-tight"
+                      style={{ fontSize: "clamp(1.8rem, 3vw, 2.4rem)", fontFamily: "'Raleway', sans-serif" }}>
                       {mode === "register" ? "Join VidVault" : "Welcome Back"}
                     </h2>
                     <p className="font-mono-ui text-[9px] text-[#2a2a2a] mt-1.5 uppercase tracking-wider">
@@ -854,32 +876,32 @@ export default function Login() {
                   </motion.div>
 
                   <motion.form initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-                    onSubmit={mode === "register" ? handleRegister : handleManualLogin} className="space-y-3.5">
+                    onSubmit={mode === "register" ? handleRegister : handleManualLogin} className="space-y-4">
                     {mode === "register" && (
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="font-mono-ui text-[8px] uppercase tracking-widest text-[#2a2a2a]">FIRST NAME</label>
+                          <label className="font-mono-ui text-[9px] uppercase tracking-widest text-[#2a2a2a]">FIRST NAME</label>
                           <MonoInput placeholder="John" value={firstName} onChange={setFirstName} />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="font-mono-ui text-[8px] uppercase tracking-widest text-[#2a2a2a]">LAST NAME</label>
+                          <label className="font-mono-ui text-[9px] uppercase tracking-widest text-[#2a2a2a]">LAST NAME</label>
                           <MonoInput placeholder="Doe" value={lastName} onChange={setLastName} />
                         </div>
                       </div>
                     )}
                     <div className="space-y-1.5">
-                      <label className="font-mono-ui text-[8px] uppercase tracking-widest text-[#2a2a2a]">EMAIL_ADDRESS</label>
+                      <label className="font-mono-ui text-[9px] uppercase tracking-widest text-[#2a2a2a]">EMAIL_ADDRESS</label>
                       <MonoInput type="email" placeholder="you@example.com" value={email} onChange={setEmail} icon={Mail} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="font-mono-ui text-[8px] uppercase tracking-widest text-[#2a2a2a]">PASSWORD</label>
+                      <label className="font-mono-ui text-[9px] uppercase tracking-widest text-[#2a2a2a]">PASSWORD</label>
                       <MonoInput type="password" placeholder="••••••••" value={password} onChange={setPassword} icon={Lock} />
                     </div>
                     <AnimatePresence>
                       {error && (
                         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                           className="p-3 text-red-400 text-xs font-mono-ui"
-                          style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.14)" }}>
+                          style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.14)", borderRadius: 8 }}>
                           ERR: {error}
                         </motion.div>
                       )}
@@ -889,7 +911,7 @@ export default function Login() {
                     </MonolithBtn>
                   </motion.form>
 
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }} className="mt-5">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }} className="mt-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex-1 h-px bg-white/[0.04]" />
                       <span className="font-mono-ui text-[8px] text-[#1e1e1e] uppercase tracking-widest">OR</span>
@@ -897,8 +919,8 @@ export default function Login() {
                     </div>
                     <button onClick={handleReplitLogin}
                       className="w-full h-11 font-mono-ui text-[9px] uppercase tracking-widest text-[#333] hover:text-white transition-all flex items-center justify-center"
-                      style={{ border: "1px solid rgba(255,255,255,0.06)" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.14)"}
+                      style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8 }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.16)"}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"}
                     >CONTINUE WITH REPLIT</button>
                     <p className="mt-5 font-mono-ui text-[9px] text-[#222] uppercase tracking-widest text-center">
@@ -913,7 +935,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Auth visual */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }}
               className="hidden lg:block flex-1 border-l overflow-hidden relative"
               style={{ borderColor: "rgba(255,255,255,0.04)" }}>
