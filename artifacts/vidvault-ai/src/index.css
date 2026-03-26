@@ -61,8 +61,28 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Monolithic Dark Design System */
+/* ═══════════════════════════════════════════
+   VIDVAULT THEME TOKENS
+═══════════════════════════════════════════ */
 :root {
+  /* Dark (default) */
+  --vv-bg: #09090c;
+  --vv-sidebar: #08080b;
+  --vv-surface: #0d0d11;
+  --vv-border: rgba(255,255,255,0.05);
+  --vv-border-section: rgba(255,255,255,0.04);
+  --vv-text: #e0e0e0;
+  --vv-text-muted: rgba(255,255,255,0.45);
+  --vv-text-desc: #505060;
+  --vv-grid-line: rgba(255,255,255,0.025);
+  --vv-hover-bg: rgba(255,255,255,0.015);
+  --vv-card-bg: #111115;
+  --vv-card-border: rgba(255,255,255,0.07);
+  --vv-card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --vv-scrollbar-track: #0a0a0b;
+  --vv-scrollbar-thumb: #2a2a2a;
+
+  /* Tailwind Design System */
   --monolith-bg: #0a0a0b;
   --etch-light: #ffffff14;
   --etch-dark: #00000099;
@@ -71,34 +91,25 @@
 
   --background: 240 5% 4%;
   --foreground: 0 0% 88%;
-  
   --card: 240 5% 7%;
   --card-foreground: 0 0% 88%;
   --card-border: 240 5% 10%;
-  
   --popover: 240 5% 7%;
   --popover-foreground: 0 0% 88%;
   --popover-border: 240 5% 10%;
-  
   --primary: 262 83% 65%;
   --primary-foreground: 0 0% 100%;
-  
   --secondary: 240 5% 12%;
   --secondary-foreground: 0 0% 88%;
-  
   --muted: 240 5% 12%;
   --muted-foreground: 240 3% 50%;
-  
   --accent: 262 83% 65%;
   --accent-foreground: 0 0% 100%;
-  
   --destructive: 0 62.8% 50%;
   --destructive-foreground: 0 0% 98%;
-  
   --border: 240 5% 14%;
   --input: 240 5% 12%;
   --ring: 262 83% 65%;
-  
   --sidebar: 240 5% 5%;
   --sidebar-foreground: 0 0% 60%;
   --sidebar-border: 240 5% 12%;
@@ -107,8 +118,56 @@
   --sidebar-accent: 240 5% 10%;
   --sidebar-accent-foreground: 0 0% 88%;
   --sidebar-ring: 262 83% 65%;
-  
   --radius: 0.25rem;
+}
+
+/* ─── LIGHT THEME OVERRIDE ─── */
+[data-theme="light"] {
+  --vv-bg: #f2f0ff;
+  --vv-sidebar: #faf9ff;
+  --vv-surface: #ffffff;
+  --vv-border: rgba(0,0,0,0.07);
+  --vv-border-section: rgba(0,0,0,0.06);
+  --vv-text: #0d0c14;
+  --vv-text-muted: rgba(0,0,0,0.5);
+  --vv-text-desc: #555568;
+  --vv-grid-line: rgba(0,0,0,0.04);
+  --vv-hover-bg: rgba(0,0,0,0.025);
+  --vv-card-bg: #ffffff;
+  --vv-card-border: rgba(0,0,0,0.08);
+  --vv-card-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --vv-scrollbar-track: #f0eeff;
+  --vv-scrollbar-thumb: #c4bfe0;
+
+  --background: 248 100% 98%;
+  --foreground: 248 20% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 248 20% 8%;
+  --card-border: 248 20% 88%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 248 20% 8%;
+  --popover-border: 248 20% 88%;
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 248 30% 94%;
+  --secondary-foreground: 248 20% 20%;
+  --muted: 248 30% 94%;
+  --muted-foreground: 248 10% 45%;
+  --accent: 262 83% 58%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 248 20% 86%;
+  --input: 248 30% 94%;
+  --ring: 262 83% 58%;
+  --sidebar: 248 50% 97%;
+  --sidebar-foreground: 248 15% 35%;
+  --sidebar-border: 248 20% 88%;
+  --sidebar-primary: 262 83% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 248 30% 92%;
+  --sidebar-accent-foreground: 248 20% 20%;
+  --sidebar-ring: 262 83% 58%;
 }
 
 .dark {
@@ -154,21 +213,22 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Raleway', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #0a0a0b;
-    color: rgb(224, 224, 224);
+    background-color: var(--vv-bg);
+    color: var(--vv-text);
     line-height: 1.65;
     overflow-x: hidden;
     font-size: 15px;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
   }
   ::-webkit-scrollbar-track {
-    background: #0a0a0b;
+    background: var(--vv-scrollbar-track);
   }
   ::-webkit-scrollbar-thumb {
-    background: #2a2a2a;
+    background: var(--vv-scrollbar-thumb);
     border-radius: 2px;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -193,9 +253,10 @@
   /* Grid mesh background */
   .grid-mesh {
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      linear-gradient(var(--vv-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--vv-grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
+    transition: background-image 0.3s;
   }
 
   /* Topo lines background */
@@ -208,37 +269,50 @@
 
   /* Etched slab card */
   .etched-slab {
-    background: #111115;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: var(--vv-card-bg);
+    border: 1px solid var(--vv-card-border);
     border-radius: 14px;
+    box-shadow: var(--vv-card-shadow);
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.35s, border-color 0.35s, background 0.3s;
+  }
+  [data-theme="dark"] .etched-slab,
+  :root .etched-slab {
     box-shadow:
       inset 1px 1px 0px rgba(255,255,255,0.07),
       inset -1px -1px 0px rgba(0,0,0,0.5),
       0 4px 24px rgba(0,0,0,0.4);
-    transition: transform 0.35s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.35s, border-color 0.35s;
+  }
+  [data-theme="light"] .etched-slab {
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
   }
   .etched-slab:hover {
     border-color: rgba(139,92,246,0.2);
+    transform: translateY(-5px);
+  }
+  [data-theme="dark"] .etched-slab:hover,
+  :root .etched-slab:hover {
     box-shadow:
       inset 1.5px 1.5px 0px rgba(255,255,255,0.09),
       inset -1px -1px 0px rgba(0,0,0,0.6),
       0 8px 32px rgba(0,0,0,0.5),
       0 0 0 1px rgba(139,92,246,0.08),
       0 0 40px rgba(139,92,246,0.06);
-    transform: translateY(-5px);
+  }
+  [data-theme="light"] .etched-slab:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 0 0 1px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.06);
   }
 
   /* Interactive card (landing sections) */
   .card-interactive {
-    background: #111115;
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--vv-card-bg);
+    border: 1px solid var(--vv-card-border);
     border-radius: 14px;
     transition: all 0.3s cubic-bezier(0.2, 0, 0.2, 1);
   }
   .card-interactive:hover {
     border-color: rgba(139,92,246,0.25);
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.1), 0 0 50px rgba(139,92,246,0.07);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(139,92,246,0.1), 0 0 50px rgba(139,92,246,0.07);
   }
 
   /* Inset etch for inputs */
@@ -246,6 +320,10 @@
     box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6), inset -1px -1px 2px rgba(255,255,255,0.05);
     background: rgba(0, 0, 0, 0.3);
     border-radius: 2px;
+  }
+  [data-theme="light"] .inset-etch {
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.03);
   }
 
   /* Clipped polygon button (monolith style) */
@@ -270,6 +348,14 @@
     transform: scale(1.05);
     box-shadow: 0 8px 28px rgba(139,92,246,0.35);
   }
+  [data-theme="light"] .btn-monolith {
+    background: #0d0c14;
+    color: #ffffff;
+  }
+  [data-theme="light"] .btn-monolith:hover {
+    background: #8b5cf6;
+    color: #ffffff;
+  }
 
   /* Outlined ghost text */
   .text-outline {
@@ -278,6 +364,14 @@
   }
   .text-outline-strong {
     -webkit-text-stroke: 2px rgba(255,255,255,0.4);
+    color: transparent;
+  }
+  [data-theme="light"] .text-outline {
+    -webkit-text-stroke: 1px rgba(0,0,0,0.18);
+    color: transparent;
+  }
+  [data-theme="light"] .text-outline-strong {
+    -webkit-text-stroke: 2px rgba(0,0,0,0.3);
     color: transparent;
   }
 
@@ -337,6 +431,11 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(16px);
   }
+  [data-theme="light"] .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0,0,0,0.07);
+    backdrop-filter: blur(16px);
+  }
 
   /* Gradient text */
   .text-gradient {
@@ -355,5 +454,68 @@
     background: rgba(139, 92, 246, 0.1);
     border-left: 2px solid #8b5cf6;
     color: #ffffff;
+  }
+  [data-theme="light"] .sidebar-active {
+    background: rgba(139, 92, 246, 0.08);
+    color: #0d0c14;
+  }
+
+  /* ─── LIGHT THEME TEXT COLOR OVERRIDES ─── */
+  /* These override Tailwind's generated color classes for description text */
+  [data-theme="light"] .text-\[\#3a3a3a\] { color: #555568 !important; }
+  [data-theme="light"] .text-\[\#333\]    { color: #666674 !important; }
+  [data-theme="light"] .text-\[\#444\]    { color: #6a6a7a !important; }
+  [data-theme="light"] .text-\[\#555\]    { color: #777784 !important; }
+  [data-theme="light"] .text-\[\#888\]    { color: #888898 !important; }
+  [data-theme="light"] .text-\[\#999\]    { color: #999aa8 !important; }
+  [data-theme="light"] .text-\[\#222\]    { color: #555565 !important; }
+  [data-theme="light"] .text-\[\#1e1e1e\] { color: #606070 !important; }
+  [data-theme="light"] .text-\[\#1a1a1a\] { color: #606070 !important; }
+  [data-theme="light"] .text-\[\#252525\] { color: #5a5a6a !important; }
+  [data-theme="light"] .text-\[\#282828\] { color: #5a5a6a !important; }
+  [data-theme="light"] .text-\[\#2a2a2a\] { color: #5a5a6a !important; }
+  [data-theme="light"] .text-\[\#202020\] { color: #606070 !important; }
+
+  /* App sidebar text in light mode */
+  [data-theme="light"] .text-\[\#666\] { color: #555568 !important; }
+
+  /* Search input in TopNav light mode */
+  [data-theme="light"] .placeholder\:text-\[\#2a2a2a\]::placeholder { color: #aaaabc !important; }
+
+  /* Section hover rows */
+  [data-theme="light"] .hover\:bg-white\/\[0\.02\]:hover {
+    background-color: rgba(0,0,0,0.025) !important;
+  }
+
+  /* Landing heading class — use on any major section heading */
+  .lp-heading {
+    color: var(--vv-text);
+    transition: color 0.3s;
+  }
+
+  /* Landing description class */
+  .lp-desc {
+    color: var(--vv-text-desc);
+    transition: color 0.3s;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--vv-border);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--vv-text-muted);
+  }
+  .theme-toggle:hover {
+    background: var(--vv-hover-bg);
+    border-color: rgba(139,92,246,0.3);
+    color: #8b5cf6;
   }
 }

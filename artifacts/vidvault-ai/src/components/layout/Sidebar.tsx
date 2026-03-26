@@ -1,7 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Library, FolderOpen, Star, Bot, Plus, LogOut } from "lucide-react";
+import { LayoutDashboard, Library, FolderOpen, Star, Bot, Plus, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "@workspace/replit-auth-web";
 import { useListFolders } from "@workspace/api-client-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const navItems = [
   { href: "/", label: "DASHBOARD", icon: LayoutDashboard, code: "01" },
@@ -15,6 +16,7 @@ export function Sidebar() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const { data: folderData } = useListFolders();
+  const { isDark, toggleTheme } = useTheme();
 
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
@@ -23,25 +25,33 @@ export function Sidebar() {
 
   return (
     <div
-      className="w-60 h-screen flex flex-col shrink-0 border-r"
+      className="w-60 h-screen flex flex-col shrink-0 border-r transition-colors duration-300"
       style={{
-        background: "#080809",
-        borderColor: "rgba(255,255,255,0.05)",
+        background: "var(--vv-sidebar)",
+        borderColor: "var(--vv-border)",
       }}
     >
       {/* Logo */}
       <div
-        className="h-16 flex items-center px-5 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.05)" }}
+        className="h-16 flex items-center justify-between px-5 border-b"
+        style={{ borderColor: "var(--vv-border)" }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white flex items-center justify-center font-black text-black text-xs"
-            style={{ fontFamily: "'Alegreya Sans SC', serif" }}>
+          <div
+            className="w-8 h-8 flex items-center justify-center font-black text-xs"
+            style={{
+              fontFamily: "'Alegreya Sans SC', serif",
+              background: isDark ? "#ffffff" : "#0d0c14",
+              color: isDark ? "#000000" : "#ffffff",
+            }}
+          >
             VV
           </div>
           <div>
-            <span className="font-black text-white uppercase tracking-[0.12em] text-sm block"
-              style={{ fontFamily: "'Alegreya Sans SC', serif" }}>
+            <span
+              className="font-black uppercase tracking-[0.12em] text-sm block lp-heading"
+              style={{ fontFamily: "'Alegreya Sans SC', serif" }}
+            >
               VidVault
             </span>
             <span className="font-mono-ui text-[8px] text-[#444] uppercase tracking-widest">
@@ -49,6 +59,13 @@ export function Sidebar() {
             </span>
           </div>
         </div>
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle"
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+        </button>
       </div>
 
       {/* Nav */}
@@ -65,11 +82,16 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono-ui uppercase tracking-wider transition-all duration-200 group relative ${
                 active
-                  ? "text-white border-l-2 border-[#8b5cf6] bg-[rgba(139,92,246,0.08)] pl-[10px]"
-                  : "text-[#555] hover:text-[#aaa] hover:bg-white/[0.02] border-l-2 border-transparent"
+                  ? "border-l-2 border-[#8b5cf6] bg-[rgba(139,92,246,0.08)] pl-[10px]"
+                  : "border-l-2 border-transparent"
               }`}
+              style={{
+                color: active
+                  ? isDark ? "#ffffff" : "#0d0c14"
+                  : isDark ? "#555" : "#667",
+              }}
             >
-              <span className="text-[#333] font-mono-ui text-[9px] w-4 shrink-0">{item.code}</span>
+              <span className="font-mono-ui text-[9px] w-4 shrink-0 text-[#333]">{item.code}</span>
               <item.icon
                 className={`w-3.5 h-3.5 shrink-0 transition-colors ${
                   active ? "text-[#8b5cf6]" : "text-[#444] group-hover:text-[#888]"
@@ -86,9 +108,7 @@ export function Sidebar() {
         {/* Folders */}
         {folderData?.folders && folderData.folders.length > 0 && (
           <div className="pt-6">
-            <div
-              className="flex items-center justify-between px-3 mb-3"
-            >
+            <div className="flex items-center justify-between px-3 mb-3">
               <p className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">
                 FOLDERS
               </p>
@@ -126,11 +146,9 @@ export function Sidebar() {
       {/* User */}
       <div
         className="p-4 border-t"
-        style={{ borderColor: "rgba(255,255,255,0.05)" }}
+        style={{ borderColor: "var(--vv-border)" }}
       >
-        <div
-          className="flex items-center justify-between p-2 hover:bg-white/[0.02] transition-colors"
-        >
+        <div className="flex items-center justify-between p-2 hover:bg-white/[0.02] transition-colors">
           <div className="flex items-center gap-3">
             {user?.profileImageUrl ? (
               <img
@@ -140,13 +158,22 @@ export function Sidebar() {
                 style={{ filter: "grayscale(30%)" }}
               />
             ) : (
-              <div className="w-8 h-8 bg-[#1a1a1c] border border-white/8 flex items-center justify-center text-xs font-black text-[#888] font-mono-ui">
+              <div
+                className="w-8 h-8 flex items-center justify-center text-xs font-black font-mono-ui"
+                style={{
+                  background: isDark ? "#1a1a1c" : "#eeeef8",
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
+                  color: isDark ? "#888" : "#667",
+                }}
+              >
                 {(user?.firstName || user?.username || "U").charAt(0).toUpperCase()}
               </div>
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-[#888] truncate"
-                style={{ fontFamily: "'Raleway', sans-serif" }}>
+              <span
+                className="text-xs font-bold text-[#888] truncate"
+                style={{ fontFamily: "'Raleway', sans-serif" }}
+              >
                 {user?.firstName || user?.username || "USER"}
               </span>
               <span className="text-[9px] text-[#333] font-mono-ui">FREE_PLAN</span>

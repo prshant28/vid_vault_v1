@@ -31,7 +31,10 @@ import {
   Plus,
   X,
   ExternalLink,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type AuthMode = "landing" | "register" | "login-manual";
 type NavSection =
@@ -257,19 +260,90 @@ function isValidUrl(url: string): boolean {
    LIVE VIDEO CAPTURE — hero right panel
 ══════════════════════════════════════════════ */
 const DEMO_VIDEOS = [
-  { title: "Baby Shark Dance", channel: "Pinkfong", id: "XqZsoesa55w", duration: "2:17", views: "13.5B" },
-  { title: "Despacito", channel: "Luis Fonsi ft. Daddy Yankee", id: "kTJczUoc26U", duration: "4:42", views: "8.4B" },
-  { title: "Johny Johny Yes Papa", channel: "LooLoo Kids", id: "C7s5B6Pz4uw", duration: "1:11", views: "6.7B" },
-  { title: "See You Again", channel: "Wiz Khalifa ft. Charlie Puth", id: "RgKAFK5djSk", duration: "3:57", views: "6.3B" },
-  { title: "Shape of You", channel: "Ed Sheeran", id: "JGwWNGJdvx8", duration: "4:24", views: "6.1B" },
-  { title: "Uptown Funk", channel: "Mark Ronson ft. Bruno Mars", id: "OPf0YbXqDm0", duration: "4:31", views: "5.1B" },
-  { title: "Gangnam Style", channel: "PSY", id: "9bZkp7q19f0", duration: "4:13", views: "4.9B" },
-  { title: "Roar", channel: "Katy Perry", id: "CevxZvSJLk8", duration: "4:32", views: "4.0B" },
-  { title: "Hello", channel: "Adele", id: "YQHsXMglC9A", duration: "6:07", views: "3.5B" },
-  { title: "Shake It Off", channel: "Taylor Swift", id: "nfWlot6h_JM", duration: "4:35", views: "3.5B" },
-  { title: "Sorry", channel: "Justin Bieber", id: "fRh_vgS2dFE", duration: "3:20", views: "3.4B" },
-  { title: "Sugar", channel: "Maroon 5", id: "09R8_2nJtjg", duration: "3:55", views: "3.2B" },
-  { title: "Believer", channel: "Imagine Dragons", id: "7wtfhZwyrcc", duration: "3:24", views: "2.7B" },
+  {
+    title: "Baby Shark Dance",
+    channel: "Pinkfong",
+    id: "XqZsoesa55w",
+    duration: "2:17",
+    views: "13.5B",
+  },
+  {
+    title: "Despacito",
+    channel: "Luis Fonsi ft. Daddy Yankee",
+    id: "kTJczUoc26U",
+    duration: "4:42",
+    views: "8.4B",
+  },
+  {
+    title: "See You Again",
+    channel: "Wiz Khalifa ft. Charlie Puth",
+    id: "RgKAFK5djSk",
+    duration: "3:57",
+    views: "6.3B",
+  },
+  {
+    title: "Shape of You",
+    channel: "Ed Sheeran",
+    id: "JGwWNGJdvx8",
+    duration: "4:24",
+    views: "6.1B",
+  },
+  {
+    title: "Uptown Funk",
+    channel: "Mark Ronson ft. Bruno Mars",
+    id: "OPf0YbXqDm0",
+    duration: "4:31",
+    views: "5.1B",
+  },
+  {
+    title: "Gangnam Style",
+    channel: "PSY",
+    id: "9bZkp7q19f0",
+    duration: "4:13",
+    views: "4.9B",
+  },
+  {
+    title: "Roar",
+    channel: "Katy Perry",
+    id: "CevxZvSJLk8",
+    duration: "4:32",
+    views: "4.0B",
+  },
+  {
+    title: "Hello",
+    channel: "Adele",
+    id: "YQHsXMglC9A",
+    duration: "6:07",
+    views: "3.5B",
+  },
+  {
+    title: "Shake It Off",
+    channel: "Taylor Swift",
+    id: "nfWlot6h_JM",
+    duration: "4:35",
+    views: "3.5B",
+  },
+  {
+    title: "Sorry",
+    channel: "Justin Bieber",
+    id: "fRh_vgS2dFE",
+    duration: "3:20",
+    views: "3.4B",
+  },
+  {
+    title: "Sugar",
+    channel: "Maroon 5",
+    id: "09R8_2nJtjg",
+    duration: "3:55",
+    views: "3.2B",
+  },
+  {
+    title: "Believer",
+    channel: "Imagine Dragons",
+    id: "7wtfhZwyrcc",
+    duration: "3:24",
+    views: "2.7B",
+  },
 ];
 const AI_TASKS = [
   {
@@ -325,7 +399,13 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
   const [demoIdx, setDemoIdx] = useState(0);
   const [tasksDone, setTasksDone] = useState(3);
   const [isHovered, setIsHovered] = useState(false);
-  const [ogData, setOgData] = useState<{ title: string; image: string | null; domain: string; favicon: string; description?: string | null } | null>(null);
+  const [ogData, setOgData] = useState<{
+    title: string;
+    image: string | null;
+    domain: string;
+    favicon: string;
+    description?: string | null;
+  } | null>(null);
   const [ogLoading, setOgLoading] = useState(false);
 
   const demoVideo = DEMO_VIDEOS[demoIdx];
@@ -365,16 +445,27 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
   useEffect(() => {
     const trimmed = inputUrl.trim();
     if (!trimmed) {
-      setVideoId(null); setPhase("demo"); setAddStatus("idle"); setOgData(null);
+      setVideoId(null);
+      setPhase("demo");
+      setAddStatus("idle");
+      setOgData(null);
       return;
     }
     const ytId = extractYouTubeId(trimmed);
     if (ytId) {
-      setVideoId(ytId); setPhase("previewing"); setAddStatus("idle"); setOgData(null);
+      setVideoId(ytId);
+      setPhase("previewing");
+      setAddStatus("idle");
+      setOgData(null);
     } else if (isValidUrl(trimmed)) {
-      setVideoId(null); setPhase("previewing"); setAddStatus("idle"); setOgData(null);
+      setVideoId(null);
+      setPhase("previewing");
+      setAddStatus("idle");
+      setOgData(null);
     } else {
-      setVideoId(null); setPhase("idle"); setOgData(null);
+      setVideoId(null);
+      setPhase("idle");
+      setOgData(null);
     }
   }, [inputUrl]);
 
@@ -387,13 +478,34 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
     setOgLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const r = await fetch(`/api/preview?url=${encodeURIComponent(trimmed)}`);
-        const d = await r.json() as { title?: string; image?: string | null; domain?: string; favicon?: string; description?: string | null };
-        if (!cancelled) setOgData({ title: d.title || trimmed, image: d.image || null, domain: d.domain || "", favicon: d.favicon || "", description: d.description });
-      } catch { /* silent */ }
+        const r = await fetch(
+          `/api/preview?url=${encodeURIComponent(trimmed)}`,
+        );
+        const d = (await r.json()) as {
+          title?: string;
+          image?: string | null;
+          domain?: string;
+          favicon?: string;
+          description?: string | null;
+        };
+        if (!cancelled)
+          setOgData({
+            title: d.title || trimmed,
+            image: d.image || null,
+            domain: d.domain || "",
+            favicon: d.favicon || "",
+            description: d.description,
+          });
+      } catch {
+        /* silent */
+      }
       if (!cancelled) setOgLoading(false);
     }, 600);
-    return () => { cancelled = true; clearTimeout(timer); setOgLoading(false); };
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      setOgLoading(false);
+    };
   }, [phase, videoId, inputUrl]);
 
   const handleAdd = async () => {
@@ -454,15 +566,21 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
     phase === "demo" || phase === "previewing" || phase === "added";
   const activeId = phase === "demo" ? demoVideo.id : videoId;
   const activeTitle =
-    phase === "demo" ? demoVideo.title
-    : videoId ? "Your YouTube Video"
-    : ogData ? ogData.title
-    : "Web Video";
+    phase === "demo"
+      ? demoVideo.title
+      : videoId
+        ? "Your YouTube Video"
+        : ogData
+          ? ogData.title
+          : "Web Video";
   const activeChannel =
-    phase === "demo" ? demoVideo.channel
-    : videoId ? "YouTube"
-    : ogData ? ogData.domain
-    : "Web";
+    phase === "demo"
+      ? demoVideo.channel
+      : videoId
+        ? "YouTube"
+        : ogData
+          ? ogData.domain
+          : "Web";
   const activeProgress = phase === "demo" ? progress : 0;
   const isYouTubePreview = phase === "previewing" && videoId;
 
@@ -628,23 +746,34 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                 {/* Video frame */}
                 <div
                   className="relative mx-3 mt-3 overflow-hidden cursor-pointer"
-                  style={{ borderRadius: 10, aspectRatio: "16/9", background: "#080810" }}
+                  style={{
+                    borderRadius: 10,
+                    aspectRatio: "16/9",
+                    background: "#080810",
+                  }}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                   onClick={() => setIsPlaying((p) => !p)}
                 >
                   {/* Base gradient — always visible, prevents blank frame */}
-                  <div className="absolute inset-0"
-                    style={{ background: `linear-gradient(135deg, ${["#1a0a2e","#0a1a2e","#2e1a0a"][demoIdx % 3]} 0%, #080810 70%)` }} />
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(135deg, ${["#1a0a2e", "#0a1a2e", "#2e1a0a"][demoIdx % 3]} 0%, #080810 70%)`,
+                    }}
+                  />
 
                   {/* YouTube thumbnail crossfade */}
                   {activeId && (
-                    <motion.img key={`yt-${activeId}`}
+                    <motion.img
+                      key={`yt-${activeId}`}
                       src={`https://img.youtube.com/vi/${activeId}/hqdefault.jpg`}
                       alt="thumbnail"
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{ filter: "brightness(0.62)" }}
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
                     />
                   )}
 
@@ -652,108 +781,226 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                   {phase === "previewing" && !videoId && (
                     <AnimatePresence>
                       {ogLoading && (
-                        <motion.div key="og-loading" className="absolute inset-0 flex items-center justify-center"
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <motion.div
+                          key="og-loading"
+                          className="absolute inset-0 flex items-center justify-center"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
                           <div className="flex flex-col items-center gap-2">
                             <Loader2 className="w-6 h-6 text-[#8b5cf6] animate-spin" />
-                            <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">Fetching Preview...</span>
+                            <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">
+                              Fetching Preview...
+                            </span>
                           </div>
                         </motion.div>
                       )}
                       {!ogLoading && ogData?.image && (
-                        <motion.img key="og-img" src={ogData.image} alt="preview"
+                        <motion.img
+                          key="og-img"
+                          src={ogData.image}
+                          alt="preview"
                           className="absolute inset-0 w-full h-full object-cover"
                           style={{ filter: "brightness(0.6)" }}
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.4 }}
                         />
                       )}
                       {!ogLoading && ogData && !ogData.image && (
-                        <motion.div key="og-meta" className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6"
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                          <img src={ogData.favicon} alt="" className="w-10 h-10 rounded-xl"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                        <motion.div
+                          key="og-meta"
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <img
+                            src={ogData.favicon}
+                            alt=""
+                            className="w-10 h-10 rounded-xl"
+                            onError={(e) => {
+                              (
+                                e.currentTarget as HTMLImageElement
+                              ).style.display = "none";
+                            }}
+                          />
                           <div className="text-center">
-                            <p className="font-bold text-white text-xs leading-snug line-clamp-2"
-                              style={{ fontFamily: "'Raleway', sans-serif" }}>{ogData.title}</p>
-                            <p className="font-mono-ui text-[9px] text-[#555] mt-1">{ogData.domain}</p>
+                            <p
+                              className="font-bold text-white text-xs leading-snug line-clamp-2"
+                              style={{ fontFamily: "'Raleway', sans-serif" }}
+                            >
+                              {ogData.title}
+                            </p>
+                            <p className="font-mono-ui text-[9px] text-[#555] mt-1">
+                              {ogData.domain}
+                            </p>
                           </div>
                         </motion.div>
                       )}
                       {!ogLoading && !ogData && (
-                        <motion.div key="og-fallback" className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-                          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                            style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)" }}>
+                        <motion.div
+                          key="og-fallback"
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center"
+                            style={{
+                              background: "rgba(139,92,246,0.12)",
+                              border: "1px solid rgba(139,92,246,0.25)",
+                            }}
+                          >
                             <Play className="w-5 h-5 text-[#8b5cf6] ml-0.5" />
                           </div>
-                          <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">URL Ready to Add</span>
+                          <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">
+                            URL Ready to Add
+                          </span>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   )}
 
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 pointer-events-none"
-                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.08) 55%, transparent 100%)" }} />
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.08) 55%, transparent 100%)",
+                    }}
+                  />
 
                   {/* AI badge */}
-                  <motion.div className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1"
-                    style={{ background: "rgba(139,92,246,0.88)", borderRadius: 6, backdropFilter: "blur(6px)" }}>
-                    <motion.div className="w-1.5 h-1.5 rounded-full bg-white"
-                      animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
-                    <span className="font-mono-ui text-[9px] text-white uppercase tracking-widest">AI ANALYZING</span>
+                  <motion.div
+                    className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1"
+                    style={{
+                      background: "rgba(139,92,246,0.88)",
+                      borderRadius: 6,
+                      backdropFilter: "blur(6px)",
+                    }}
+                  >
+                    <motion.div
+                      className="w-1.5 h-1.5 rounded-full bg-white"
+                      animate={{ opacity: [1, 0.2, 1] }}
+                      transition={{ duration: 0.8, repeat: Infinity }}
+                    />
+                    <span className="font-mono-ui text-[9px] text-white uppercase tracking-widest">
+                      AI ANALYZING
+                    </span>
                   </motion.div>
 
                   {/* Hover play/pause indicator */}
                   <AnimatePresence>
                     {isHovered && (
-                      <motion.div className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                        <div className="w-12 h-12 flex items-center justify-center"
-                          style={{ background: "rgba(0,0,0,0.5)", borderRadius: 12, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                          {isPlaying
-                            ? <Pause className="w-5 h-5 text-white" />
-                            : <Play className="w-5 h-5 text-white fill-white ml-0.5" />}
+                      <motion.div
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <div
+                          className="w-12 h-12 flex items-center justify-center"
+                          style={{
+                            background: "rgba(0,0,0,0.5)",
+                            borderRadius: 12,
+                            backdropFilter: "blur(8px)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-5 h-5 text-white" />
+                          ) : (
+                            <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                          )}
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
                   {/* Controls bar — fades up on hover */}
-                  <motion.div className="absolute bottom-0 left-0 right-0 px-3 py-2.5"
-                    style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.97))" }}
-                    animate={{ opacity: isHovered ? 1 : 0.45, y: isHovered ? 0 : 4 }}
-                    transition={{ duration: 0.18 }}>
+                  <motion.div
+                    className="absolute bottom-0 left-0 right-0 px-3 py-2.5"
+                    style={{
+                      background:
+                        "linear-gradient(transparent, rgba(0,0,0,0.97))",
+                    }}
+                    animate={{
+                      opacity: isHovered ? 1 : 0.45,
+                      y: isHovered ? 0 : 4,
+                    }}
+                    transition={{ duration: 0.18 }}
+                  >
                     {/* Scrubable progress bar */}
-                    <div className="w-full h-1.5 rounded-full mb-2 cursor-pointer group/bar relative"
+                    <div
+                      className="w-full h-1.5 rounded-full mb-2 cursor-pointer group/bar relative"
                       style={{ background: "rgba(255,255,255,0.1)" }}
                       onClick={(e) => {
                         e.stopPropagation();
                         const rect = e.currentTarget.getBoundingClientRect();
-                        const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                        const pct = Math.max(
+                          0,
+                          Math.min(
+                            100,
+                            ((e.clientX - rect.left) / rect.width) * 100,
+                          ),
+                        );
                         setProgress(pct);
-                      }}>
-                      <motion.div className="h-full rounded-full overflow-visible"
-                        animate={{ width: `${activeProgress}%` }} transition={{ duration: 0.4 }}
-                        style={{ background: "linear-gradient(90deg, #8b5cf6, #a78bfa)", position: "relative" }}>
-                        <div className="absolute right-0 top-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover/bar:opacity-100 transition-opacity"
-                          style={{ transform: "translate(50%, -50%)", boxShadow: "0 0 8px rgba(139,92,246,0.9)" }} />
+                      }}
+                    >
+                      <motion.div
+                        className="h-full rounded-full overflow-visible"
+                        animate={{ width: `${activeProgress}%` }}
+                        transition={{ duration: 0.4 }}
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #8b5cf6, #a78bfa)",
+                          position: "relative",
+                        }}
+                      >
+                        <div
+                          className="absolute right-0 top-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover/bar:opacity-100 transition-opacity"
+                          style={{
+                            transform: "translate(50%, -50%)",
+                            boxShadow: "0 0 8px rgba(139,92,246,0.9)",
+                          }}
+                        />
                       </motion.div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); setIsPlaying((p) => !p); }}
-                        className="text-white hover:text-white/80 transition-colors">
-                        {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-white" />}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsPlaying((p) => !p);
+                        }}
+                        className="text-white hover:text-white/80 transition-colors"
+                      >
+                        {isPlaying ? (
+                          <Pause className="w-3.5 h-3.5" />
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                        )}
                       </button>
                       <span className="font-mono-ui text-[9px] text-white/60 flex-1">
-                        {Math.floor((activeProgress / 100) * 18)}:{String(Math.floor(((activeProgress / 100) * 42) % 60)).padStart(2, "0")}
+                        {Math.floor((activeProgress / 100) * 18)}:
+                        {String(
+                          Math.floor(((activeProgress / 100) * 42) % 60),
+                        ).padStart(2, "0")}
                         {" / "}
                         {phase === "demo" ? demoVideo.duration : "--:--"}
                       </span>
-                      <Volume2 className="w-3.5 h-3.5 text-white/50 hover:text-white cursor-pointer transition-colors"
-                        onClick={(e) => e.stopPropagation()} />
-                      <Maximize className="w-3.5 h-3.5 text-white/50 hover:text-white cursor-pointer transition-colors"
-                        onClick={(e) => e.stopPropagation()} />
+                      <Volume2
+                        className="w-3.5 h-3.5 text-white/50 hover:text-white cursor-pointer transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <Maximize
+                        className="w-3.5 h-3.5 text-white/50 hover:text-white cursor-pointer transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </div>
                   </motion.div>
                 </div>
@@ -1041,8 +1288,8 @@ function LeftSidebar({
       className="fixed left-0 top-0 bottom-0 z-40 flex flex-col items-center"
       style={{
         width: SIDEBAR_W,
-        background: "#08080b",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
+        background: "var(--vv-sidebar)",
+        borderRight: "1px solid var(--vv-border)",
       }}
     >
       {/* Logo */}
@@ -1075,7 +1322,7 @@ function LeftSidebar({
           >
             <span
               className="font-mono-ui text-[8px] uppercase tracking-[0.25em] transition-all duration-200"
-              style={{ color: active === item.id ? "#8b5cf6" : "#202020" }}
+              style={{ color: active === item.id ? "#8b5cf6" : "var(--vv-text-muted)" }}
             >
               {item.label}
             </span>
@@ -1112,17 +1359,18 @@ function TopBar({
   onLogin: () => void;
   onRegister: () => void;
 }) {
+  const { isDark, toggleTheme } = useTheme();
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
       className="flex items-center justify-between px-6 sm:px-10 h-14 sm:h-16 flex-shrink-0"
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      style={{ borderBottom: "1px solid var(--vv-border)" }}
     >
       <div className="flex items-center gap-2">
         <span
-          className="font-black text-white uppercase text-base sm:text-lg"
+          className="font-black lp-heading uppercase text-base sm:text-lg"
           style={{
             fontFamily: "'Alegreya Sans SC', serif",
             letterSpacing: "0.04em",
@@ -1142,10 +1390,17 @@ function TopBar({
         </span>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6">
+      <div className="flex items-center gap-3 sm:gap-5">
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle"
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
         <button
           onClick={onLogin}
-          className="text-[11px] uppercase tracking-widest text-[#3a3a3a] hover:text-white transition-colors font-semibold"
+          className="text-[11px] uppercase tracking-widest text-[#3a3a3a] hover:text-[#8b5cf6] transition-colors font-semibold"
           style={{ fontFamily: "'Raleway', sans-serif" }}
         >
           LOG IN
@@ -1259,14 +1514,14 @@ function FeaturesSection() {
                 <card.icon className="w-5 h-5" style={{ color: card.color }} />
               </div>
               <span
-                className="font-black text-[12px] uppercase tracking-wide text-white"
+                className="font-black text-[12px] uppercase tracking-wide lp-heading"
                 style={{ fontFamily: "'Raleway', sans-serif" }}
               >
                 {card.title}
               </span>
             </div>
             <p
-              className="text-[11px] text-[#3a3a3a] leading-relaxed"
+              className="text-[14px] text-[#3a3a3a] leading-relaxed"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
               {card.desc}
@@ -1327,7 +1582,7 @@ function AIToolsSection() {
     <section
       ref={ref}
       className="py-20 sm:py-28 px-8 sm:px-14"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+      style={{ borderTop: "1px solid var(--vv-border-section)" }}
     >
       <SectionLabel>AI_GENERATION_SUITE</SectionLabel>
       <div className="overflow-hidden mb-12">
@@ -1335,7 +1590,7 @@ function AIToolsSection() {
           initial={{ y: 60, opacity: 0 }}
           animate={inView ? { y: 0, opacity: 1 } : {}}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black text-white leading-[0.88]"
+          className="font-black lp-heading leading-[0.88]"
           style={{
             fontSize: "clamp(2.2rem, 5vw, 5rem)",
             fontFamily: "'Alegreya Sans SC', serif",
@@ -1356,7 +1611,7 @@ function AIToolsSection() {
             transition={{ delay: 0.05 + i * 0.07, duration: 0.45 }}
             className="flex items-center gap-5 px-5 py-4 group cursor-default transition-all duration-200 hover:bg-white/[0.02]"
             style={{
-              borderBottom: "1px solid rgba(255,255,255,0.04)",
+              borderBottom: "1px solid var(--vv-border-section)",
               borderRadius: 4,
             }}
           >
@@ -1371,13 +1626,13 @@ function AIToolsSection() {
               style={{ background: `${tool.color}40` }}
             />
             <span
-              className="font-black text-sm uppercase tracking-wide text-white w-36 sm:w-44 flex-shrink-0 transition-colors group-hover:text-white"
+              className="font-black text-sm uppercase tracking-wide lp-heading w-36 sm:w-44 flex-shrink-0 transition-colors"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
               {tool.label}
             </span>
             <span
-              className="text-[11px] text-[#333] flex-1 hidden sm:block leading-relaxed"
+              className="text-[14px] text-[#333] flex-1 hidden sm:block leading-relaxed"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
               {tool.desc}
@@ -1431,7 +1686,7 @@ function HowItWorksSection() {
     <section
       ref={ref}
       className="py-20 sm:py-28 px-8 sm:px-14"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+      style={{ borderTop: "1px solid var(--vv-border-section)" }}
     >
       <SectionLabel>WORKFLOW</SectionLabel>
       <div className="overflow-hidden mb-16">
@@ -1439,7 +1694,7 @@ function HowItWorksSection() {
           initial={{ y: 60, opacity: 0 }}
           animate={inView ? { y: 0, opacity: 1 } : {}}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black text-white leading-[0.88]"
+          className="font-black lp-heading leading-[0.88]"
           style={{
             fontSize: "clamp(2.2rem, 5vw, 5rem)",
             fontFamily: "'Alegreya Sans SC', serif",
@@ -1490,7 +1745,7 @@ function HowItWorksSection() {
               </span>
             </div>
             <h3
-              className="font-black text-white text-xl mb-2"
+              className="font-black lp-heading text-xl mb-2"
               style={{ fontFamily: "'Alegreya Sans SC', serif" }}
             >
               {step.title}
@@ -1518,7 +1773,7 @@ function GetStartedSection({ onRegister }: { onRegister: () => void }) {
     <section
       ref={ref}
       className="py-20 sm:py-32 px-8 sm:px-14"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+      style={{ borderTop: "1px solid var(--vv-border-section)" }}
     >
       <div className="max-w-2xl">
         <SectionLabel>START_NOW</SectionLabel>
@@ -1527,7 +1782,7 @@ function GetStartedSection({ onRegister }: { onRegister: () => void }) {
             initial={{ y: 60, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : {}}
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-            className="font-black text-white leading-[0.88]"
+            className="font-black lp-heading leading-[0.88]"
             style={{
               fontSize: "clamp(2.2rem, 5vw, 5rem)",
               fontFamily: "'Alegreya Sans SC', serif",
@@ -1543,7 +1798,7 @@ function GetStartedSection({ onRegister }: { onRegister: () => void }) {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.3 }}
-          className="text-[13px] text-[#3a3a3a] mb-8 leading-relaxed max-w-md"
+          className="text-[16px] text-[#3a3a3a] mb-8 leading-relaxed max-w-md"
           style={{ fontFamily: "'Raleway', sans-serif" }}
         >
           Join thousands of students and creators who use VidVault AI to turn
@@ -1803,7 +2058,7 @@ export default function Login() {
   return (
     <div
       className="flex relative"
-      style={{ background: "#09090c", color: "#e0e0e0", minHeight: "100vh" }}
+      style={{ background: "var(--vv-bg)", color: "var(--vv-text)", minHeight: "100vh" }}
     >
       <motion.div
         className="fixed w-[360px] h-[360px] rounded-full pointer-events-none z-0"
@@ -1871,7 +2126,7 @@ export default function Login() {
                           variants={textVars}
                           initial="hidden"
                           animate="visible"
-                          className={`font-black leading-[0.88] uppercase ${i === 1 ? "text-outline-strong" : "text-white"}`}
+                          className={`font-black leading-[0.88] uppercase ${i === 1 ? "text-outline-strong" : "lp-heading"}`}
                           style={{
                             fontSize: "clamp(2.8rem, 7.5vw, 7.8rem)",
                             letterSpacing: "-0.01em",
@@ -1889,7 +2144,7 @@ export default function Login() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.46 }}
                     className="mt-5 text-[#3a3a3a] leading-relaxed max-w-[360px] font-mono-ui"
-                    style={{ fontSize: "11px" }}
+                    style={{ fontSize: "14px" }}
                   >
                     <TypedText
                       text="Save YouTube videos. Generate AI summaries, flashcards & MCQs. Build your knowledge vault."
@@ -1911,7 +2166,7 @@ export default function Login() {
                     ].map((s) => (
                       <div key={s.label} className="flex flex-col">
                         <span
-                          className="font-black text-white leading-none"
+                          className="font-black lp-heading leading-none"
                           style={{
                             fontSize: "clamp(1.6rem, 2.8vw, 2.4rem)",
                             fontFamily: "'Alegreya Sans SC', serif",
@@ -2022,7 +2277,7 @@ export default function Login() {
 
               <footer
                 className="px-8 sm:px-14 py-6 border-t flex items-center justify-between"
-                style={{ borderColor: "rgba(255,255,255,0.04)", marginLeft: 0 }}
+                style={{ borderColor: "var(--vv-border-section)", marginLeft: 0 }}
               >
                 <span className="font-mono-ui text-[8px] text-[#1a1a1a] uppercase tracking-widest">
                   © 2026 VIDVAULT AI
@@ -2049,7 +2304,7 @@ export default function Login() {
             <div className="flex flex-col flex-1 lg:max-w-[50%]">
               <header
                 className="flex items-center justify-between px-8 sm:px-10 h-14 sm:h-16 flex-shrink-0"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                style={{ borderBottom: "1px solid var(--vv-border-section)" }}
               >
                 <div className="flex items-center gap-2">
                   <div

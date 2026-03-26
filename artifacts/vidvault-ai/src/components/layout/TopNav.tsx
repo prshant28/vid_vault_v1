@@ -1,7 +1,8 @@
-import { Search, Plus, Sparkles } from "lucide-react";
+import { Search, Plus, Sparkles, Sun, Moon } from "lucide-react";
 import { useUI } from "@/contexts/ui-context";
 import { useLocation } from "wouter";
 import { useRef } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "DASHBOARD",
@@ -14,6 +15,7 @@ export function TopNav() {
   const { setAiSidebarOpen, setUrlModalOpen } = useUI();
   const [location, setLocation] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { isDark, toggleTheme } = useTheme();
 
   const pageTitle = PAGE_TITLES[location] || "VAULT";
 
@@ -25,10 +27,10 @@ export function TopNav() {
 
   return (
     <header
-      className="h-14 flex items-center justify-between px-5 lg:px-8 sticky top-0 z-40 border-b"
+      className="h-14 flex items-center justify-between px-5 lg:px-8 sticky top-0 z-40 border-b transition-colors duration-300"
       style={{
-        background: "#080809",
-        borderColor: "rgba(255,255,255,0.05)",
+        background: "var(--vv-sidebar)",
+        borderColor: "var(--vv-border)",
       }}
     >
       {/* Page title */}
@@ -38,7 +40,7 @@ export function TopNav() {
         </span>
         <div
           className="h-4 w-px hidden sm:block"
-          style={{ background: "rgba(255,255,255,0.05)" }}
+          style={{ background: "var(--vv-border)" }}
         />
         {/* Search */}
         <div className="relative group">
@@ -46,15 +48,18 @@ export function TopNav() {
           <input
             ref={inputRef}
             placeholder="SEARCH VAULT..."
-            className="w-48 sm:w-64 h-9 bg-transparent border pl-9 pr-3 text-[#666] text-xs font-mono-ui uppercase tracking-widest focus:outline-none focus:text-white placeholder:text-[#2a2a2a] transition-colors"
+            className="w-48 sm:w-64 h-9 bg-transparent border pl-9 pr-3 text-xs font-mono-ui uppercase tracking-widest focus:outline-none transition-colors placeholder:text-[#2a2a2a]"
             style={{
-              borderColor: "rgba(255,255,255,0.06)",
+              borderColor: "var(--vv-border)",
+              color: isDark ? "#666" : "#555568",
             }}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)";
+              e.currentTarget.style.color = isDark ? "#fff" : "#0d0c14";
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+              e.currentTarget.style.borderColor = "var(--vv-border)";
+              e.currentTarget.style.color = isDark ? "#666" : "#555568";
             }}
             onKeyDown={handleSearch}
           />
@@ -63,6 +68,14 @@ export function TopNav() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle"
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+        </button>
+
         <button
           onClick={() => setAiSidebarOpen(true)}
           className="flex items-center gap-2 px-3 h-9 text-[10px] font-mono-ui uppercase tracking-widest text-[#8b5cf6] border border-[rgba(139,92,246,0.2)] hover:bg-[rgba(139,92,246,0.08)] hover:border-[rgba(139,92,246,0.4)] transition-all"
@@ -73,9 +86,10 @@ export function TopNav() {
 
         <button
           onClick={() => setUrlModalOpen(true)}
-          className="flex items-center gap-2 px-3 h-9 text-[10px] font-mono-ui uppercase tracking-widest text-black font-bold transition-all"
+          className="flex items-center gap-2 px-3 h-9 text-[10px] font-mono-ui uppercase tracking-widest font-bold transition-all"
           style={{
-            background: "#ffffff",
+            background: isDark ? "#ffffff" : "#0d0c14",
+            color: isDark ? "#000" : "#fff",
             clipPath: "polygon(8% 0px, 100% 0px, 100% 70%, 92% 100%, 0px 100%, 0px 30%)",
           }}
           onMouseEnter={(e) => {
@@ -83,8 +97,8 @@ export function TopNav() {
             (e.currentTarget as HTMLButtonElement).style.color = "#fff";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#ffffff";
-            (e.currentTarget as HTMLButtonElement).style.color = "#000";
+            (e.currentTarget as HTMLButtonElement).style.background = isDark ? "#ffffff" : "#0d0c14";
+            (e.currentTarget as HTMLButtonElement).style.color = isDark ? "#000" : "#fff";
           }}
         >
           <Plus className="w-3 h-3" />
