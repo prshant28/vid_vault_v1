@@ -123,9 +123,9 @@ function isValidUrl(url: string): boolean {
    LIVE VIDEO CAPTURE — hero right panel
 ══════════════════════════════════════════════ */
 const DEMO_VIDEOS = [
-  { title: "The Complete React 19 Guide", channel: "Fireship", id: "dQw4w9WgXcQ", duration: "18:42", views: "1.2M" },
-  { title: "System Design: Scale to Millions", channel: "ByteByteGo", id: "xpDnVSmNFX0", duration: "32:15", views: "847K" },
-  { title: "OpenAI GPT-5 Full Tutorial", channel: "AI Explained", id: "SXpJ9bc4DBs", duration: "44:08", views: "2.1M" },
+  { title: "Learn Python – Full Course for Beginners", channel: "freeCodeCamp", id: "rfscVS0vtbw", duration: "4:26:51", views: "42M" },
+  { title: "But what is a neural network?", channel: "3Blue1Brown", id: "aircAruvnKk", duration: "19:13", views: "15M" },
+  { title: "Kubernetes Tutorial for Beginners", channel: "TechWorld with Nana", id: "X48VuDVv0do", duration: "3:18:58", views: "5.2M" },
 ];
 const AI_TASKS = [
   { label: "AI Summary", icon: FileText, color: "#8b5cf6", result: "847-word structured summary" },
