@@ -1,8 +1,17 @@
 import { useGetStats } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/videos/VideoCard";
-import { Library, Folder, Tag, PlayCircle, Loader2 } from "lucide-react";
+import { Library, Folder, Tag, Star } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function Home() {
   const { data: stats, isLoading } = useGetStats();
@@ -10,97 +19,167 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="font-mono-ui text-[#333] text-xs uppercase tracking-widest animate-pulse">
+          LOADING_VAULT...
+        </span>
       </div>
     );
   }
 
+  const statCards = [
+    {
+      label: "TOTAL_VIDEOS",
+      value: stats?.totalVideos || 0,
+      icon: Library,
+      code: "01",
+      accent: "#8b5cf6",
+    },
+    {
+      label: "FOLDERS",
+      value: stats?.totalFolders || 0,
+      icon: Folder,
+      code: "02",
+      accent: "#06b6d4",
+    },
+    {
+      label: "TAGS_USED",
+      value: stats?.totalTags || 0,
+      icon: Tag,
+      code: "03",
+      accent: "#10b981",
+    },
+  ];
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-foreground">Welcome back</h1>
-        <p className="text-muted-foreground">Here's what's happening in your vault today.</p>
-      </div>
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-10"
+    >
+      {/* Header */}
+      <motion.div variants={item} className="space-y-2 pt-2">
+        <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">
+          //SYSTEM_STATUS
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
+          YOUR VAULT
+        </h1>
+        <p className="text-[#555] text-sm font-mono-ui">
+          KNOWLEDGE_BASE // ACTIVE
+        </p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center mb-4 text-primary">
-              <Library className="w-5 h-5" />
+      {/* Stats */}
+      <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {statCards.map((card) => (
+          <div
+            key={card.code}
+            className="etched-slab p-6 relative overflow-hidden group"
+          >
+            <div className="relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">{card.code}</span>
+                <card.icon className="w-4 h-4" style={{ color: card.accent + "60" }} />
+              </div>
+              <p className="font-mono-ui text-[10px] uppercase tracking-widest mb-1" style={{ color: card.accent + "80" }}>
+                {card.label}
+              </p>
+              <p className="text-5xl font-black text-white leading-none">
+                {card.value.toString().padStart(2, "0")}
+              </p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Total Videos</p>
-            <p className="text-4xl font-display font-bold text-foreground mt-1">{stats?.totalVideos || 0}</p>
+            <div
+              className="absolute bottom-0 right-0 w-24 h-24 opacity-5 group-hover:opacity-10 transition-opacity"
+              style={{
+                background: `radial-gradient(circle, ${card.accent}, transparent)`,
+              }}
+            />
           </div>
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500" />
-        </div>
+        ))}
+      </motion.div>
 
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center mb-4 text-accent">
-              <Folder className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">Folders</p>
-            <p className="text-4xl font-display font-bold text-foreground mt-1">{stats?.totalFolders || 0}</p>
-          </div>
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-2xl group-hover:bg-accent/20 transition-all duration-500" />
-        </div>
-
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center mb-4 text-green-500">
-              <Tag className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">Tags Used</p>
-            <p className="text-4xl font-display font-bold text-foreground mt-1">{stats?.totalTags || 0}</p>
-          </div>
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all duration-500" />
-        </div>
-      </div>
-
+      {/* Recently Saved */}
       {stats?.recentVideos && stats.recentVideos.length > 0 && (
-        <section className="space-y-4">
+        <motion.section variants={item} className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-display font-semibold flex items-center gap-2">
-              <PlayCircle className="w-5 h-5 text-primary" />
-              Recently Saved
-            </h2>
-            <Link href="/videos" className="text-sm font-medium text-primary hover:underline">
-              View All
+            <div>
+              <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
+                //RECENTLY_SAVED
+              </span>
+              <h2 className="text-lg font-black text-white uppercase tracking-tight">
+                Latest Captures
+              </h2>
+            </div>
+            <Link
+              href="/videos"
+              className="font-mono-ui text-[9px] text-[#444] hover:text-[#8b5cf6] uppercase tracking-widest transition-colors"
+            >
+              VIEW_ALL →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {stats.recentVideos.map(video => (
-              <VideoCard key={video.id} video={video} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {stats.recentVideos.map((video, i) => (
+              <motion.div
+                key={video.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+              >
+                <VideoCard video={video} />
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
 
+      {/* Favorites */}
       {stats?.favoriteVideos && stats.favoriteVideos.length > 0 && (
-        <section className="space-y-4 pb-10">
+        <motion.section variants={item} className="space-y-5 pb-10">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-display font-semibold flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-400" />
-              Your Favorites
-            </h2>
+            <div>
+              <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
+                //STARRED
+              </span>
+              <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-500" />
+                Favorites
+              </h2>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {stats.favoriteVideos.map(video => (
-              <VideoCard key={video.id} video={video} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {stats.favoriteVideos.map((video, i) => (
+              <motion.div
+                key={video.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+              >
+                <VideoCard video={video} />
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
 
+      {/* Empty State */}
       {(!stats?.recentVideos || stats.recentVideos.length === 0) && (
-        <div className="text-center py-20 bg-card/20 rounded-3xl border border-white/5 border-dashed">
-          <Library className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-xl font-display font-medium text-foreground mb-2">Your vault is empty</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Start building your second brain by saving your first YouTube video.
+        <motion.div
+          variants={item}
+          className="etched-slab py-24 text-center"
+        >
+          <Library className="w-10 h-10 text-[#222] mx-auto mb-5" />
+          <span className="font-mono-ui text-[10px] text-[#333] uppercase tracking-[0.3em] block mb-3">
+            VAULT_EMPTY
+          </span>
+          <h3 className="text-xl font-black text-[#444] uppercase mb-3">
+            No Videos Yet
+          </h3>
+          <p className="text-[#333] font-mono-ui text-sm max-w-sm mx-auto">
+            Paste a YouTube URL to begin saving videos to your knowledge vault.
           </p>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

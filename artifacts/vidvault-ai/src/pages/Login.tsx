@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Bot, Sparkles, Youtube, Brain, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 type AuthMode = "landing" | "register" | "login-manual";
+
+function GrainOverlay() {
+  return <div className="grain-overlay" />;
+}
+
+function GridMesh() {
+  return <div className="grid-mesh absolute inset-0 pointer-events-none" />;
+}
 
 export default function Login() {
   const [mode, setMode] = useState<AuthMode>("landing");
@@ -23,21 +30,19 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, firstName, lastName }),
       });
-
       if (res.ok) {
         window.location.href = "/";
       } else {
         const data = await res.json();
         setError(data.error || "Registration failed");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setLoading(false);
@@ -48,396 +53,400 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/login-manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       if (res.ok) {
         window.location.href = "/";
       } else {
         const data = await res.json();
         setError(data.error || "Login failed");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setLoading(false);
     }
   };
 
+  const sideNavItems = ["SAVE", "ORGANIZE", "ANALYZE", "GENERATE", "LEARN"];
+
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden selection:bg-primary/30">
-      {/* Animated background elements */}
-      <motion.div
-        animate={{ y: [0, 20, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none"
-      />
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/20 rounded-full blur-[120px] pointer-events-none"
-      />
+    <div className="min-h-screen bg-[#0a0a0b] text-[#e0e0e0] flex flex-col relative overflow-hidden">
+      <GrainOverlay />
 
-      {/* Landing Page */}
-      {mode === "landing" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex-1 flex flex-col w-full"
-        >
-          <header className="h-20 px-6 lg:px-8 flex items-center justify-between relative z-10">
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
-              <span className="font-display font-bold text-xl lg:text-2xl tracking-tight text-white">
-                VidVault AI
-              </span>
-            </motion.div>
-            <motion.div
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Button
-                onClick={handleReplitLogin}
-                variant="outline"
-                className="rounded-full px-6 border-white/10 hover:bg-white/5"
-              >
-                Sign In
-              </Button>
-            </motion.div>
-          </header>
-
-          <motion.main
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex-1 flex items-center justify-center relative z-10 px-4 lg:px-6 py-8 lg:py-0"
+      <AnimatePresence mode="wait">
+        {mode === "landing" && (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.4 }}
+            className="flex-1 flex flex-col min-h-screen"
           >
-            <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-              {/* Left Content */}
-              <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-accent mx-auto lg:mx-0 w-fit"
-                >
-                  <Sparkles className="w-4 h-4 animate-pulse" />
-                  The ultimate learning companion
-                </motion.div>
+            {/* Grid bg */}
+            <GridMesh />
 
-                <motion.h1
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold tracking-tight text-white leading-[1.1]"
+            {/* Top nav */}
+            <header className="relative z-20 flex items-center justify-between px-6 lg:px-10 h-16 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white flex items-center justify-center font-black text-black text-sm font-mono-ui">
+                  VV
+                </div>
+                <span className="font-black text-white uppercase tracking-[0.15em] text-sm font-mono-ui">
+                  VIDVAULT AI
+                </span>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => setMode("login-manual")}
+                  className="text-[#999] font-mono-ui text-xs uppercase tracking-widest hover:text-white transition-colors"
                 >
-                  Your Second <br className="hidden sm:block" />
-                  Brain for <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-                    Video Knowledge
+                  LOG IN
+                </button>
+                <button
+                  onClick={() => setMode("register")}
+                  className="btn-monolith text-xs py-2.5 px-6"
+                >
+                  GET STARTED
+                </button>
+              </div>
+            </header>
+
+            {/* Main hero */}
+            <main className="flex-1 flex relative z-10">
+              {/* Side nav (vertical) */}
+              <div className="hidden lg:flex w-14 border-r border-white/5 flex-col items-center justify-center gap-10">
+                {sideNavItems.map((item, i) => (
+                  <div
+                    key={item}
+                    style={{ animationDelay: `${0.3 + i * 0.1}s` }}
+                    className="landing-fade-in"
+                  >
+                    <span
+                      className="text-[#666] font-mono-ui text-[9px] uppercase tracking-[0.3em] cursor-pointer hover:text-white transition-colors"
+                      style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                ))}
+                {/* Live indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              </div>
+
+              {/* Hero content */}
+              <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 py-12">
+                {/* Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-8"
+                >
+                  <span className="badge-mono">
+                    AI_POWERED // SECOND_BRAIN
                   </span>
-                </motion.h1>
-
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="text-base lg:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0"
-                >
-                  Transform hours of YouTube content into actionable insights, flashcards, and structured notes in
-                  seconds using advanced AI.
-                </motion.p>
-
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start pt-4"
-                >
-                  <Button
-                    onClick={handleReplitLogin}
-                    size="lg"
-                    className="rounded-full w-full sm:w-auto px-8 h-14 text-base font-semibold bg-primary hover:bg-primary/90 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] transition-all group"
-                  >
-                    Get Started with Replit
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <Button
-                    onClick={() => setMode("register")}
-                    size="lg"
-                    variant="outline"
-                    className="rounded-full w-full sm:w-auto px-8 h-14 text-base font-semibold border-white/10 hover:bg-white/5"
-                  >
-                    Create Account
-                  </Button>
                 </motion.div>
 
+                {/* Massive headline */}
+                <div className="space-y-0 leading-none overflow-hidden">
+                  <motion.div
+                    initial={{ y: 120, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <h1 className="text-[clamp(3.5rem,10vw,8.5rem)] font-black text-white leading-[0.9] uppercase tracking-[-0.02em]">
+                      SAVE.
+                    </h1>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 120, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <h1 className="text-[clamp(3.5rem,10vw,8.5rem)] font-black text-outline-strong leading-[0.9] uppercase tracking-[-0.02em]">
+                      ANALYZE.
+                    </h1>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 120, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <h1 className="text-[clamp(3.5rem,10vw,8.5rem)] font-black text-white leading-[0.9] uppercase tracking-[-0.02em]">
+                      MASTER.
+                    </h1>
+                  </motion.div>
+                </div>
+
+                {/* Sub-copy */}
                 <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                  className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground pt-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.75 }}
+                  className="mt-10 max-w-md"
                 >
-                  <span>Already have an account?</span>
+                  <p className="text-[#888] text-[0.95rem] leading-relaxed">
+                    VidVault AI transforms YouTube content into structured knowledge. Save videos, generate AI summaries, flashcards, MCQs, and study notes — all in one vault.
+                  </p>
+                </motion.div>
+
+                {/* CTA row */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className="mt-10 flex flex-col sm:flex-row items-start gap-6"
+                >
                   <button
-                    onClick={() => setMode("login-manual")}
-                    className="text-accent hover:text-accent/90 font-semibold transition-colors"
+                    onClick={() => setMode("register")}
+                    className="btn-monolith"
                   >
-                    Sign In Here
+                    START FOR FREE
                   </button>
-                </motion.div>
-              </div>
+                  <button
+                    onClick={handleReplitLogin}
+                    className="btn-monolith"
+                    style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", clipPath: "none", padding: "1rem 2rem" }}
+                  >
+                    SIGN IN WITH REPLIT
+                  </button>
 
-              {/* Right Visual */}
-              <motion.div
-                initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="relative hidden lg:block"
-              >
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 blur-3xl rounded-full" />
+                  <div className="hidden sm:flex flex-col justify-center ml-2">
+                    <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">PLATFORM_VERSION</span>
+                    <span className="font-mono-ui text-[11px] text-[#666]">VV_CORE_v2.0.1</span>
+                  </div>
+                </motion.div>
+
+                {/* Already have account */}
                 <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 6, repeat: Infinity }}
-                  className="relative glass-panel rounded-2xl p-6 border border-white/10 aspect-square flex flex-col justify-between overflow-hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.1 }}
+                  className="mt-6"
                 >
-                  <div className="flex gap-4">
-                    <div className="w-full bg-secondary/50 rounded-lg p-4 space-y-3 border border-white/5">
-                      <Youtube className="w-8 h-8 text-red-500" />
-                      <div className="h-2 w-3/4 bg-white/10 rounded animate-pulse" />
-                      <div className="h-2 w-1/2 bg-white/10 rounded animate-pulse" />
-                    </div>
-                    <div className="w-full bg-secondary/50 rounded-lg p-4 space-y-3 border border-white/5 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
-                      <Brain className="w-8 h-8 text-primary relative z-10" />
-                      <div className="h-2 w-full bg-primary/40 rounded relative z-10 animate-pulse" />
-                      <div className="h-2 w-4/5 bg-primary/40 rounded relative z-10 animate-pulse" />
-                      <div className="h-2 w-5/6 bg-primary/40 rounded relative z-10 animate-pulse" />
-                    </div>
-                  </div>
-                  <div className="mt-4 bg-background/50 rounded-xl p-4 border border-white/5">
-                    <p className="text-sm font-medium text-white mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-accent animate-pulse" /> AI Summary generated
-                    </p>
-                    <div className="space-y-2">
-                      <div className="h-1.5 w-full bg-white/20 rounded animate-pulse" />
-                      <div className="h-1.5 w-full bg-white/20 rounded animate-pulse" />
-                      <div className="h-1.5 w-2/3 bg-white/20 rounded animate-pulse" />
-                    </div>
-                  </div>
+                  <span className="text-[#555] text-sm font-mono-ui text-xs">
+                    HAVE AN ACCOUNT?{" "}
+                    <button
+                      onClick={() => setMode("login-manual")}
+                      className="text-[#8b5cf6] hover:text-[#a78bfa] transition-colors uppercase tracking-widest"
+                    >
+                      SIGN IN →
+                    </button>
+                  </span>
                 </motion.div>
-              </motion.div>
-            </div>
-          </motion.main>
-        </motion.div>
-      )}
+              </div>
 
-      {/* Register Page */}
-      {mode === "register" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex-1 flex items-center justify-center relative z-10 px-4 py-8"
-        >
+              {/* Right side panel (feature grid) */}
+              <div className="hidden xl:flex w-96 border-l border-white/5 flex-col">
+                {[
+                  { label: "SAVE VIDEOS", desc: "Any YouTube URL instantly", badge: "01" },
+                  { label: "AI SUMMARIES", desc: "GPT-5 powered extraction", badge: "02" },
+                  { label: "FLASHCARDS", desc: "Auto-generated study cards", badge: "03" },
+                  { label: "PLAYLISTS", desc: "Bulk import entire playlists", badge: "04" },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="flex-1 border-b border-white/5 p-6 group hover:bg-white/[0.02] transition-colors cursor-default flex flex-col justify-between"
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="font-mono-ui text-[9px] text-[#444] uppercase tracking-widest">{item.badge}</span>
+                      <ArrowRight className="w-3 h-3 text-[#333] group-hover:text-[#8b5cf6] transition-colors" />
+                    </div>
+                    <div>
+                      <p className="font-black text-white uppercase text-sm tracking-wider">{item.label}</p>
+                      <p className="text-[#555] text-xs mt-1 font-mono-ui">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </main>
+          </motion.div>
+        )}
+
+        {/* Register / Login forms */}
+        {(mode === "register" || mode === "login-manual") && (
           <motion.div
-            initial={{ y: 20, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            className="w-full max-w-md"
+            key="auth-form"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col min-h-screen"
           >
-            <div className="glass-panel rounded-2xl p-6 lg:p-8 border border-white/10 space-y-6">
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl lg:text-3xl font-display font-bold text-white">Create Account</h2>
-                <p className="text-muted-foreground">Join VidVault AI today</p>
+            <GridMesh />
+
+            {/* Header */}
+            <header className="relative z-20 flex items-center justify-between px-6 lg:px-10 h-16 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white flex items-center justify-center font-black text-black text-sm font-mono-ui">
+                  VV
+                </div>
+                <span className="font-black text-white uppercase tracking-[0.15em] text-sm font-mono-ui">
+                  VIDVAULT AI
+                </span>
               </div>
-
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">First Name</label>
-                    <Input
-                      placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Last Name</label>
-                    <Input
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11 pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11 pl-10"
-                    />
-                  </div>
-                </div>
-
-                {error && <div className="p-3 bg-destructive/20 border border-destructive/30 rounded-lg text-sm text-destructive">{error}</div>}
-
-                <Button type="submit" disabled={loading} className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Account"}
-                </Button>
-              </form>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-background text-muted-foreground">Or</span>
-                </div>
-              </div>
-
-              <Button onClick={handleReplitLogin} variant="outline" className="w-full h-11 border-white/10 hover:bg-white/5">
-                Sign Up with Replit
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <button onClick={() => setMode("login-manual")} className="text-accent hover:text-accent/90 font-semibold">
-                  Sign In
-                </button>
-              </p>
-
               <button
                 onClick={() => { setMode("landing"); setError(""); }}
-                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors"
+                className="text-[#666] font-mono-ui text-xs uppercase tracking-widest hover:text-white transition-colors"
               >
-                ← Back
+                ← BACK
               </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
+            </header>
 
-      {/* Login Page */}
-      {mode === "login-manual" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex-1 flex items-center justify-center relative z-10 px-4 py-8"
-        >
-          <motion.div
-            initial={{ y: 20, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            className="w-full max-w-md"
-          >
-            <div className="glass-panel rounded-2xl p-6 lg:p-8 border border-white/10 space-y-6">
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl lg:text-3xl font-display font-bold text-white">Welcome Back</h2>
-                <p className="text-muted-foreground">Sign in to your account</p>
-              </div>
+            <main className="flex-1 flex items-center justify-center px-6 py-16 relative z-10">
+              <div className="w-full max-w-md">
+                {/* Form header */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-10"
+                >
+                  <span className="badge-mono mb-4 block w-fit">
+                    {mode === "register" ? "CREATE_ACCOUNT" : "SIGN_IN"}
+                  </span>
+                  <h2 className="text-4xl font-black text-white uppercase tracking-tight">
+                    {mode === "register" ? "Join VidVault" : "Welcome Back"}
+                  </h2>
+                  <p className="text-[#555] text-sm font-mono-ui mt-2">
+                    {mode === "register"
+                      ? "Create your account to start building your knowledge vault."
+                      : "Sign in to access your video knowledge vault."}
+                  </p>
+                </motion.div>
 
-              <form onSubmit={handleManualLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11 pl-10"
-                    />
+                {/* Form */}
+                <motion.form
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  onSubmit={mode === "register" ? handleRegister : handleManualLogin}
+                  className="space-y-4"
+                >
+                  {mode === "register" && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-mono-ui text-[10px] uppercase tracking-widest text-[#555]">First Name</label>
+                        <input
+                          placeholder="John"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="w-full h-11 bg-[#0f0f10] border border-white/8 text-white text-sm px-3 focus:outline-none focus:border-[#8b5cf6] transition-colors font-sans"
+                          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                          onFocus={(e) => e.currentTarget.style.borderColor = "#8b5cf6"}
+                          onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-mono-ui text-[10px] uppercase tracking-widest text-[#555]">Last Name</label>
+                        <input
+                          placeholder="Doe"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="w-full h-11 bg-[#0f0f10] border border-white/8 text-white text-sm px-3 focus:outline-none focus:border-[#8b5cf6] transition-colors font-sans"
+                          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                          onFocus={(e) => e.currentTarget.style.borderColor = "#8b5cf6"}
+                          onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="font-mono-ui text-[10px] uppercase tracking-widest text-[#555]">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3.5 w-4 h-4 text-[#444]" />
+                      <input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full h-11 bg-[#0f0f10] border text-white text-sm px-3 pl-10 focus:outline-none transition-colors font-sans"
+                        style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = "#8b5cf6"}
+                        onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-secondary/50 border-white/10 h-11 pl-10"
-                    />
+                  <div className="space-y-1">
+                    <label className="font-mono-ui text-[10px] uppercase tracking-widest text-[#555]">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3.5 w-4 h-4 text-[#444]" />
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full h-11 bg-[#0f0f10] border text-white text-sm px-3 pl-10 focus:outline-none transition-colors font-sans"
+                        style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = "#8b5cf6"}
+                        onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+                      />
+                    </div>
                   </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-950/40 border border-red-800/30 text-red-400 text-sm font-mono-ui">
+                      ERROR: {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-monolith w-full flex items-center justify-center gap-2 mt-2"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      mode === "register" ? "CREATE ACCOUNT" : "SIGN IN"
+                    )}
+                  </button>
+                </motion.form>
+
+                {/* Divider */}
+                <div className="my-6 flex items-center gap-4">
+                  <div className="flex-1 h-px bg-white/5" />
+                  <span className="font-mono-ui text-[10px] text-[#444] uppercase tracking-widest">OR</span>
+                  <div className="flex-1 h-px bg-white/5" />
                 </div>
 
-                {error && <div className="p-3 bg-destructive/20 border border-destructive/30 rounded-lg text-sm text-destructive">{error}</div>}
-
-                <Button type="submit" disabled={loading} className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
-                </Button>
-              </form>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-background text-muted-foreground">Or</span>
-                </div>
-              </div>
-
-              <Button onClick={handleReplitLogin} variant="outline" className="w-full h-11 border-white/10 hover:bg-white/5">
-                Sign In with Replit
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <button onClick={() => setMode("register")} className="text-accent hover:text-accent/90 font-semibold">
-                  Create one
+                <button
+                  onClick={handleReplitLogin}
+                  className="w-full h-11 border border-white/8 text-[#888] font-mono-ui text-xs uppercase tracking-widest hover:border-white/20 hover:text-white transition-colors flex items-center justify-center gap-2"
+                  style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                >
+                  CONTINUE WITH REPLIT
                 </button>
-              </p>
 
-              <button
-                onClick={() => { setMode("landing"); setError(""); }}
-                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors"
-              >
-                ← Back
-              </button>
-            </div>
+                <div className="mt-6 text-center">
+                  <span className="font-mono-ui text-[11px] text-[#444] uppercase tracking-widest">
+                    {mode === "register" ? "ALREADY HAVE AN ACCOUNT? " : "NO ACCOUNT? "}
+                    <button
+                      onClick={() => { setMode(mode === "register" ? "login-manual" : "register"); setError(""); }}
+                      className="text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"
+                    >
+                      {mode === "register" ? "SIGN IN" : "REGISTER"}
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </main>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

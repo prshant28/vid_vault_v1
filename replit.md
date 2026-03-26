@@ -4,6 +4,13 @@
 
 A full-stack AI-powered video knowledge management web application. Users save YouTube videos or entire playlists, organize into folders/tags, take timestamped notes, and use AI to transform video content into summaries, notes, flashcards, MCQs, and more.
 
+## Design System — Monolithic Brutalist
+
+**Color**: `#0a0a0b` background, white text, `#8b5cf6` purple accent
+**Typography**: Inter (900 weight, uppercase) for headings; JetBrains Mono for all UI labels/badges (uppercase, tracked)
+**CSS Classes**: `etched-slab` (dark card with inset shadow), `btn-monolith` (clip-path polygon button), `grid-mesh` (40px grid overlay), `grain-overlay` (noise texture), `badge-mono` (purple monospace badge), `font-mono-ui` (JetBrains Mono)
+**Motion**: Framer Motion with stagger reveals, y-offset slide-ups, and tween transitions (no spring for panels)
+
 ## Key Features
 
 ### ✅ Core Functionality

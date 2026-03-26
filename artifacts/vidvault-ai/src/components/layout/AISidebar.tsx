@@ -77,90 +77,132 @@ export function AISidebar() {
             onClick={() => setAiSidebarOpen(false)}
           />
           <motion.div 
-            initial={{ x: "100%", boxShadow: "-20px 0 40px rgba(0,0,0,0)" }}
-            animate={{ x: 0, boxShadow: "-20px 0 40px rgba(0,0,0,0.3)" }}
-            exit={{ x: "100%", boxShadow: "-20px 0 40px rgba(0,0,0,0)" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-card/95 backdrop-blur-2xl border-l border-white/5 z-50 flex flex-col shadow-2xl"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.25 }}
+            className="fixed top-0 right-0 h-screen w-full sm:w-[400px] z-50 flex flex-col"
+            style={{
+              background: "#080809",
+              borderLeft: "1px solid rgba(255,255,255,0.05)",
+              boxShadow: "-20px 0 60px rgba(0,0,0,0.5)",
+            }}
           >
-            <div className="flex items-center justify-between p-5 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground leading-none">AI Assistant</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {activeVideo ? `Context: ${activeVideo.title.substring(0, 30)}...` : "Global Context"}
-                  </p>
-                </div>
+            {/* Header */}
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b"
+              style={{ borderColor: "rgba(255,255,255,0.05)" }}
+            >
+              <div>
+                <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
+                  //AI_STUDIO
+                </span>
+                <h3 className="font-black text-white text-sm uppercase tracking-wider">
+                  {activeVideo ? activeVideo.title.substring(0, 25) + "…" : "VidVault AI"}
+                </h3>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setAiSidebarOpen(false)} className="rounded-full hover:bg-secondary">
-                <X className="w-5 h-5" />
-              </Button>
+              <button
+                onClick={() => setAiSidebarOpen(false)}
+                className="text-[#333] hover:text-white transition-colors p-2"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 hide-scrollbar">
-              {activeVideoId && (
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" size="sm" className="justify-start bg-secondary/30 border-white/5 hover:bg-secondary" onClick={() => handleQuickAction('summary')}>
-                    <FileText className="w-4 h-4 mr-2 text-primary" /> Summary
-                  </Button>
-                  <Button variant="outline" size="sm" className="justify-start bg-secondary/30 border-white/5 hover:bg-secondary" onClick={() => handleQuickAction('key_insights')}>
-                    <Sparkles className="w-4 h-4 mr-2 text-accent" /> Key Insights
-                  </Button>
-                  <Button variant="outline" size="sm" className="justify-start bg-secondary/30 border-white/5 hover:bg-secondary" onClick={() => handleQuickAction('mcq')}>
-                    <CheckSquare className="w-4 h-4 mr-2 text-green-500" /> Quiz MCQs
-                  </Button>
-                  <Button variant="outline" size="sm" className="justify-start bg-secondary/30 border-white/5 hover:bg-secondary" onClick={() => handleQuickAction('ppt_outline')}>
-                    <LayoutList className="w-4 h-4 mr-2 text-orange-500" /> PPT Outline
-                  </Button>
+            {/* Quick Actions */}
+            {activeVideoId && (
+              <div className="px-4 py-3 border-b grid grid-cols-2 gap-2" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                {[
+                  { label: "SUMMARY", action: "summary" as const, icon: FileText },
+                  { label: "INSIGHTS", action: "key_insights" as const, icon: Sparkles },
+                  { label: "QUIZ_MCQ", action: "mcq" as const, icon: CheckSquare },
+                  { label: "PPT_OUTLINE", action: "ppt_outline" as const, icon: LayoutList },
+                ].map(({ label, action, icon: Icon }) => (
+                  <button
+                    key={action}
+                    onClick={() => handleQuickAction(action)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-[#555] hover:text-white transition-all group font-mono-ui text-[9px] uppercase tracking-widest"
+                    style={{
+                      background: "#0f0f10",
+                      border: "1px solid rgba(255,255,255,0.04)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(139,92,246,0.3)";
+                      (e.currentTarget as HTMLElement).style.color = "#8b5cf6";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.04)";
+                      (e.currentTarget as HTMLElement).style.color = "#555";
+                    }}
+                  >
+                    <Icon className="w-3 h-3" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 hide-scrollbar">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {msg.role === "ai" && (
+                    <div className="w-5 h-5 mr-2 mt-1 shrink-0 flex items-center justify-center font-mono-ui font-black text-[#8b5cf6] text-[8px]"
+                      style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                      AI
+                    </div>
+                  )}
+                  <div
+                    className="max-w-[80%] text-sm leading-relaxed whitespace-pre-wrap"
+                    style={{
+                      padding: "10px 14px",
+                      background: msg.role === "user" ? "#8b5cf6" : "#111113",
+                      color: msg.role === "user" ? "#fff" : "#aaa",
+                      border: msg.role === "user" ? "none" : "1px solid rgba(255,255,255,0.04)",
+                      fontFamily: msg.role === "ai" ? "'JetBrains Mono', monospace" : "inherit",
+                      fontSize: msg.role === "ai" ? "0.75rem" : "0.875rem",
+                    }}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {(chatMutation.isPending || generateMutation.isPending) && (
+                <div className="flex justify-start">
+                  <div className="flex gap-1.5 px-4 py-3" style={{ background: "#111113", border: "1px solid rgba(255,255,255,0.04)" }}>
+                    <div className="w-1.5 h-1.5 bg-[#8b5cf6] animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-1.5 h-1.5 bg-[#8b5cf6] animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-1.5 h-1.5 bg-[#8b5cf6] animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
                 </div>
               )}
-
-              <div className="space-y-4">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-2xl p-3 text-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                        : 'bg-secondary/50 text-foreground rounded-tl-sm border border-white/5'
-                    }`}>
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
-                    </div>
-                  </div>
-                ))}
-                {(chatMutation.isPending || generateMutation.isPending) && (
-                  <div className="flex justify-start">
-                    <div className="bg-secondary/50 rounded-2xl rounded-tl-sm p-4 border border-white/5">
-                      <div className="flex gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" />
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce delay-100" />
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce delay-200" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 border-t border-border/50 bg-background/50">
-              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex items-center">
-                <Input
+            {/* Input */}
+            <div className="p-4 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex items-center gap-2">
+                <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask anything..."
-                  className="w-full pr-12 rounded-full bg-secondary/50 border-transparent focus-visible:ring-primary/30 h-12"
+                  placeholder="ASK ANYTHING..."
+                  className="flex-1 h-10 bg-transparent border text-white text-xs font-mono-ui uppercase tracking-widest px-3 placeholder:text-[#222] focus:outline-none transition-colors"
+                  style={{ borderColor: "rgba(255,255,255,0.06)" }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)"}
+                  onBlur={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 />
-                <Button 
-                  type="submit" 
-                  size="icon" 
+                <button
+                  type="submit"
                   disabled={!query.trim() || chatMutation.isPending}
-                  className="absolute right-1 w-10 h-10 rounded-full bg-primary hover:bg-primary/90 text-white"
+                  className="w-10 h-10 flex items-center justify-center shrink-0 disabled:opacity-30 transition-all"
+                  style={{
+                    background: "#8b5cf6",
+                    clipPath: "polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%)",
+                  }}
                 >
-                  <Send className="w-4 h-4" />
-                </Button>
+                  <Send className="w-3.5 h-3.5 text-white" />
+                </button>
               </form>
             </div>
           </motion.div>

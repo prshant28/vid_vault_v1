@@ -1,12 +1,11 @@
-import { Play, Sparkles, FolderDown, Star, Clock } from "lucide-react";
+import { Play, Sparkles, Star, Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useUI } from "@/contexts/ui-context";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Video } from "@workspace/api-client-react/src/generated/api.schemas";
 import { useToggleFavorite } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface VideoCardProps {
   video: Video;
@@ -17,12 +16,14 @@ export function VideoCard({ video }: VideoCardProps) {
   const [, setLocation] = useLocation();
   const toggleFavorite = useToggleFavorite();
   const queryClient = useQueryClient();
+  const [hovered, setHovered] = useState(false);
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     await toggleFavorite.mutateAsync({ videoId: video.id });
     queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
   };
 
   const handleAiClick = (e: React.MouseEvent) => {
@@ -33,84 +34,140 @@ export function VideoCard({ video }: VideoCardProps) {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5 }}
-      className="group relative flex flex-col bg-card/40 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-primary/40 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(99,102,241,0.15)]">
-      <div className="relative aspect-video w-full overflow-hidden bg-secondary">
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => setLocation(`/videos/${video.id}`)}
+      className="group cursor-pointer flex flex-col"
+      style={{
+        background: "#111113",
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.05)"}`,
+        transition: "border-color 0.3s, box-shadow 0.3s, transform 0.3s",
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: hovered
+          ? "0 12px 30px rgba(0,0,0,0.5), inset 1px 1px 0 rgba(255,255,255,0.05)"
+          : "inset 1px 1px 0 rgba(255,255,255,0.03), inset -1px -1px 0 rgba(0,0,0,0.4)",
+      }}
+    >
+      {/* Thumbnail */}
+      <div className="relative aspect-video w-full overflow-hidden bg-[#0a0a0b]">
         {video.thumbnail ? (
-          <img 
-            src={video.thumbnail} 
-            alt={video.title} 
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out" 
+          <img
+            src={video.thumbnail}
+            alt={video.title}
+            className="object-cover w-full h-full transition-transform duration-500"
+            style={{ transform: hovered ? "scale(1.06)" : "scale(1)", filter: "grayscale(10%)" }}
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            No thumbnail
+          <div className="w-full h-full flex items-center justify-center">
+            <Play className="w-8 h-8 text-[#1a1a1c]" />
           </div>
         )}
-        
+
+        {/* Duration */}
         {video.duration && (
-          <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 backdrop-blur-md text-xs font-medium text-white rounded-md flex items-center gap-1">
-            <Clock className="w-3 h-3" />
+          <div
+            className="absolute bottom-2 right-2 px-2 py-0.5 text-[10px] font-mono-ui text-white flex items-center gap-1"
+            style={{ background: "rgba(0,0,0,0.85)" }}
+          >
+            <Clock className="w-2.5 h-2.5" />
             {video.duration}
           </div>
         )}
 
-        <button 
+        {/* Favorite */}
+        <button
           onClick={handleFavorite}
-          className="absolute top-2 right-2 p-2 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-colors opacity-0 group-hover:opacity-100"
+          className="absolute top-2 left-2 p-1.5 transition-opacity"
+          style={{
+            background: "rgba(0,0,0,0.7)",
+            opacity: hovered || video.isFavorite ? 1 : 0,
+          }}
         >
-          <Star className={`w-4 h-4 ${video.isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+          <Star
+            className={`w-3 h-3 ${video.isFavorite ? "text-yellow-400 fill-yellow-400" : "text-[#666]"}`}
+          />
         </button>
 
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-          <Button 
-            size="icon" 
-            className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg hover:scale-110 transition-transform" 
-            onClick={() => setLocation(`/videos/${video.id}`)}
+        {/* Hover overlay */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: hovered ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 flex items-center justify-center gap-3"
+          style={{ background: "rgba(0,0,0,0.65)" }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setLocation(`/videos/${video.id}`); }}
+            className="w-11 h-11 flex items-center justify-center transition-all"
+            style={{
+              background: "#fff",
+              clipPath: "polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%)",
+            }}
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "#8b5cf6"}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "#fff"}
           >
-            <Play className="w-5 h-5 ml-1 fill-current"/>
-          </Button>
-          <Button 
-            size="icon" 
-            variant="outline" 
-            className="w-12 h-12 rounded-full border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-transform bg-transparent" 
+            <Play className="w-4 h-4 text-black fill-black" />
+          </button>
+          <button
             onClick={handleAiClick}
+            className="w-11 h-11 flex items-center justify-center border border-[rgba(139,92,246,0.4)] transition-all hover:bg-[rgba(139,92,246,0.2)]"
+            style={{
+              background: "rgba(139,92,246,0.1)",
+              clipPath: "polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%)",
+            }}
           >
-            <Sparkles className="w-5 h-5 text-accent"/>
-          </Button>
-        </div>
+            <Sparkles className="w-4 h-4 text-[#8b5cf6]" />
+          </button>
+        </motion.div>
       </div>
-      
+
+      {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-display font-semibold line-clamp-2 text-foreground text-sm leading-tight cursor-pointer hover:text-primary transition-colors" onClick={() => setLocation(`/videos/${video.id}`)}>
+        <h3
+          className="font-bold text-sm line-clamp-2 leading-tight mb-2 transition-colors uppercase tracking-tight"
+          style={{ color: hovered ? "#fff" : "#aaa" }}
+        >
           {video.title}
         </h3>
-        
-        <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
-          {video.channelName || 'Unknown Channel'}
+
+        <p className="text-[10px] font-mono-ui text-[#333] mb-3 truncate uppercase tracking-wider">
+          {video.channelName || "UNKNOWN_CHANNEL"}
         </p>
-        
-        <div className="flex items-center justify-between mt-auto pt-4">
-          {video.folderName ? (
-            <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-secondary-foreground font-normal hover:bg-secondary/70 cursor-pointer">
-              <FolderDown className="w-3 h-3 mr-1" />
-              {video.folderName}
-            </Badge>
-          ) : (
-            <div />
-          )}
-          
-          <div className="flex gap-1">
-            {video.tags?.slice(0,2).map(t => (
-              <div key={t.id} className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color || 'var(--primary)' }} title={t.name} />
+
+        {/* Tags */}
+        {video.tags && video.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {video.tags.slice(0, 2).map((t) => (
+              <span
+                key={t.id}
+                className="font-mono-ui text-[8px] uppercase tracking-widest px-2 py-0.5"
+                style={{
+                  color: "#8b5cf6",
+                  background: "rgba(139,92,246,0.08)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                }}
+              >
+                {t.name}
+              </span>
             ))}
+            {video.tags.length > 2 && (
+              <span className="font-mono-ui text-[8px] text-[#333]">+{video.tags.length - 2}</span>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Folder */}
+        {video.folderName && (
+          <div className="mt-auto pt-2 border-t border-white/[0.04]">
+            <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-widest truncate">
+              /{video.folderName}
+            </span>
+          </div>
+        )}
       </div>
     </motion.div>
   );

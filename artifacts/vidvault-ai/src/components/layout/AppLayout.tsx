@@ -8,7 +8,6 @@ import { UrlPasteModal } from "../videos/UrlPasteModal";
 import { useAuth } from "@workspace/replit-auth-web";
 import Login from "@/pages/Login";
 import { LoadingScreen } from "../ui/loading-screen";
-import { Button } from "../ui/button";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -18,25 +17,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
   if (!isAuthenticated) return <Login />;
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden relative selection:bg-primary/30 selection:text-primary-foreground">
-      {/* Animated background glow */}
-      <motion.div
-        animate={{ y: [0, 20, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-0 left-[20%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] pointer-events-none"
-      />
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-0 right-[10%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[150px] pointer-events-none"
-      />
+    <div className="flex h-screen w-full overflow-hidden relative" style={{ background: "#0a0a0b" }}>
+      {/* Grain overlay */}
+      <div className="grain-overlay" />
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block flex-shrink-0">
+      <div className="hidden lg:block flex-shrink-0 relative z-20">
         <Sidebar />
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
@@ -45,12 +35,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              className="fixed inset-0 z-40 lg:hidden"
+              style={{ background: "rgba(0,0,0,0.7)" }}
             />
             <motion.div
-              initial={{ x: -256 }}
+              initial={{ x: -240 }}
               animate={{ x: 0 }}
-              exit={{ x: -256 }}
+              exit={{ x: -240 }}
+              transition={{ type: "tween", duration: 0.25 }}
               className="fixed left-0 top-0 h-screen z-50 lg:hidden"
             >
               <Sidebar />
@@ -59,30 +51,36 @@ export function AppLayout({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
-        {/* Mobile Top Bar with Menu */}
-        <div className="lg:hidden h-16 flex items-center justify-between px-4 bg-card/30 backdrop-blur-xl border-b border-border">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-10 h-10"
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-          <span className="font-display font-bold text-lg">VidVault AI</span>
-          <div className="w-10" />
+        {/* Mobile top bar */}
+        <div
+          className="lg:hidden h-14 flex items-center justify-between px-4 border-b"
+          style={{ background: "#080809", borderColor: "rgba(255,255,255,0.05)" }}
+        >
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-[#666] hover:text-white transition-colors p-2">
+            {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+          <span className="font-mono-ui font-black text-white uppercase tracking-[0.15em] text-xs">VIDVAULT AI</span>
+          <div className="w-8" />
         </div>
 
         <TopNav />
+
         <motion.main
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 hide-scrollbar"
+          className="flex-1 overflow-y-auto hide-scrollbar"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
         >
-          <div className="max-w-7xl mx-auto">{children}</div>
+          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            {children}
+          </div>
         </motion.main>
       </div>
 
