@@ -1,6 +1,14 @@
 import { ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Sun, Moon, Sparkles, Home, FolderOpen, Search } from "lucide-react";
+import {
+  Plus,
+  Sun,
+  Moon,
+  Sparkles,
+  Home,
+  FolderOpen,
+  Search,
+} from "lucide-react";
 import { useLocation } from "wouter";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
@@ -40,10 +48,10 @@ function HamburgerIcon({ open }: { open: boolean }) {
 
 /* ── Mobile bottom nav items ── */
 const NAV_ITEMS = [
-  { icon: Home,       label: "Home",    path: "/" },
-  { icon: Search,     label: "Videos",  path: "/videos" },
+  { icon: Home, label: "Home", path: "/" },
+  { icon: Search, label: "Videos", path: "/videos" },
   { icon: FolderOpen, label: "Folders", path: "/folders" },
-  { icon: Sparkles,   label: "AI",      path: "/ai" },
+  { icon: Sparkles, label: "AI", path: "/ai" },
 ];
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -79,7 +87,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
               exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
               className="fixed inset-0 z-40 lg:hidden"
-              style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+              style={{
+                background: "rgba(0,0,0,0.65)",
+                backdropFilter: "blur(4px)",
+              }}
             />
             <motion.div
               initial={{ x: -280 }}
@@ -96,7 +107,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
-
         {/* ─── Mobile Top Bar ─── */}
         <div
           className="lg:hidden flex-shrink-0 h-14 flex items-center justify-between px-3 relative transition-colors duration-300"
@@ -112,7 +122,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
             className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors relative"
             style={{
               background: sidebarOpen ? "rgba(139,92,246,0.12)" : "transparent",
-              border: sidebarOpen ? "1px solid rgba(139,92,246,0.25)" : "1px solid transparent",
+              border: sidebarOpen
+                ? "1px solid rgba(139,92,246,0.25)"
+                : "1px solid transparent",
             }}
             aria-label="Toggle sidebar"
           >
@@ -120,12 +132,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </motion.button>
 
           {/* Center: logo */}
-          <motion.div
-            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5"
-          >
+          <motion.div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5">
             <div
               className="w-6 h-6 flex items-center justify-center text-[8px] font-black rounded text-black"
-              style={{ background: "#8b5cf6", fontFamily: "'Alegreya Sans SC', serif" }}
+              style={{
+                background: "#8b5cf6",
+                fontFamily: "'Alegreya Sans SC', serif",
+              }}
             >
               VV
             </div>
@@ -219,16 +232,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
           transition={{ duration: 0.3 }}
           className="flex-1 overflow-y-auto hide-scrollbar grid-mesh transition-colors duration-300 pb-16 lg:pb-0"
         >
-          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">{children}</div>
         </motion.main>
 
         {/* ─── Mobile Bottom Navigation ─── */}
         <motion.nav
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25, type: "spring", stiffness: 280, damping: 30 }}
+          transition={{
+            delay: 0.25,
+            type: "spring",
+            stiffness: 280,
+            damping: 30,
+          }}
           className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around"
           style={{
             height: 60,
@@ -238,7 +254,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
           }}
         >
           {NAV_ITEMS.map(({ icon: Icon, label, path }) => {
-            const isActive = path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+            const isActive =
+              path === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(path);
             return (
               <motion.button
                 key={path}
@@ -256,7 +275,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 )}
                 <Icon
                   className="w-5 h-5 transition-colors"
-                  style={{ color: isActive ? "#8b5cf6" : "var(--vv-text-muted)" }}
+                  style={{
+                    color: isActive ? "#8b5cf6" : "var(--vv-text-muted)",
+                  }}
                 />
                 <span
                   className="text-[9px] font-bold uppercase tracking-wider transition-colors"
