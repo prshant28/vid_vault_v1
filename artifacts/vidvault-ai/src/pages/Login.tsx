@@ -257,19 +257,19 @@ function isValidUrl(url: string): boolean {
    LIVE VIDEO CAPTURE — hero right panel
 ══════════════════════════════════════════════ */
 const DEMO_VIDEOS = [
-  { title: "Learn Python – Full Course for Beginners", channel: "freeCodeCamp", id: "rfscVS0vtbw", duration: "4:26:51", views: "42M" },
-  { title: "But what is a Neural Network?", channel: "3Blue1Brown", id: "aircAruvnKk", duration: "19:13", views: "15M" },
-  { title: "JavaScript Full Course for Beginners", channel: "freeCodeCamp", id: "PkZNo7MFNFg", duration: "3:26:42", views: "10M" },
-  { title: "Java Full Course for Beginners", channel: "freeCodeCamp", id: "bMknfKXIFA8", duration: "9:32:11", views: "8.7M" },
-  { title: "HTML & CSS Full Course – Beginner to Pro", channel: "freeCodeCamp", id: "qz0aGYrrlhU", duration: "6:29:16", views: "8.1M" },
-  { title: "SQL Tutorial – Full Database Course", channel: "freeCodeCamp", id: "HXV3zeQKqGY", duration: "4:20:36", views: "9.3M" },
-  { title: "Machine Learning with Python – Full Course", channel: "freeCodeCamp", id: "i_LwzRVP7bg", duration: "9:52:19", views: "5.6M" },
-  { title: "Kubernetes Tutorial for Beginners", channel: "TechWorld with Nana", id: "X48VuDVv0do", duration: "3:18:58", views: "5.2M" },
-  { title: "Git and GitHub – Full Beginner Crash Course", channel: "freeCodeCamp", id: "RGOj5yH7evk", duration: "1:08:29", views: "4.8M" },
-  { title: "Let's Build GPT: From Scratch in Code", channel: "Andrej Karpathy", id: "kCc8FmEb1nY", duration: "1:56:21", views: "3.7M" },
-  { title: "TypeScript Course for Beginners", channel: "Academind", id: "BwuLxPH8IDs", duration: "3:17:45", views: "3.4M" },
-  { title: "React JS Full Course for Beginners", channel: "Dave Gray", id: "RVFAyFWO4go", duration: "9:49:30", views: "2.9M" },
-  { title: "Intro to Large Language Models", channel: "Andrej Karpathy", id: "zjkBMFhNj_g", duration: "59:47", views: "1.8M" },
+  { title: "Baby Shark Dance", channel: "Pinkfong", id: "XqZsoesa55w", duration: "2:17", views: "13.5B" },
+  { title: "Despacito", channel: "Luis Fonsi ft. Daddy Yankee", id: "kTJczUoc26U", duration: "4:42", views: "8.4B" },
+  { title: "Johny Johny Yes Papa", channel: "LooLoo Kids", id: "C7s5B6Pz4uw", duration: "1:11", views: "6.7B" },
+  { title: "See You Again", channel: "Wiz Khalifa ft. Charlie Puth", id: "RgKAFK5djSk", duration: "3:57", views: "6.3B" },
+  { title: "Shape of You", channel: "Ed Sheeran", id: "JGwWNGJdvx8", duration: "4:24", views: "6.1B" },
+  { title: "Uptown Funk", channel: "Mark Ronson ft. Bruno Mars", id: "OPf0YbXqDm0", duration: "4:31", views: "5.1B" },
+  { title: "Gangnam Style", channel: "PSY", id: "9bZkp7q19f0", duration: "4:13", views: "4.9B" },
+  { title: "Roar", channel: "Katy Perry", id: "CevxZvSJLk8", duration: "4:32", views: "4.0B" },
+  { title: "Hello", channel: "Adele", id: "YQHsXMglC9A", duration: "6:07", views: "3.5B" },
+  { title: "Shake It Off", channel: "Taylor Swift", id: "nfWlot6h_JM", duration: "4:35", views: "3.5B" },
+  { title: "Sorry", channel: "Justin Bieber", id: "fRh_vgS2dFE", duration: "3:20", views: "3.4B" },
+  { title: "Sugar", channel: "Maroon 5", id: "09R8_2nJtjg", duration: "3:55", views: "3.2B" },
+  { title: "Believer", channel: "Imagine Dragons", id: "7wtfhZwyrcc", duration: "3:24", views: "2.7B" },
 ];
 const AI_TASKS = [
   {
