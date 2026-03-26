@@ -305,7 +305,7 @@ router.post("/videos", async (req, res) => {
     return;
   }
   const userId = req.user.id;
-  const { url, folderId } = req.body as { url: string; folderId?: string };
+  const { url, folderId, title: customTitle } = req.body as { url: string; folderId?: string; title?: string };
 
   if (!url) {
     res.status(400).json({ error: "URL is required" });
@@ -319,7 +319,7 @@ router.post("/videos", async (req, res) => {
     .values({
       userId,
       url,
-      title: meta.title,
+      title: customTitle?.trim() || meta.title,
       thumbnail: meta.thumbnail,
       duration: meta.duration,
       channelName: meta.channelName,

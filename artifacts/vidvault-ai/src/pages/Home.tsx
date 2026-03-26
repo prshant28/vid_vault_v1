@@ -62,8 +62,14 @@ export default function Home() {
         <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">
           //SYSTEM_STATUS
         </span>
-        <h1 className="font-black text-white uppercase"
-          style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
+        <h1
+          className="font-black lp-heading uppercase"
+          style={{
+            fontSize: "clamp(2rem, 4vw, 3rem)",
+            fontFamily: "'Alegreya Sans SC', serif",
+            letterSpacing: "-0.01em",
+          }}
+        >
           Your Vault
         </h1>
         <p className="text-[#555] text-sm font-mono-ui">
@@ -74,28 +80,31 @@ export default function Home() {
       {/* Stats */}
       <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statCards.map((card) => (
-          <div
-            key={card.code}
-            className="etched-slab p-6 relative overflow-hidden group"
-          >
+          <div key={card.code} className="etched-slab p-6 relative overflow-hidden group">
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
                 <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">{card.code}</span>
                 <card.icon className="w-4 h-4" style={{ color: card.accent + "60" }} />
               </div>
-              <p className="font-mono-ui text-[10px] uppercase tracking-widest mb-1" style={{ color: card.accent + "80" }}>
+              <p
+                className="font-mono-ui text-[10px] uppercase tracking-widest mb-1"
+                style={{ color: card.accent + "80" }}
+              >
                 {card.label}
               </p>
-              <p className="font-black text-white leading-none"
-                style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", fontFamily: "'Alegreya Sans SC', serif" }}>
+              <p
+                className="font-black lp-heading leading-none"
+                style={{
+                  fontSize: "clamp(2.5rem, 4vw, 3.5rem)",
+                  fontFamily: "'Alegreya Sans SC', serif",
+                }}
+              >
                 {card.value.toString().padStart(2, "0")}
               </p>
             </div>
             <div
               className="absolute bottom-0 right-0 w-24 h-24 opacity-5 group-hover:opacity-10 transition-opacity"
-              style={{
-                background: `radial-gradient(circle, ${card.accent}, transparent)`,
-              }}
+              style={{ background: `radial-gradient(circle, ${card.accent}, transparent)` }}
             />
           </div>
         ))}
@@ -109,8 +118,10 @@ export default function Home() {
               <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
                 //RECENTLY_SAVED
               </span>
-              <h2 className="text-lg font-black text-white uppercase"
-                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
+              <h2
+                className="text-lg font-black lp-heading uppercase"
+                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}
+              >
                 Latest Captures
               </h2>
             </div>
@@ -144,8 +155,10 @@ export default function Home() {
               <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
                 //STARRED
               </span>
-              <h2 className="text-lg font-black text-white uppercase flex items-center gap-2"
-                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
+              <h2
+                className="text-lg font-black lp-heading uppercase flex items-center gap-2"
+                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}
+              >
                 <Star className="w-4 h-4 text-yellow-500" />
                 Favorites
               </h2>
@@ -168,10 +181,7 @@ export default function Home() {
 
       {/* Empty State */}
       {(!stats?.recentVideos || stats.recentVideos.length === 0) && (
-        <motion.div
-          variants={item}
-          className="etched-slab py-24 text-center"
-        >
+        <motion.div variants={item} className="etched-slab py-24 text-center">
           <Library className="w-10 h-10 text-[#222] mx-auto mb-5" />
           <span className="font-mono-ui text-[10px] text-[#333] uppercase tracking-[0.3em] block mb-3">
             VAULT_EMPTY
