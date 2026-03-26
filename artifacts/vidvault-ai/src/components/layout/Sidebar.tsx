@@ -18,9 +18,23 @@ export function Sidebar() {
   const { data: folderData } = useListFolders();
   const { isDark, toggleTheme } = useTheme();
 
+  const currentSearch = typeof window !== "undefined" ? window.location.search : "";
+  const isFavoritesActive = currentSearch.includes("favorites=true");
+
   const isActive = (href: string) => {
-    if (href === "/") return location === "/";
-    return location.startsWith(href.split("?")[0]);
+    const [hrefPath, hrefQuery] = href.split("?");
+    if (hrefPath === "/") return location === "/";
+    if (!location.startsWith(hrefPath)) return false;
+
+    if (hrefQuery) {
+      return currentSearch.includes(hrefQuery);
+    }
+
+    if (hrefPath === "/videos") {
+      return !isFavoritesActive;
+    }
+
+    return true;
   };
 
   return (

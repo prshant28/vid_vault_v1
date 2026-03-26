@@ -52,7 +52,7 @@ export function UrlPasteModal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const isPlaylist = /youtube\.com\/playlist\?list=|youtube\.com\/watch\?.*list=/.test(url);
+  const isPlaylist = /youtube\.com\/playlist\?list=/.test(url) && !/[?&]v=/.test(url);
 
   useEffect(() => {
     const trimmed = url.trim();
