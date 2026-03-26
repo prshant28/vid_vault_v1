@@ -109,11 +109,14 @@ function RippleBtn({ children, onClick, size = "md", type = "button", disabled =
 }
 
 /* ══════════════════════════════════════════════
-   YOUTUBE URL HELPERS (client-side)
+   URL HELPERS (client-side)
 ══════════════════════════════════════════════ */
 function extractYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
+}
+function isValidUrl(url: string): boolean {
+  try { const u = new URL(url); return u.protocol === "http:" || u.protocol === "https:"; } catch { return false; }
 }
 
 /* ══════════════════════════════════════════════
@@ -139,52 +142,56 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
   const [inputUrl, setInputUrl] = useState("");
   const [videoId, setVideoId] = useState<string | null>(null);
   const [phase, setPhase] = useState<CapturePhase>("demo");
-  const [addStatus, setAddStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [addStatus, setAddStatus] = useState<"idle" | "loading" | "needsAuth" | "error">("idle");
   const [addError, setAddError] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
-  const [progress, setProgress] = useState(18);
+  const [progress, setProgress] = useState(32);
   const [demoIdx, setDemoIdx] = useState(0);
-  const [tasksDone, setTasksDone] = useState(4);
-  const [imgError, setImgError] = useState(false);
+  const [tasksDone, setTasksDone] = useState(3);
 
   const demoVideo = DEMO_VIDEOS[demoIdx];
 
-  /* Cycle demo videos */
+  /* Cycle demo videos — keeps the card never blank */
   useEffect(() => {
     if (phase !== "demo") return;
-    const t = setTimeout(() => setDemoIdx(p => (p + 1) % DEMO_VIDEOS.length), 12000);
+    const t = setTimeout(() => {
+      setDemoIdx(p => (p + 1) % DEMO_VIDEOS.length);
+      setProgress(32);
+      setTasksDone(3);
+    }, 13000);
     return () => clearTimeout(t);
   }, [phase, demoIdx]);
 
-  /* Demo progress bar */
+  /* Demo progress & task animation */
   useEffect(() => {
     if (phase !== "demo") return;
-    setProgress(18);
-    setTasksDone(0);
-    const pTimer = setInterval(() => setProgress(p => Math.min(p + 0.25, 95)), 100);
-    let td = 0;
+    const pTimer = setInterval(() => setProgress(p => Math.min(p + 0.18, 96)), 90);
+    let td = tasksDone;
     const tTimer = setInterval(() => {
       if (td < AI_TASKS.length) { td++; setTasksDone(td); }
       else clearInterval(tTimer);
-    }, 1100);
+    }, 1200);
     return () => { clearInterval(pTimer); clearInterval(tTimer); };
   }, [phase, demoIdx]);
 
-  /* Detect YouTube URL as user types */
+  /* URL detection — supports YouTube AND any http(s) URL */
   useEffect(() => {
-    if (!inputUrl.trim()) {
+    const trimmed = inputUrl.trim();
+    if (!trimmed) {
       setVideoId(null);
       setPhase("demo");
       setAddStatus("idle");
-      setImgError(false);
       return;
     }
-    const id = extractYouTubeId(inputUrl);
-    if (id) {
-      setVideoId(id);
+    const ytId = extractYouTubeId(trimmed);
+    if (ytId) {
+      setVideoId(ytId);
       setPhase("previewing");
       setAddStatus("idle");
-      setImgError(false);
+    } else if (isValidUrl(trimmed)) {
+      setVideoId(null);
+      setPhase("previewing");
+      setAddStatus("idle");
     } else {
       setVideoId(null);
       setPhase("idle");
@@ -192,31 +199,27 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
   }, [inputUrl]);
 
   const handleAdd = async () => {
-    if (!inputUrl || !videoId) return;
+    if (!inputUrl.trim()) return;
     setAddStatus("loading");
     try {
-      /* Check if user is logged in */
       const authRes = await fetch("/api/auth/user");
       const authData = await authRes.json() as { user?: { id: string } };
       if (!authData.user) {
-        /* Not logged in — send to register */
-        onSignUpNeeded();
+        setAddStatus("needsAuth");
         return;
       }
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: inputUrl }),
+        body: JSON.stringify({ url: inputUrl.trim() }),
       });
       if (res.ok) {
-        setAddStatus("success");
         setPhase("added");
+        setAddStatus("idle");
         setTimeout(() => {
-          setInputUrl("");
-          setVideoId(null);
-          setAddStatus("idle");
-          setPhase("demo");
-        }, 4000);
+          setInputUrl(""); setVideoId(null); setAddStatus("idle"); setPhase("demo");
+          setProgress(32); setTasksDone(3);
+        }, 4500);
       } else {
         const d = await res.json() as { error?: string };
         setAddError(d.error || "Failed to add video");
@@ -243,9 +246,10 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
 
   const showVideo = phase === "demo" || phase === "previewing" || phase === "added";
   const activeId = phase === "demo" ? demoVideo.id : videoId;
-  const activeTitle = phase === "demo" ? demoVideo.title : "Your Video";
-  const activeChannel = phase === "demo" ? demoVideo.channel : "YouTube";
+  const activeTitle = phase === "demo" ? demoVideo.title : (videoId ? "Your YouTube Video" : "Web Video");
+  const activeChannel = phase === "demo" ? demoVideo.channel : (videoId ? "YouTube" : new URL(inputUrl.trim().startsWith("http") ? inputUrl.trim() : "https://x").hostname || "Web");
   const activeProgress = phase === "demo" ? progress : 0;
+  const isYouTubePreview = phase === "previewing" && videoId;
 
   return (
     <div className="w-full h-full flex items-center justify-center p-4 lg:p-6" style={{ perspective: "1100px" }}>
@@ -257,7 +261,7 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
         <div className="overflow-hidden relative"
           style={{ background: "rgba(10,10,14,0.97)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 18, boxShadow: "0 28px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
 
-          {/* Scan line */}
+          {/* Scan line — always visible */}
           <motion.div className="absolute left-0 right-0 h-px pointer-events-none z-20"
             style={{ background: "linear-gradient(90deg,transparent,rgba(139,92,246,0.45),transparent)" }}
             animate={{ top: ["0%", "100%", "0%"] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} />
@@ -266,7 +270,7 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
           <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
             style={{ backgroundImage: "linear-gradient(rgba(139,92,246,1) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,1) 1px,transparent 1px)", backgroundSize: "24px 24px" }} />
 
-          {/* ─── URL BAR (real input) ─── */}
+          {/* ─── URL BAR ─── */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.05] relative z-10">
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
@@ -280,19 +284,18 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
               <input
                 value={inputUrl}
                 onChange={e => setInputUrl(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && videoId && handleAdd()}
-                placeholder="Paste YouTube URL here..."
-                className="flex-1 bg-transparent text-[11px] text-white placeholder:text-[#333] focus:outline-none min-w-0 font-mono-ui"
+                onKeyDown={e => e.key === "Enter" && phase === "previewing" && handleAdd()}
+                placeholder="Paste any video URL from the web..."
+                className="flex-1 bg-transparent text-[11px] text-white placeholder:text-[#2e2e2e] focus:outline-none min-w-0 font-mono-ui"
               />
               {inputUrl && (
-                <button onClick={() => { setInputUrl(""); setVideoId(null); setPhase("demo"); }}
+                <button onClick={() => { setInputUrl(""); setVideoId(null); setPhase("demo"); setAddStatus("idle"); setProgress(32); setTasksDone(3); }}
                   className="text-[#444] hover:text-white transition-colors flex-shrink-0">
                   <X className="w-3 h-3" />
                 </button>
               )}
             </div>
 
-            {/* Status indicator */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <motion.div className="w-1.5 h-1.5 rounded-full"
                 style={{ background: phase === "added" ? "#22c55e" : phase === "previewing" ? "#f59e0b" : "#22c55e" }}
@@ -310,50 +313,63 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
             {/* Invalid URL notice */}
             {phase === "idle" && inputUrl && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="flex items-center justify-center py-6 gap-2">
-                <span className="font-mono-ui text-[10px] text-[#444] uppercase tracking-wider">
-                  NOT A VALID YOUTUBE URL
-                </span>
+                className="flex flex-col items-center justify-center py-8 gap-2">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                  <X className="w-4 h-4 text-red-500" />
+                </div>
+                <span className="font-mono-ui text-[10px] text-[#333] uppercase tracking-wider">NOT A VALID URL</span>
+                <span className="font-mono-ui text-[9px] text-[#222]">Try: youtube.com/... or any https:// link</span>
               </motion.div>
             )}
 
-            {/* Video area */}
+            {/* Video area — always shows something in demo mode */}
             {showVideo && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
 
                 {/* Video frame */}
-                <div className="relative mx-3 mt-3 overflow-hidden bg-[#080810]"
-                  style={{ borderRadius: 10, aspectRatio: "16/9" }}>
+                <div className="relative mx-3 mt-3 overflow-hidden"
+                  style={{ borderRadius: 10, aspectRatio: "16/9", background: "#080810" }}>
 
-                  {/* Thumbnail */}
-                  <AnimatePresence mode="wait">
-                    <motion.div key={activeId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }} className="absolute inset-0">
-                      {activeId && !imgError ? (
-                        <img
-                          src={`https://img.youtube.com/vi/${activeId}/maxresdefault.jpg`}
-                          alt="thumbnail"
-                          onError={() => setImgError(true)}
-                          className="w-full h-full object-cover"
-                          style={{ filter: "brightness(0.65)" }}
-                        />
-                      ) : (
-                        <div className="w-full h-full"
-                          style={{ background: `linear-gradient(135deg, #1a0a2e 0%, #080810 100%)` }} />
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
+                  {/* Always-present gradient background (prevents blank) */}
+                  <div key={`bg-${demoIdx}`} className="absolute inset-0"
+                    style={{ background: `linear-gradient(135deg, ${["#1a0a2e","#0a1a2e","#2e1a0a"][demoIdx % 3]} 0%, #080810 70%)` }} />
 
-                  {/* Purple overlay gradient */}
+                  {/* YouTube thumbnail — crossfade on top of gradient */}
+                  {activeId && (
+                    <motion.img
+                      key={`thumb-${activeId}`}
+                      src={`https://img.youtube.com/vi/${activeId}/hqdefault.jpg`}
+                      alt="thumbnail"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ filter: "brightness(0.62)" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  )}
+
+                  {/* Non-YouTube preview placeholder */}
+                  {phase === "previewing" && !videoId && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                        style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)" }}>
+                        <Play className="w-6 h-6 text-[#8b5cf6] ml-0.5" />
+                      </div>
+                      <span className="font-mono-ui text-[9px] text-[#555] uppercase tracking-widest">Video URL Ready</span>
+                    </div>
+                  )}
+
+                  {/* Gradient overlay */}
                   <div className="absolute inset-0 pointer-events-none"
-                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)" }} />
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)" }} />
 
-                  {/* Play/pause */}
+                  {/* Play/pause button */}
                   <button onClick={() => setIsPlaying(p => !p)}
-                    className="absolute inset-0 flex items-center justify-center group">
+                    className="absolute inset-0 flex items-center justify-center">
                     <motion.div className="w-14 h-14 flex items-center justify-center"
                       style={{ background: "rgba(0,0,0,0.7)", borderRadius: 14, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)" }}
-                      whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}>
+                      whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}>
                       {isPlaying ? <Pause className="w-6 h-6 text-white" /> : <Play className="w-6 h-6 text-white fill-white ml-0.5" />}
                     </motion.div>
                   </button>
@@ -369,10 +385,10 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                   {/* Controls bar */}
                   <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5"
                     style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.95))" }}>
-                    <div className="w-full h-1 rounded-full overflow-hidden mb-2 cursor-pointer"
+                    <div className="w-full h-1 rounded-full overflow-hidden mb-2"
                       style={{ background: "rgba(255,255,255,0.12)" }}>
                       <motion.div className="h-full rounded-full"
-                        animate={{ width: `${activeProgress}%` }} transition={{ duration: 0.6 }}
+                        animate={{ width: `${activeProgress}%` }} transition={{ duration: 0.5 }}
                         style={{ background: "linear-gradient(90deg, #8b5cf6, #a78bfa)" }} />
                     </div>
                     <div className="flex items-center gap-3">
@@ -381,8 +397,8 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                       </button>
                       <span className="font-mono-ui text-[9px] text-white/60 flex-1">
                         {Math.floor(activeProgress / 100 * 18)}:{String(Math.floor((activeProgress / 100 * 42) % 60)).padStart(2, "0")}
-                        {" "}/{" "}
-                        {phase === "demo" ? demoVideo.duration : "??:??"}
+                        {" / "}
+                        {phase === "demo" ? demoVideo.duration : "--:--"}
                       </span>
                       <Volume2 className="w-3.5 h-3.5 text-white/50" />
                       <Maximize className="w-3.5 h-3.5 text-white/50" />
@@ -390,11 +406,10 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                   </div>
                 </div>
 
-                {/* Video info row */}
+                {/* Video info */}
                 <div className="px-4 py-2.5 border-b border-white/[0.05] flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-xs text-white leading-snug truncate"
-                      style={{ fontFamily: "'Raleway', sans-serif" }}>
+                    <p className="font-bold text-xs text-white leading-snug truncate" style={{ fontFamily: "'Raleway', sans-serif" }}>
                       {activeTitle}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
@@ -406,50 +421,82 @@ function LiveVideoCapture({ onSignUpNeeded }: { onSignUpNeeded: () => void }) {
                     </div>
                   </div>
                   {phase === "demo" && (
-                    <span className="font-mono-ui text-[7px] text-[#222] uppercase tracking-widest mt-0.5 flex-shrink-0">DEMO</span>
+                    <span className="font-mono-ui text-[7px] text-[#1e1e1e] uppercase tracking-widest mt-0.5 flex-shrink-0">DEMO</span>
                   )}
                 </div>
 
-                {/* ─── Capture CTA (shown when user has a valid URL) ─── */}
+                {/* ─── CAPTURE CTA ─── */}
                 <AnimatePresence>
-                  {phase === "previewing" && (
-                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  {/* Valid URL detected */}
+                  {phase === "previewing" && addStatus !== "needsAuth" && (
+                    <motion.div key="cta" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                       className="px-4 py-3 border-b border-white/[0.05]"
                       style={{ background: "rgba(139,92,246,0.05)" }}>
                       <p className="font-mono-ui text-[9px] text-[#8b5cf6] uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3 h-3" /> YOUTUBE VIDEO DETECTED
+                        <CheckCircle2 className="w-3 h-3" />
+                        {isYouTubePreview ? "YOUTUBE URL DETECTED" : "VIDEO URL DETECTED"}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <RippleBtn onClick={handleAdd} size="sm" disabled={addStatus === "loading"}>
                           {addStatus === "loading"
                             ? <><Loader2 className="w-3 h-3 animate-spin" /> ADDING...</>
                             : <><Plus className="w-3 h-3" /> ADD TO VAULT</>}
                         </RippleBtn>
-                        <button onClick={onSignUpNeeded}
-                          className="text-[9px] font-mono-ui text-[#333] hover:text-[#8b5cf6] transition-colors uppercase tracking-widest">
-                          OR SIGN UP FREE →
-                        </button>
+                        {addStatus === "error" && (
+                          <span className="font-mono-ui text-[9px] text-red-400">ERR: {addError}</span>
+                        )}
                       </div>
-                      {addStatus === "error" && (
-                        <p className="mt-1.5 font-mono-ui text-[9px] text-red-400">ERR: {addError}</p>
-                      )}
                     </motion.div>
                   )}
+
+                  {/* Not logged in prompt */}
+                  {addStatus === "needsAuth" && (
+                    <motion.div key="auth" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="px-4 py-4 border-b border-white/[0.05]"
+                      style={{ background: "rgba(139,92,246,0.06)", borderTop: "1px solid rgba(139,92,246,0.15)" }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)" }}>
+                          <Lock className="w-4 h-4 text-[#8b5cf6]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-[12px] text-white mb-0.5" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                            Sign in to save this video
+                          </p>
+                          <p className="font-mono-ui text-[9px] text-[#444] mb-3">
+                            Create a free account or log in to add videos to your vault.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <RippleBtn onClick={onSignUpNeeded} size="sm">
+                              Create Account
+                            </RippleBtn>
+                            <button onClick={() => { window.location.href = "/api/login"; }}
+                              className="text-[10px] font-semibold text-[#555] hover:text-white transition-colors px-3 py-1.5 border border-white/[0.08] rounded-md"
+                              style={{ fontFamily: "'Raleway', sans-serif" }}>
+                              Log In
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Success */}
                   {phase === "added" && (
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                      className="px-4 py-4 flex items-center gap-3"
-                      style={{ background: "rgba(34,197,94,0.06)", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                    <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                      className="px-4 py-4 flex items-center gap-3 border-b"
+                      style={{ background: "rgba(34,197,94,0.06)", borderColor: "rgba(34,197,94,0.15)" }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ background: "rgba(34,197,94,0.15)" }}>
                         <CheckCircle2 className="w-4 h-4 text-green-400" />
                       </div>
-                      <div>
-                        <p className="font-bold text-xs text-green-400" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      <div className="flex-1">
+                        <p className="font-bold text-[12px] text-green-400" style={{ fontFamily: "'Raleway', sans-serif" }}>
                           Video Added to Vault!
                         </p>
-                        <p className="font-mono-ui text-[9px] text-[#444] mt-0.5">AI analysis queued. Check your dashboard.</p>
+                        <p className="font-mono-ui text-[9px] text-[#444] mt-0.5">AI analysis queued. Opening library...</p>
                       </div>
-                      <a href="/" className="ml-auto text-[#8b5cf6] hover:text-[#a78bfa] transition-colors flex-shrink-0">
+                      <a href="/" className="text-[#8b5cf6] hover:text-[#a78bfa] transition-colors flex-shrink-0">
                         <ExternalLink className="w-4 h-4" />
                       </a>
                     </motion.div>
@@ -536,16 +583,16 @@ function LeftSidebar({ active, onNav }: { active: NavSection; onNav: (id: NavSec
         VV
       </motion.div>
 
-      {/* Nav items */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-10">
+      {/* Nav items — gap auto-adjusts to available height */}
+      <div className="flex-1 flex flex-col items-center justify-evenly py-4 min-h-0">
         {NAV_ITEMS.map((item, i) => (
           <motion.button key={item.id}
             initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.25 + i * 0.07 }}
             onClick={() => onNav(item.id)}
-            className="relative group cursor-pointer transition-all duration-200"
+            className="relative group cursor-pointer transition-all duration-200 flex-shrink-0"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
-            <span className="font-mono-ui text-[8px] uppercase tracking-[0.28em] transition-all duration-200"
+            <span className="font-mono-ui text-[8px] uppercase tracking-[0.25em] transition-all duration-200"
               style={{ color: active === item.id ? "#8b5cf6" : "#202020" }}>
               {item.label}
             </span>

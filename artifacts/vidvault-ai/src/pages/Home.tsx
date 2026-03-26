@@ -109,7 +109,8 @@ export default function Home() {
               <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
                 //RECENTLY_SAVED
               </span>
-              <h2 className="text-lg font-black text-white uppercase tracking-tight">
+              <h2 className="text-lg font-black text-white uppercase"
+                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
                 Latest Captures
               </h2>
             </div>
@@ -143,7 +144,8 @@ export default function Home() {
               <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
                 //STARRED
               </span>
-              <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+              <h2 className="text-lg font-black text-white uppercase flex items-center gap-2"
+                style={{ fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
                 <Star className="w-4 h-4 text-yellow-500" />
                 Favorites
               </h2>

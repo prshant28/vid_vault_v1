@@ -35,12 +35,14 @@ export function Sidebar() {
         style={{ borderColor: "rgba(255,255,255,0.05)" }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white flex items-center justify-center font-black text-black text-xs font-mono-ui">
+          <div className="w-8 h-8 bg-white flex items-center justify-center font-black text-black text-xs"
+            style={{ fontFamily: "'Alegreya Sans SC', serif" }}>
             VV
           </div>
           <div>
-            <span className="font-black text-white uppercase tracking-[0.15em] text-xs font-mono-ui block">
-              VIDVAULT
+            <span className="font-black text-white uppercase tracking-[0.12em] text-sm block"
+              style={{ fontFamily: "'Alegreya Sans SC', serif" }}>
+              VidVault
             </span>
             <span className="font-mono-ui text-[8px] text-[#444] uppercase tracking-widest">
               AI_CORE_v2.0
@@ -143,7 +145,8 @@ export function Sidebar() {
               </div>
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-[#888] uppercase tracking-widest truncate font-mono-ui">
+              <span className="text-xs font-bold text-[#888] truncate"
+                style={{ fontFamily: "'Raleway', sans-serif" }}>
                 {user?.firstName || user?.username || "USER"}
               </span>
               <span className="text-[9px] text-[#333] font-mono-ui">FREE_PLAN</span>
