@@ -59,6 +59,64 @@ async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: str
 
 const router = Router();
 
+/* ── GET /api/preview?url=... — fetch OG metadata for any URL ── */
+router.get("/preview", async (req, res) => {
+  const { url } = req.query as { url?: string };
+  if (!url) return res.status(400).json({ error: "url required" });
+
+  try {
+    const parsed = new URL(url);
+    const domain = parsed.hostname;
+
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) {
+      const videoId = ytMatch[1];
+      return res.json({
+        title: "YouTube Video",
+        image: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        domain,
+        favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+        type: "youtube",
+        videoId,
+      });
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const resp = await fetch(url, {
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; VidVaultBot/1.0)" },
+    });
+    clearTimeout(timeout);
+
+    const html = await resp.text();
+    const getMeta = (prop: string): string | null => {
+      const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']+)["']`, "i"))
+        || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${prop}["']`, "i"));
+      return m ? m[1] : null;
+    };
+    const title = getMeta("og:title") || getMeta("twitter:title") || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || domain;
+    const image = getMeta("og:image") || getMeta("twitter:image") || null;
+    const description = getMeta("og:description") || getMeta("twitter:description") || null;
+
+    return res.json({
+      title: title?.trim() || domain,
+      image,
+      description,
+      domain,
+      favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+      type: "web",
+    });
+  } catch {
+    try {
+      const domain = new URL(url).hostname;
+      return res.json({ title: domain, image: null, domain, favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`, type: "web" });
+    } catch {
+      return res.status(400).json({ error: "Invalid URL" });
+    }
+  }
+});
+
 async function fetchVideoMeta(url: string) {
   try {
     const ytMatch = url.match(
