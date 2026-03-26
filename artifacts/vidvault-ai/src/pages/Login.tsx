@@ -109,11 +109,13 @@ function MonoInput({
   autoFocus?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
+  const { isDark } = useTheme();
   return (
     <div className="relative">
       {Icon && (
         <Icon
-          className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focused ? "text-[#8b5cf6]" : "text-[#333]"}`}
+          className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focused ? "text-[#8b5cf6]" : ""}`}
+          style={{ color: focused ? "#8b5cf6" : "var(--vv-text-muted)" }}
         />
       )}
       <input
@@ -124,14 +126,15 @@ function MonoInput({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         autoFocus={autoFocus}
-        className="w-full h-11 text-sm text-white placeholder:text-[#252525] focus:outline-none transition-all"
+        className="w-full h-11 text-sm focus:outline-none transition-all"
         style={{
           fontFamily: "'Raleway', sans-serif",
-          background: "#0c0c0e",
-          border: `1px solid ${focused ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.06)"}`,
+          background: isDark ? "#0c0c0e" : "#f4f2ff",
+          color: isDark ? "#e0e0e0" : "#0d0c14",
+          border: `1px solid ${focused ? "rgba(139,92,246,0.5)" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)"}`,
           borderRadius: 8,
           padding: Icon ? "0 12px 0 38px" : "0 12px",
-          boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.07)" : "none",
+          boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.1)" : "none",
         }}
       />
     </div>
@@ -162,6 +165,7 @@ function RippleBtn({
   const [hov, setHov] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   const nextId = useRef(0);
+  const { isDark } = useTheme();
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
@@ -186,13 +190,15 @@ function RippleBtn({
   const bg =
     variant === "ghost"
       ? hov
-        ? "rgba(255,255,255,0.06)"
+        ? isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"
         : "transparent"
       : hov
         ? "#8b5cf6"
-        : "#fff";
+        : isDark ? "#fff" : "#0d0c14";
   const fg =
-    variant === "ghost" ? (hov ? "#fff" : "#555") : hov ? "#fff" : "#000";
+    variant === "ghost"
+      ? hov ? (isDark ? "#fff" : "#0d0c14") : (isDark ? "#888" : "#555")
+      : hov ? "#fff" : (isDark ? "#000" : "#fff");
 
   return (
     <motion.button
@@ -217,7 +223,9 @@ function RippleBtn({
             ? "none"
             : "polygon(6% 0px,100% 0px,100% 76%,94% 100%,0px 100%,0px 24%)",
         border:
-          variant === "ghost" ? "1px solid rgba(255,255,255,0.08)" : "none",
+          variant === "ghost"
+            ? `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`
+            : "none",
         borderRadius: variant === "ghost" ? 8 : 0,
         transition: "background 0.2s,color 0.2s,box-shadow 0.2s",
         boxShadow:
@@ -1474,7 +1482,7 @@ function FeaturesSection() {
           initial={{ y: 60, opacity: 0 }}
           animate={inView ? { y: 0, opacity: 1 } : {}}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="font-black uppercase text-white leading-[0.88]"
+          className="font-black uppercase lp-heading leading-[0.88]"
           style={{
             fontSize: "clamp(2.2rem, 5vw, 5rem)",
             fontFamily: "'Alegreya Sans SC', serif",
@@ -1521,12 +1529,12 @@ function FeaturesSection() {
               </span>
             </div>
             <p
-              className="text-[14px] text-[#3a3a3a] leading-relaxed"
+              className="text-[14px] lp-desc leading-relaxed"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
               {card.desc}
             </p>
-            <ChevronRight className="w-3 h-3 text-[#1e1e1e] absolute bottom-4 right-4 group-hover:text-[#8b5cf6] transition-colors duration-200" />
+            <ChevronRight className="w-3 h-3 absolute bottom-4 right-4 group-hover:text-[#8b5cf6] transition-colors duration-200" style={{ color: "var(--vv-text-muted)" }} />
           </motion.div>
         ))}
       </div>
@@ -1751,7 +1759,7 @@ function HowItWorksSection() {
               {step.title}
             </h3>
             <p
-              className="text-[11px] text-[#3a3a3a] leading-relaxed"
+              className="text-[11px] lp-desc leading-relaxed"
               style={{ fontFamily: "'Raleway', sans-serif" }}
             >
               {step.desc}
@@ -2318,7 +2326,7 @@ export default function Login() {
                     VV
                   </div>
                   <span
-                    className="font-black text-white text-sm hidden sm:block"
+                    className="font-black lp-heading text-sm hidden sm:block"
                     style={{
                       fontFamily: "'Alegreya Sans SC', serif",
                       letterSpacing: "0.04em",
@@ -2332,7 +2340,7 @@ export default function Login() {
                     setMode("landing");
                     setError("");
                   }}
-                  className="font-mono-ui text-[9px] uppercase tracking-widest hover:text-white transition-colors text-[#282828]"
+                  className="font-mono-ui text-[9px] uppercase tracking-widest hover:text-[#8b5cf6] transition-colors lp-desc"
                 >
                   ← BACK
                 </button>
@@ -2350,7 +2358,7 @@ export default function Login() {
                       {mode === "register" ? "CREATE_ACCOUNT" : "SIGN_IN"}
                     </span>
                     <h2
-                      className="font-black text-white"
+                      className="font-black lp-heading"
                       style={{
                         fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
                         fontFamily: "'Alegreya Sans SC', serif",
@@ -2462,31 +2470,31 @@ export default function Login() {
                     className="mt-6"
                   >
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="flex-1 h-px bg-white/[0.04]" />
-                      <span className="font-mono-ui text-[8px] text-[#1e1e1e] uppercase tracking-widest">
+                      <div className="flex-1 h-px" style={{ background: "var(--vv-border)" }} />
+                      <span className="font-mono-ui text-[8px] lp-desc uppercase tracking-widest">
                         OR
                       </span>
-                      <div className="flex-1 h-px bg-white/[0.04]" />
+                      <div className="flex-1 h-px" style={{ background: "var(--vv-border)" }} />
                     </div>
                     <button
                       onClick={handleReplitLogin}
-                      className="w-full h-11 font-mono-ui text-[9px] uppercase tracking-widest text-[#2a2a2a] hover:text-white transition-all flex items-center justify-center"
+                      className="w-full h-11 font-mono-ui text-[9px] uppercase tracking-widest lp-desc hover:text-[#8b5cf6] transition-all flex items-center justify-center"
                       style={{
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        border: "1px solid var(--vv-border)",
                         borderRadius: 8,
                       }}
                       onMouseEnter={(e) =>
                         ((e.currentTarget as HTMLElement).style.borderColor =
-                          "rgba(255,255,255,0.16)")
+                          "rgba(139,92,246,0.35)")
                       }
                       onMouseLeave={(e) =>
                         ((e.currentTarget as HTMLElement).style.borderColor =
-                          "rgba(255,255,255,0.06)")
+                          "var(--vv-border)")
                       }
                     >
                       CONTINUE WITH REPLIT
                     </button>
-                    <p className="mt-5 font-mono-ui text-[9px] text-[#1e1e1e] uppercase tracking-widest text-center">
+                    <p className="mt-5 font-mono-ui text-[9px] lp-desc uppercase tracking-widest text-center">
                       {mode === "register"
                         ? "HAVE AN ACCOUNT? "
                         : "NO ACCOUNT? "}
@@ -2514,8 +2522,8 @@ export default function Login() {
               transition={{ delay: 0.18 }}
               className="hidden lg:flex flex-1 border-l overflow-hidden relative flex-col"
               style={{
-                borderColor: "rgba(255,255,255,0.04)",
-                background: "#08080b",
+                borderColor: "var(--vv-border)",
+                background: "var(--vv-surface)",
               }}
             >
               <div className="flex-1 flex items-center justify-center p-6">
