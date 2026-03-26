@@ -1,0 +1,860 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: VidVault AI API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: videos
+    description: Video management operations
+  - name: folders
+    description: Folder management operations
+  - name: tags
+    description: Tag management operations
+  - name: notes
+    description: Notes operations
+  - name: ai
+    description: AI generation operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /auth/user:
+    get:
+      operationId: getCurrentAuthUser
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user or unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List all videos for the current user
+      parameters:
+        - name: folderId
+          in: query
+          schema:
+            type: string
+            nullable: true
+        - name: tagId
+          in: query
+          schema:
+            type: string
+            nullable: true
+        - name: search
+          in: query
+          schema:
+            type: string
+            nullable: true
+        - name: favorites
+          in: query
+          schema:
+            type: boolean
+            nullable: true
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Video"
+                  total:
+                    type: integer
+                required:
+                  - videos
+                  - total
+    post:
+      operationId: addVideo
+      tags: [videos]
+      summary: Add a new video by URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddVideoRequest"
+      responses:
+        "201":
+          description: Video added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "400":
+          description: Invalid URL or video not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /videos/{videoId}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get a single video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoDetail"
+        "404":
+          description: Video not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateVideo
+      tags: [videos]
+      summary: Update a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVideoRequest"
+      responses:
+        "200":
+          description: Updated video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Video deleted
+  /videos/{videoId}/favorite:
+    post:
+      operationId: toggleFavorite
+      tags: [videos]
+      summary: Toggle favorite status
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated favorite status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isFavorite:
+                    type: boolean
+                required:
+                  - isFavorite
+  /folders:
+    get:
+      operationId: listFolders
+      tags: [folders]
+      summary: List all folders for the current user
+      responses:
+        "200":
+          description: List of folders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Folder"
+                required:
+                  - folders
+    post:
+      operationId: createFolder
+      tags: [folders]
+      summary: Create a new folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFolderRequest"
+      responses:
+        "201":
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+  /folders/{folderId}:
+    patch:
+      operationId: updateFolder
+      tags: [folders]
+      summary: Update a folder
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFolderRequest"
+      responses:
+        "200":
+          description: Updated folder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+    delete:
+      operationId: deleteFolder
+      tags: [folders]
+      summary: Delete a folder
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Folder deleted
+  /tags:
+    get:
+      operationId: listTags
+      tags: [tags]
+      summary: List all tags for the current user
+      responses:
+        "200":
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tag"
+                required:
+                  - tags
+    post:
+      operationId: createTag
+      tags: [tags]
+      summary: Create a new tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagRequest"
+      responses:
+        "201":
+          description: Tag created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+  /videos/{videoId}/tags:
+    post:
+      operationId: addTagToVideo
+      tags: [tags]
+      summary: Add a tag to a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagId:
+                  type: string
+              required:
+                - tagId
+      responses:
+        "200":
+          description: Tag added
+  /videos/{videoId}/tags/{tagId}:
+    delete:
+      operationId: removeTagFromVideo
+      tags: [tags]
+      summary: Remove a tag from a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Tag removed
+  /videos/{videoId}/notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes for a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Note"
+                required:
+                  - notes
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note for a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteRequest"
+      responses:
+        "201":
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+  /notes/{noteId}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNoteRequest"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Note deleted
+  /videos/{videoId}/ai/generate:
+    post:
+      operationId: generateAiContent
+      tags: [ai]
+      summary: Generate AI content for a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateAiContentRequest"
+      responses:
+        "200":
+          description: Generated AI content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiOutput"
+  /videos/{videoId}/ai/outputs:
+    get:
+      operationId: listAiOutputs
+      tags: [ai]
+      summary: List AI outputs for a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of AI outputs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  outputs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AiOutput"
+                required:
+                  - outputs
+  /ai/chat:
+    post:
+      operationId: aiChat
+      tags: [ai]
+      summary: Chat with AI about a video or general queries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatRequest"
+      responses:
+        "200":
+          description: AI chat response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatResponse"
+  /stats:
+    get:
+      operationId: getStats
+      tags: [videos]
+      summary: Get dashboard stats for the current user
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    AuthUser:
+      type: object
+      properties:
+        isAuthenticated:
+          type: boolean
+        user:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            firstName:
+              type: string
+              nullable: true
+            lastName:
+              type: string
+              nullable: true
+            profileImageUrl:
+              type: string
+              nullable: true
+          required:
+            - id
+            - username
+      required:
+        - isAuthenticated
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        url:
+          type: string
+        title:
+          type: string
+        thumbnail:
+          type: string
+          nullable: true
+        duration:
+          type: string
+          nullable: true
+        channelName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        folderId:
+          type: string
+          nullable: true
+        folderName:
+          type: string
+          nullable: true
+        isFavorite:
+          type: boolean
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        viewCount:
+          type: integer
+          nullable: true
+        publishedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - url
+        - title
+        - isFavorite
+        - tags
+        - createdAt
+        - updatedAt
+    VideoDetail:
+      allOf:
+        - $ref: "#/components/schemas/Video"
+        - type: object
+          properties:
+            notes:
+              type: array
+              items:
+                $ref: "#/components/schemas/Note"
+            aiOutputs:
+              type: array
+              items:
+                $ref: "#/components/schemas/AiOutput"
+          required:
+            - notes
+            - aiOutputs
+    AddVideoRequest:
+      type: object
+      properties:
+        url:
+          type: string
+        folderId:
+          type: string
+          nullable: true
+      required:
+        - url
+    UpdateVideoRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+    Folder:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+        parentId:
+          type: string
+          nullable: true
+        videoCount:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - name
+        - videoCount
+        - createdAt
+    CreateFolderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+        parentId:
+          type: string
+          nullable: true
+      required:
+        - name
+    UpdateFolderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+    CreateTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+      required:
+        - name
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+        videoId:
+          type: string
+        userId:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - videoId
+        - userId
+        - content
+        - createdAt
+        - updatedAt
+    CreateNoteRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        timestamp:
+          type: integer
+          nullable: true
+      required:
+        - content
+    UpdateNoteRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          nullable: true
+    AiOutputType:
+      type: string
+      enum:
+        - summary
+        - notes
+        - ppt_outline
+        - mcq
+        - flashcards
+        - blog_article
+        - key_insights
+    AiOutput:
+      type: object
+      properties:
+        id:
+          type: string
+        videoId:
+          type: string
+        type:
+          $ref: "#/components/schemas/AiOutputType"
+        content:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - videoId
+        - type
+        - content
+        - createdAt
+    GenerateAiContentRequest:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/AiOutputType"
+      required:
+        - type
+    AiChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        videoId:
+          type: string
+          nullable: true
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              content:
+                type: string
+            required:
+              - role
+              - content
+      required:
+        - message
+    AiChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    DashboardStats:
+      type: object
+      properties:
+        totalVideos:
+          type: integer
+        totalFolders:
+          type: integer
+        totalTags:
+          type: integer
+        recentVideos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        favoriteVideos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+      required:
+        - totalVideos
+        - totalFolders
+        - totalTags
+        - recentVideos
+        - favoriteVideos
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+          nullable: true
+      required:
+        - error
