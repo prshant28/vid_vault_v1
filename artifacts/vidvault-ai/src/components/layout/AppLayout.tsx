@@ -132,16 +132,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </motion.button>
 
           {/* Center: logo */}
-          <motion.div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5">
-            <div
-              className="w-6 h-6 flex items-center justify-center text-[8px] font-black rounded text-black"
-              style={{
-                background: "#8b5cf6",
-                fontFamily: "'Alegreya Sans SC', serif",
-              }}
-            >
-              VV
-            </div>
+          <motion.div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <img
+              src="/logo.png"
+              alt="VidVault AI"
+              className="w-7 h-7 rounded-lg object-cover"
+            />
             <span
               className="font-black lp-heading text-xs uppercase tracking-[0.12em]"
               style={{ fontFamily: "'Alegreya Sans SC', serif" }}

@@ -51,16 +51,12 @@ export function Sidebar() {
         style={{ borderColor: "var(--vv-border)" }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 flex items-center justify-center font-black text-xs"
-            style={{
-              fontFamily: "'Alegreya Sans SC', serif",
-              background: isDark ? "#ffffff" : "#0d0c14",
-              color: isDark ? "#000000" : "#ffffff",
-            }}
-          >
-            VV
-          </div>
+          <img
+            src="/logo.png"
+            alt="VidVault AI"
+            className="w-8 h-8 rounded-lg object-cover"
+            style={{ imageRendering: "crisp-edges" }}
+          />
           <div>
             <span
               className="font-black uppercase tracking-[0.12em] text-sm block lp-heading"
