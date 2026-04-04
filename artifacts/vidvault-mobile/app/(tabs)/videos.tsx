@@ -102,7 +102,10 @@ export default function VideosScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Library</Text>
+        <View>
+          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>VIDEO_VAULT</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Library</Text>
+        </View>
       </View>
 
       <View style={styles.controls}>
@@ -243,9 +246,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
+  headerEyebrow: {
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
   headerTitle: {
     fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.5,
   },
   controls: {
     paddingHorizontal: 16,

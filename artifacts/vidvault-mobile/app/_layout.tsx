@@ -64,23 +64,18 @@ function RootLayoutNav() {
     if (user) {
       router.replace("/(tabs)");
     } else {
-      // On web preview skip onboarding — it's a native-only flow
       if (Platform.OS === "web") {
         router.replace("/login");
         return;
       }
-      AsyncStorage.getItem(ONBOARDING_KEY).then((done) => {
-        if (!done) {
-          router.replace("/onboarding");
-        } else {
-          router.replace("/login");
-        }
-      });
+      // On native show splash → onboarding or login
+      router.replace("/splash");
     }
   }, [user, isLoading]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="splash" options={{ headerShown: false, animation: "none" }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
       <Stack.Screen name="login" options={{ headerShown: false, animation: "fade" }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

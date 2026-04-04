@@ -24,15 +24,17 @@ import { VideoListCard } from "@/components/VideoListCard";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
-function StatCard({ label, value, icon, color }: { label: string; value: number; icon: FeatherIconName; color: string }) {
+const ACCENT_COLORS = ["#8b5cf6", "#06b6d4", "#10b981"];
+
+function StatCard({ label, value, icon, color, index }: { label: string; value: number; icon: FeatherIconName; color: string; index: number }) {
   const colors = useColors();
   return (
-    <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-      <View style={[styles.statIcon, { backgroundColor: color + "20" }]}>
-        <Feather name={icon} size={20} color={color} />
+    <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.statIconWrap, { backgroundColor: color + "18" }]}>
+        <Feather name={icon} size={16} color={color} />
       </View>
       <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
+      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label.toUpperCase()}</Text>
     </View>
   );
 }
@@ -66,9 +68,10 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
     >
+      {/* Header */}
       <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
         <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Good morning,</Text>
+          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>GOOD MORNING,</Text>
           <Text style={[styles.name, { color: colors.foreground }]}>{displayName} 👋</Text>
         </View>
         <TouchableOpacity
@@ -80,33 +83,38 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Stats */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Overview</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>OVERVIEW</Text>
+          <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+        </View>
         {isLoading ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll}>
+          <View style={styles.statsGrid}>
             {[1, 2, 3].map((i) => <StatCardSkeleton key={i} />)}
-          </ScrollView>
+          </View>
         ) : (
           <View style={styles.statsGrid}>
-            <StatCard label="Videos" value={stats?.totalVideos ?? 0} icon="film" color="#7c3aed" />
-            <StatCard label="Folders" value={stats?.totalFolders ?? 0} icon="folder" color="#2563eb" />
-            <StatCard label="Tags" value={stats?.totalTags ?? 0} icon="tag" color="#059669" />
+            <StatCard label="Videos" value={stats?.totalVideos ?? 0} icon="film" color={ACCENT_COLORS[0]} index={0} />
+            <StatCard label="Folders" value={stats?.totalFolders ?? 0} icon="folder" color={ACCENT_COLORS[1]} index={1} />
+            <StatCard label="Tags" value={stats?.totalTags ?? 0} icon="tag" color={ACCENT_COLORS[2]} index={2} />
           </View>
         )}
       </View>
 
+      {/* Recently Added */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recently Added</Text>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>RECENTLY ADDED</Text>
           <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
+            <Text style={[styles.seeAll, { color: colors.primary }]}>SEE ALL →</Text>
           </TouchableOpacity>
         </View>
         {isLoading ? (
           <>
-            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={colors.radius} />
-            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={colors.radius} />
-            <Skeleton height={72} borderRadius={colors.radius} />
+            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={4} />
+            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={4} />
+            <Skeleton height={72} borderRadius={4} />
           </>
         ) : stats?.recentVideos && stats.recentVideos.length > 0 ? (
           stats.recentVideos.slice(0, 5).map((video: Video) => (
@@ -131,7 +139,8 @@ export default function HomeScreen() {
       {stats?.favoriteVideos && stats.favoriteVideos.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Favorites</Text>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>FAVORITES</Text>
+            <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
           </View>
           {stats.favoriteVideos.slice(0, 3).map((video: Video) => (
             <VideoListCard
@@ -153,71 +162,79 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   greeting: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    marginBottom: 2,
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 4,
   },
   name: {
-    fontSize: 24,
-    fontFamily: "Inter_700Bold",
+    fontSize: 26,
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.5,
+    lineHeight: 30,
   },
   addBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
   section: {
     paddingHorizontal: 20,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 16,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "Inter_700Bold",
-    marginBottom: 14,
+  sectionLine: {
+    flex: 1,
+    height: 1,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
   },
   seeAll: {
-    fontSize: 14,
-    fontFamily: "Inter_500Medium",
-    marginBottom: 14,
-  },
-  statsScroll: {
-    flexDirection: "row",
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_600SemiBold",
+    letterSpacing: 1.5,
   },
   statsGrid: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
   },
   statCard: {
     flex: 1,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
+    borderRadius: 4,
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
-  statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  statIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
   statValue: {
-    fontSize: 24,
-    fontFamily: "Inter_700Bold",
+    fontSize: 26,
+    fontFamily: "JetBrainsMono_600SemiBold",
+    lineHeight: 30,
+    letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 1.5,
   },
 });

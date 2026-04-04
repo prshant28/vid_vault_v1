@@ -103,7 +103,10 @@ export default function FoldersScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Folders</Text>
+        <View>
+          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>ORGANIZE</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Folders</Text>
+        </View>
         <TouchableOpacity
           onPress={() => setShowModal(true)}
           style={[styles.addBtn, { backgroundColor: colors.primary }]}
@@ -212,14 +215,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
+  headerEyebrow: {
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
   headerTitle: {
     fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.5,
   },
   addBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },

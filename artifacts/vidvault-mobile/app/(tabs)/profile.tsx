@@ -85,6 +85,7 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
+        <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>USER_SETTINGS</Text>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Profile</Text>
       </View>
 
@@ -139,9 +140,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
+  headerEyebrow: {
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
   headerTitle: {
     fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.5,
   },
   profileSection: {
     alignItems: "center",

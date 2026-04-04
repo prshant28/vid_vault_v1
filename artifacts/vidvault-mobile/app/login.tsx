@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Image,
 } from "react-native";
 import Svg, { Path, Polygon, Rect, Circle, Line, G } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -315,12 +316,24 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={[
           styles.scroll,
-          { paddingTop: Math.max(insets.top, 20) + 24, paddingBottom: insets.bottom + 32 },
+          { paddingTop: Math.max(insets.top, 20) + 16, paddingBottom: insets.bottom + 32 },
         ]}
         keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
+        {/* Logo */}
+        <View style={styles.logoBlock}>
+          <View style={styles.logoRing}>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImg}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={styles.logoName}>VidVault</Text>
+        </View>
+
         {/* Mode badge */}
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
@@ -483,6 +496,35 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+
+  /* Logo */
+  logoBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 32,
+  },
+  logoRing: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(139,92,246,0.3)",
+    backgroundColor: "rgba(139,92,246,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoImg: {
+    width: 28,
+    height: 28,
+  },
+  logoName: {
+    fontFamily: "Raleway_900Black",
+    fontSize: 22,
+    color: WHITE,
+    letterSpacing: -0.5,
   },
 
   /* Badge */

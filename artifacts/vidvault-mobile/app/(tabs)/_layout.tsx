@@ -75,8 +75,10 @@ function ClassicTabLayout() {
             />
           ) : null,
         tabBarLabelStyle: {
-          fontFamily: "Inter_500Medium",
-          fontSize: 11,
+          fontFamily: "JetBrainsMono_400Regular",
+          fontSize: 9,
+          letterSpacing: 0.5,
+          marginTop: 2,
         },
       }}
     >

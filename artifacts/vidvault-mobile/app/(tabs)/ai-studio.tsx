@@ -211,12 +211,12 @@ export default function AIStudioScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
-        <View style={[styles.headerIcon, { backgroundColor: colors.accent }]}>
+        <View style={[styles.headerIcon, { backgroundColor: "rgba(139,92,246,0.12)" }]}>
           <Feather name="cpu" size={18} color={colors.primary} />
         </View>
         <View>
+          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>AI_STUDIO</Text>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI Studio</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>Discover & explore videos</Text>
         </View>
       </View>
 
@@ -284,17 +284,20 @@ const styles = StyleSheet.create({
   headerIcon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
+  headerEyebrow: {
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 2,
   },
-  headerSubtitle: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
+  headerTitle: {
+    fontSize: 22,
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.3,
   },
   bubbleRow: {
     flexDirection: "row",
