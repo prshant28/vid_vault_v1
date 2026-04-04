@@ -25,7 +25,8 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance, Platform, View } from "react-native";
+import { Appearance, Platform, View, Image, Text, Dimensions } from "react-native";
+import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -73,10 +74,32 @@ function RootLayoutNav() {
     }
   }, [user, isLoading]);
 
-  // While auth state is being restored from storage, show a blank dark screen
+  // While auth state is being restored from storage, show a branded loading screen
   // so the home tab never flashes before the correct route is pushed.
   if (isLoading) {
-    return <View style={{ flex: 1, backgroundColor: "#0a0a0b" }} />;
+    const { width: W, height: H } = Dimensions.get("window");
+    const CELL = 52;
+    const cols = Math.ceil(W / CELL) + 1;
+    const rows = Math.ceil(H / CELL) + 1;
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0b", alignItems: "center", justifyContent: "center" }}>
+        {/* Grid background */}
+        <Svg width={W} height={H} style={{ position: "absolute" }}>
+          {Array.from({ length: cols }).map((_, i) => (
+            <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
+          ))}
+          {Array.from({ length: rows }).map((_, i) => (
+            <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
+          ))}
+        </Svg>
+        {/* Logo ring */}
+        <View style={{ width: 90, height: 90, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+          <Image source={require("@/assets/images/logo.png")} style={{ width: 62, height: 62 }} resizeMode="contain" />
+        </View>
+        <Text style={{ fontFamily: "Raleway_900Black", fontSize: 28, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
+        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 6 }}>AI KNOWLEDGE VAULT</Text>
+      </View>
+    );
   }
 
   return (

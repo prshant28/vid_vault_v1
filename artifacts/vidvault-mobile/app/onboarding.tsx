@@ -6,55 +6,59 @@ import {
   StyleSheet,
   Dimensions,
   Platform,
+  Image,
 } from "react-native";
-import Svg, { Polygon, Line, Circle } from "react-native-svg";
+import Svg, { Line, Polygon } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width, height } = Dimensions.get("window");
+const { width: W, height: H } = Dimensions.get("window");
 
-const BG = "#0a0a0b";
-const CARD = "#0f0f12";
+const BG = "#09090c";
 const PURPLE = "#8b5cf6";
 const CYAN = "#06b6d4";
 const GREEN = "#10b981";
-const MUTED = "#555566";
-const MUTED2 = "#3a3a4a";
 const WHITE = "#ffffff";
-const BORDER = "rgba(255,255,255,0.07)";
+const MUTED = "#4a4a5a";
+const MUTED2 = "#2a2a3a";
+const GRID_LINE = "rgba(139,92,246,0.07)";
+const CELL = 56;
 
 const SLIDES = [
   {
     icon: "film" as const,
     code: "01",
     badge: "SAVE_CONTENT",
-    title: "Save Any Video",
-    subtitle: "Paste any YouTube URL to instantly save it to your personal knowledge vault.",
+    title: "Save Any\nYouTube Video",
+    subtitle:
+      "Paste any YouTube URL to instantly save it to your personal knowledge vault.",
     accent: PURPLE,
-    accentDim: "rgba(139,92,246,0.12)",
-    accentBorder: "rgba(139,92,246,0.25)",
+    accentGlow: "rgba(139,92,246,0.12)",
+    accentBorder: "rgba(139,92,246,0.3)",
   },
   {
     icon: "cpu" as const,
     code: "02",
     badge: "AI_INSIGHTS",
-    title: "AI-Powered Analysis",
-    subtitle: "Generate summaries, study notes, flashcards, and quizzes with one tap.",
+    title: "Instant AI\nAnalysis",
+    subtitle:
+      "Generate summaries, study notes, flashcards, and quizzes from any video with one tap.",
     accent: CYAN,
-    accentDim: "rgba(6,182,212,0.10)",
-    accentBorder: "rgba(6,182,212,0.22)",
+    accentGlow: "rgba(6,182,212,0.10)",
+    accentBorder: "rgba(6,182,212,0.28)",
   },
   {
     icon: "folder" as const,
     code: "03",
     badge: "ORGANIZE",
-    title: "Organize & Discover",
-    subtitle: "Sort videos into folders, tag them, and chat with AI to find exactly what you need.",
+    title: "Organize &\nDiscover",
+    subtitle:
+      "Sort videos into folders, add tags, and chat with AI to find exactly what you need.",
     accent: GREEN,
-    accentDim: "rgba(16,185,129,0.10)",
-    accentBorder: "rgba(16,185,129,0.22)",
+    accentGlow: "rgba(16,185,129,0.10)",
+    accentBorder: "rgba(16,185,129,0.28)",
   },
 ];
 
@@ -65,117 +69,45 @@ const completeOnboarding = async () => {
   router.replace("/login");
 };
 
-/* Polygon CTA button — matches login screen style */
-function PolygonButton({
-  label,
-  onPress,
-  accent,
-}: {
-  label: string;
-  onPress: () => void;
-  accent: string;
-}) {
+/* Grid background — SVG lines forming subtle dark grid */
+function GridBg() {
+  const cols = Math.ceil(W / CELL) + 1;
+  const rows = Math.ceil(H / CELL) + 1;
+  return (
+    <Svg width={W} height={H} style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+      {Array.from({ length: cols }).map((_, i) => (
+        <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke={GRID_LINE} strokeWidth={1} />
+      ))}
+      {Array.from({ length: rows }).map((_, i) => (
+        <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke={GRID_LINE} strokeWidth={1} />
+      ))}
+    </Svg>
+  );
+}
+
+/* Polygon CTA button */
+function PolyBtn({ label, onPress }: { label: string; onPress: () => void }) {
   const [pressed, setPressed] = useState(false);
-  const btnW = Math.min(width - 48, 500);
+  const btnW = W - 48;
   const btnH = 52;
   const cut = 12;
-  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
-
+  const pts = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.85}
+      activeOpacity={0.9}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
     >
       <View style={{ width: btnW, height: btnH }}>
         <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
-          <Polygon
-            points={points}
-            fill={pressed ? "#d0d0d0" : WHITE}
-          />
+          <Polygon points={pts} fill={pressed ? "#d8d8d8" : WHITE} />
         </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.polyInner]}>
-          <Text style={styles.polyText}>{label}</Text>
+        <View style={[StyleSheet.absoluteFillObject, { alignItems: "center", justifyContent: "center" }]}>
+          <Text style={styles.polyLabel}>{label}</Text>
         </View>
       </View>
     </TouchableOpacity>
-  );
-}
-
-/* Ghost polygon button for Skip */
-function GhostButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
-  const [pressed, setPressed] = useState(false);
-  const btnW = 100;
-  const btnH = 34;
-  const cut = 7;
-  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={{ width: btnW, height: btnH }}>
-        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
-          <Polygon
-            points={points}
-            fill={pressed ? "rgba(255,255,255,0.04)" : "transparent"}
-            stroke={BORDER}
-            strokeWidth={1}
-          />
-        </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.polyInner]}>
-          <Text style={styles.ghostText}>{label}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-/* Geometric icon block — sharp corners, no circles */
-function SlideIcon({
-  icon,
-  accent,
-  accentDim,
-  accentBorder,
-}: {
-  icon: "film" | "cpu" | "folder";
-  accent: string;
-  accentDim: string;
-  accentBorder: string;
-}) {
-  return (
-    <View style={styles.iconWrap}>
-      {/* Outer frame */}
-      <View
-        style={[
-          styles.iconOuter,
-          { backgroundColor: accentDim, borderColor: accentBorder },
-        ]}
-      >
-        {/* Corner brackets */}
-        <View style={[styles.bracketTL, { borderColor: accent + "60" }]} />
-        <View style={[styles.bracketBR, { borderColor: accent + "60" }]} />
-        {/* Inner box */}
-        <View
-          style={[
-            styles.iconInner,
-            { backgroundColor: accentDim, borderColor: accent + "30" },
-          ]}
-        >
-          <Feather name={icon} size={40} color={accent} />
-        </View>
-      </View>
-    </View>
   );
 }
 
@@ -183,8 +115,8 @@ export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState(0);
 
-  const isLast = current === SLIDES.length - 1;
   const slide = SLIDES[current];
+  const isLast = current === SLIDES.length - 1;
 
   const next = () => {
     if (isLast) {
@@ -199,51 +131,41 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: topPad, paddingBottom: botPad }]}>
-      {/* Background grid dots */}
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        {Array.from({ length: 60 }).map((_, i) => {
-          const col = i % 10;
-          const row = Math.floor(i / 10);
-          return (
-            <View
-              key={i}
-              style={[
-                styles.gridDot,
-                {
-                  left: col * (width / 10) + width / 20,
-                  top: row * (height / 6) + height / 12,
-                  opacity: 0.035 + (col % 3) * 0.01,
-                },
-              ]}
-            />
-          );
-        })}
-      </View>
+      <GridBg />
 
-      {/* Corner accents */}
-      <View style={[styles.cornerTL, { borderColor: PURPLE + "25" }]} />
-      <View style={[styles.cornerBR, { borderColor: slide.accent + "20" }]} />
+      {/* Corner brackets */}
+      <View style={[styles.bracketTL, { borderColor: PURPLE + "30" }]} />
+      <View style={[styles.bracketBR, { borderColor: slide.accent + "25" }]} />
 
-      {/* Top bar: code + skip */}
+      {/* ── Top bar ── */}
       <View style={styles.topBar}>
-        <View style={styles.codeTag}>
-          <Text style={[styles.codeTagText, { color: MUTED }]}>{slide.code}/{SLIDES.length.toString().padStart(2, "0")}</Text>
+        {/* Logo wordmark */}
+        <View style={styles.logoRow}>
+          <View style={[styles.logoBox, { borderColor: PURPLE + "35", backgroundColor: PURPLE + "0d" }]}>
+            <Image source={require("@/assets/images/logo.png")} style={styles.logoImg} resizeMode="contain" />
+          </View>
+          <Text style={styles.logoName}>VidVault</Text>
         </View>
-        <GhostButton label="SKIP" onPress={completeOnboarding} />
+
+        {/* Skip */}
+        <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <Text style={styles.skipText}>SKIP</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Slide content */}
-      <View style={styles.slideContent}>
-        {/* Icon */}
-        <SlideIcon
-          icon={slide.icon}
-          accent={slide.accent}
-          accentDim={slide.accentDim}
-          accentBorder={slide.accentBorder}
-        />
+      {/* ── Slide body ── */}
+      <View style={styles.body}>
+        {/* Large faded code number — decorative */}
+        <Text style={[styles.bigCode, { color: slide.accent }]}>{slide.code}</Text>
+
+        {/* Icon in sharp bordered box */}
+        <View style={[styles.iconBox, { backgroundColor: slide.accentGlow, borderColor: slide.accentBorder }]}>
+          <Feather name={slide.icon} size={44} color={slide.accent} />
+        </View>
 
         {/* Badge */}
-        <View style={[styles.badge, { borderColor: slide.accent }]}>
+        <View style={[styles.badge, { borderColor: slide.accent + "50" }]}>
+          <View style={[styles.badgeDot, { backgroundColor: slide.accent }]} />
           <Text style={[styles.badgeText, { color: slide.accent }]}>{slide.badge}</Text>
         </View>
 
@@ -254,35 +176,26 @@ export default function OnboardingScreen() {
         <Text style={styles.subtitle}>{slide.subtitle}</Text>
       </View>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <View style={styles.footer}>
-        {/* Progress dots */}
-        <View style={styles.dots}>
+        {/* Step counter */}
+        <View style={styles.stepRow}>
           {SLIDES.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: i === current ? WHITE : MUTED2,
-                  width: i === current ? 20 : 6,
-                },
-              ]}
-            />
+            <View key={i} style={[styles.stepDot, {
+              backgroundColor: i === current ? WHITE : MUTED2,
+              width: i === current ? 24 : 6,
+            }]} />
           ))}
+          <Text style={styles.stepLabel}>
+            {current + 1} / {SLIDES.length}
+          </Text>
         </View>
 
-        {/* CTA button */}
-        <PolygonButton
-          label={isLast ? "GET STARTED" : "CONTINUE"}
-          onPress={next}
-          accent={slide.accent}
-        />
+        {/* CTA */}
+        <PolyBtn label={isLast ? "GET STARTED" : "CONTINUE →"} onPress={next} />
 
-        {/* Bottom mono hint */}
-        <Text style={styles.hint}>
-          {isLast ? "YOUR_VAULT_AWAITS" : `STEP_${current + 1}_OF_${SLIDES.length}`}
-        </Text>
+        {/* Bottom hint */}
+        <Text style={styles.hint}>KNOWLEDGE_BASE // ACTIVE</Text>
       </View>
     </View>
   );
@@ -294,28 +207,23 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
     paddingHorizontal: 24,
   },
-  gridDot: {
+
+  /* Corner brackets */
+  bracketTL: {
     position: "absolute",
-    width: 2,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: WHITE,
-  },
-  cornerTL: {
-    position: "absolute",
-    top: 80,
-    left: 20,
-    width: 32,
-    height: 32,
+    top: 70,
+    left: 16,
+    width: 28,
+    height: 28,
     borderTopWidth: 1,
     borderLeftWidth: 1,
   },
-  cornerBR: {
+  bracketBR: {
     position: "absolute",
-    bottom: 100,
-    right: 20,
-    width: 32,
-    height: 32,
+    bottom: 110,
+    right: 16,
+    width: 28,
+    height: 28,
     borderBottomWidth: 1,
     borderRightWidth: 1,
   },
@@ -326,130 +234,129 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 8,
-    marginBottom: 8,
+    marginBottom: 0,
   },
-  codeTag: {
-    borderWidth: 1,
-    borderColor: MUTED2,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  codeTagText: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 10,
-    letterSpacing: 2,
-  },
-
-  /* Ghost button internals */
-  polyInner: {
+  logoRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 9,
+  },
+  logoBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 4,
+    borderWidth: 1,
+    alignItems: "center",
     justifyContent: "center",
-    gap: 8,
   },
-  polyText: {
+  logoImg: {
+    width: 22,
+    height: 22,
+  },
+  logoName: {
     fontFamily: "Raleway_900Black",
-    fontSize: 13,
-    color: BG,
-    letterSpacing: 2,
+    fontSize: 17,
+    color: WHITE,
+    letterSpacing: -0.3,
   },
-  ghostText: {
+  skipText: {
     fontFamily: "JetBrainsMono_600SemiBold",
     fontSize: 10,
     color: MUTED,
     letterSpacing: 2,
   },
 
-  /* Slide content */
-  slideContent: {
+  /* Body */
+  body: {
     flex: 1,
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
-    gap: 20,
+    gap: 16,
   },
-  iconWrap: {
-    marginBottom: 8,
+  bigCode: {
+    fontFamily: "JetBrainsMono_600SemiBold",
+    fontSize: 80,
+    lineHeight: 80,
+    opacity: 0.08,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    letterSpacing: -4,
   },
-  iconOuter: {
-    width: 140,
-    height: 140,
+  iconBox: {
+    width: 88,
+    height: 88,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-  },
-  bracketTL: {
-    position: "absolute",
-    top: -1,
-    left: -1,
-    width: 20,
-    height: 20,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-  },
-  bracketBR: {
-    position: "absolute",
-    bottom: -1,
-    right: -1,
-    width: 20,
-    height: 20,
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-  },
-  iconInner: {
-    width: 90,
-    height: 90,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: 4,
   },
   badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
     borderWidth: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 5,
+  },
+  badgeDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
   },
   badgeText: {
     fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 10,
+    fontSize: 9,
     letterSpacing: 2,
   },
   title: {
     fontFamily: "Raleway_900Black",
-    fontSize: 30,
+    fontSize: 34,
     color: WHITE,
-    textAlign: "center",
-    letterSpacing: -0.5,
-    lineHeight: 36,
+    letterSpacing: -0.8,
+    lineHeight: 40,
   },
   subtitle: {
     fontFamily: "Inter_400Regular",
-    fontSize: 15,
+    fontSize: 14,
     color: MUTED,
-    textAlign: "center",
-    lineHeight: 23,
+    lineHeight: 22,
     maxWidth: 320,
   },
 
   /* Footer */
   footer: {
-    paddingVertical: 28,
+    paddingBottom: 12,
     alignItems: "center",
-    gap: 20,
+    gap: 18,
   },
-  dots: {
+  stepRow: {
     flexDirection: "row",
-    gap: 6,
     alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
   },
-  dot: {
+  stepDot: {
     height: 4,
     borderRadius: 2,
   },
-  hint: {
+  stepLabel: {
     fontFamily: "JetBrainsMono_400Regular",
     fontSize: 9,
+    color: MUTED,
+    letterSpacing: 1.5,
+    marginLeft: 6,
+  },
+  polyLabel: {
+    fontFamily: "Raleway_900Black",
+    fontSize: 13,
+    color: BG,
+    letterSpacing: 2,
+  },
+  hint: {
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 8,
     color: MUTED2,
     letterSpacing: 2,
-    marginTop: -4,
   },
 });
