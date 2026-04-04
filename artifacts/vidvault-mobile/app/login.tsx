@@ -315,7 +315,7 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={[
           styles.scroll,
-          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 },
+          { paddingTop: Math.max(insets.top, 20) + 24, paddingBottom: insets.bottom + 32 },
         ]}
         keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
@@ -491,56 +491,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: PURPLE,
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginBottom: 28,
+    paddingVertical: 4,
+    marginBottom: 20,
   },
   badgeText: {
     fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 11,
+    fontSize: 10,
     color: PURPLE,
     letterSpacing: 1.5,
-    textTransform: "uppercase",
   },
 
   /* Heading */
   headingBlock: {
-    marginBottom: 32,
-    gap: 8,
+    marginBottom: 28,
+    gap: 6,
   },
   heading: {
     fontFamily: "Raleway_900Black",
-    fontSize: 38,
+    fontSize: 34,
     color: WHITE,
-    lineHeight: 42,
+    lineHeight: 40,
     letterSpacing: -0.5,
   },
   subheading: {
     fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 11,
+    fontSize: 10,
     color: MUTED,
-    letterSpacing: 2,
-    textTransform: "uppercase",
+    letterSpacing: 1.8,
   },
 
   /* Form */
   form: {
-    gap: 18,
+    gap: 16,
   },
 
   /* Name row */
   nameRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
   },
 
   /* Labels */
   label: {
     fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 10,
+    fontSize: 9,
     color: MUTED,
     letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 8,
+    marginBottom: 7,
   },
 
   /* Inputs */
@@ -548,8 +545,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    height: 48,
-    paddingHorizontal: 12,
+    height: 50,
+    paddingHorizontal: 14,
   },
   inputIcon: {
     marginRight: 10,
@@ -559,7 +556,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     fontSize: 14,
     padding: 0,
-    height: 48,
+    height: 50,
   },
   inputRight: {
     paddingLeft: 8,
@@ -574,6 +571,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(239,68,68,0.15)",
     padding: 12,
+    marginTop: -4,
   },
   errorIcon: {
     color: ERROR_COLOR,
@@ -582,10 +580,10 @@ const styles = StyleSheet.create({
   errorText: {
     flex: 1,
     fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 12,
+    fontSize: 11,
     color: ERROR_COLOR,
     letterSpacing: 0.3,
-    lineHeight: 18,
+    lineHeight: 17,
   },
 
   /* Polygon button internals */
@@ -599,15 +597,13 @@ const styles = StyleSheet.create({
     fontFamily: "Raleway_700Bold",
     fontSize: 13,
     color: BG,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
+    letterSpacing: 2,
   },
   ghostText: {
     fontFamily: "Raleway_700Bold",
-    fontSize: 12,
-    color: "rgba(255,255,255,0.6)",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.55)",
+    letterSpacing: 2,
   },
 
   /* Divider */
@@ -615,7 +611,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginVertical: -4,
   },
   dividerLine: {
     flex: 1,
@@ -624,7 +619,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 11,
+    fontSize: 10,
     color: MUTED,
     letterSpacing: 2,
   },
@@ -635,28 +630,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexWrap: "wrap",
-    marginTop: 4,
+    gap: 4,
+    paddingTop: 4,
   },
   switchText: {
     fontFamily: "JetBrainsMono_400Regular",
     fontSize: 10,
     color: MUTED,
-    letterSpacing: 1.5,
+    letterSpacing: 1.2,
   },
   switchLink: {
     fontFamily: "JetBrainsMono_600SemiBold",
     fontSize: 10,
     color: PURPLE,
-    letterSpacing: 1.5,
+    letterSpacing: 1.2,
   },
 
   /* Grid dots decoration */
   gridDots: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 18,
+    gap: 16,
     justifyContent: "center",
-    marginTop: 40,
+    marginTop: 32,
+    paddingBottom: 8,
   },
   dot: {
     width: 3,

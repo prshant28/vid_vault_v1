@@ -25,7 +25,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance } from "react-native";
+import { Appearance, Platform } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -64,6 +64,11 @@ function RootLayoutNav() {
     if (user) {
       router.replace("/(tabs)");
     } else {
+      // On web preview skip onboarding — it's a native-only flow
+      if (Platform.OS === "web") {
+        router.replace("/login");
+        return;
+      }
       AsyncStorage.getItem(ONBOARDING_KEY).then((done) => {
         if (!done) {
           router.replace("/onboarding");
