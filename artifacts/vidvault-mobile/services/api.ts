@@ -1,0 +1,136 @@
+const BASE_URL = `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
+
+let _token: string | null = null;
+
+export function setApiToken(token: string | null) {
+  _token = token;
+}
+
+function authHeaders(): HeadersInit {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (_token) headers["Authorization"] = `Bearer ${_token}`;
+  return headers;
+}
+
+async function handleRes(res: Response) {
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+export const api = {
+  async getStats() {
+    const res = await fetch(`${BASE_URL}/stats`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async listVideos(params?: { folderId?: string; tagId?: string; search?: string; favorites?: boolean; limit?: number; offset?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.folderId) qs.set("folderId", params.folderId);
+    if (params?.tagId) qs.set("tagId", params.tagId);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.favorites) qs.set("favorites", "true");
+    if (params?.limit != null) qs.set("limit", String(params.limit));
+    if (params?.offset != null) qs.set("offset", String(params.offset));
+    const res = await fetch(`${BASE_URL}/videos?${qs}`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async getVideo(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async addVideo(url: string, folderId?: string) {
+    const res = await fetch(`${BASE_URL}/videos`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ url, folderId }),
+    });
+    return handleRes(res);
+  },
+  async deleteVideo(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async listTags() {
+    const res = await fetch(`${BASE_URL}/tags`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async toggleFavorite(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/favorite`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async listFolders() {
+    const res = await fetch(`${BASE_URL}/folders`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async createFolder(name: string, color?: string) {
+    const res = await fetch(`${BASE_URL}/folders`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ name, color }),
+    });
+    return handleRes(res);
+  },
+  async deleteFolder(folderId: string) {
+    const res = await fetch(`${BASE_URL}/folders/${folderId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async listNotes(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/notes`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async createNote(videoId: string, content: string, timestamp?: number) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/notes`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ content, timestamp }),
+    });
+    return handleRes(res);
+  },
+  async updateNote(noteId: string, content: string, timestamp?: number | null) {
+    const res = await fetch(`${BASE_URL}/notes/${noteId}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ content, timestamp: timestamp ?? null }),
+    });
+    return handleRes(res);
+  },
+  async deleteNote(noteId: string) {
+    const res = await fetch(`${BASE_URL}/notes/${noteId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async generateAiContent(videoId: string, type: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/generate`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ type }),
+    });
+    return handleRes(res);
+  },
+  async listAiOutputs(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/outputs`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async globalChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>) {
+    const res = await fetch(`${BASE_URL}/ai/global-chat`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ message, history }),
+    });
+    return handleRes(res);
+  },
+};

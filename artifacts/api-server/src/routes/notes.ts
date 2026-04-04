@@ -42,7 +42,7 @@ router.post("/videos/:videoId/notes", async (req, res) => {
       videoId: req.params.videoId,
       userId: req.user.id,
       content,
-      timestamp: timestamp || null,
+      timestamp: timestamp ?? null,
     })
     .returning();
 
@@ -54,9 +54,10 @@ router.patch("/notes/:noteId", async (req, res) => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  const { content } = req.body as { content?: string };
+  const { content, timestamp } = req.body as { content?: string; timestamp?: number | null };
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (content !== undefined) updates.content = content;
+  if (timestamp !== undefined) updates.timestamp = timestamp ?? null;
 
   const [updated] = await db
     .update(notesTable)

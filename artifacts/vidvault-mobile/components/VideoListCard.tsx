@@ -1,0 +1,124 @@
+import React from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { useColors } from "@/hooks/useColors";
+
+interface Video {
+  id: string;
+  title: string;
+  thumbnail?: string | null;
+  channelName?: string | null;
+  duration?: string | null;
+  isFavorite: boolean;
+}
+
+interface VideoListCardProps {
+  video: Video;
+  onPress: () => void;
+  onToggleFavorite?: () => void;
+}
+
+export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCardProps) {
+  const colors = useColors();
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={[styles.card, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}
+    >
+      <View style={styles.thumbnailWrapper}>
+        {video.thumbnail ? (
+          <Image source={{ uri: video.thumbnail }} style={[styles.thumbnail, { borderRadius: 8 }]} resizeMode="cover" />
+        ) : (
+          <View style={[styles.thumbPlaceholder, { borderRadius: 8, backgroundColor: colors.secondary }]}>
+            <Feather name="play-circle" size={22} color={colors.mutedForeground} />
+          </View>
+        )}
+        {video.duration && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{video.duration}</Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
+          {video.title}
+        </Text>
+        {video.channelName && (
+          <Text style={[styles.channel, { color: colors.mutedForeground }]} numberOfLines={1}>
+            {video.channelName}
+          </Text>
+        )}
+      </View>
+      {onToggleFavorite && (
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            onToggleFavorite();
+          }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.favBtn}
+        >
+          <Feather name="heart" size={18} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+  },
+  thumbnailWrapper: {
+    position: "relative",
+    marginRight: 12,
+  },
+  thumbnail: {
+    width: 96,
+    height: 54,
+  },
+  thumbPlaceholder: {
+    width: 96,
+    height: 54,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badge: {
+    position: "absolute",
+    bottom: 3,
+    right: 3,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 3,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+  },
+  content: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    lineHeight: 19,
+    marginBottom: 4,
+  },
+  channel: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+  },
+  favBtn: {
+    padding: 4,
+    marginLeft: 8,
+  },
+});

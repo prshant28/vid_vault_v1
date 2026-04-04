@@ -74,6 +74,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
+      sessionId: sid,
       user: sessionData.user,
     });
   } catch (err) {
@@ -134,6 +135,7 @@ router.post("/login-manual", async (req: Request, res: Response) => {
 
     res.json({
       success: true,
+      sessionId: sid,
       user: sessionData.user,
     });
   } catch (err) {
