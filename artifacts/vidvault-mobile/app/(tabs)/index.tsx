@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -19,18 +19,20 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/services/api";
 import type { Video, Stats } from "@/types/api";
-import { Skeleton, StatCardSkeleton } from "@/components/SkeletonLoader";
+import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
-import { VideoListCard } from "@/components/VideoListCard";
+import { VideoCard } from "@/components/VideoCard";
+import { SaveToVaultModal } from "@/components/SaveToVaultModal";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const GRID_CELL = 56;
+const RECENT_CARD_W = SCREEN_W * 0.72;
 
 function GridBackground({ color }: { color: string }) {
   const cols = Math.ceil(SCREEN_W / GRID_CELL) + 1;
   const rows = Math.ceil(SCREEN_H / GRID_CELL) + 1;
   return (
-    <Svg width={SCREEN_W} height={SCREEN_H} style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+    <Svg width={SCREEN_W} height={SCREEN_H} style={StyleSheet.absoluteFillObject} pointerEvents="none">
       {Array.from({ length: cols }).map((_, i) => (
         <Line key={`v${i}`} x1={i * GRID_CELL} y1={0} x2={i * GRID_CELL} y2={SCREEN_H} stroke={color} strokeWidth={1} />
       ))}
@@ -44,9 +46,9 @@ function GridBackground({ color }: { color: string }) {
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const STAT_CONFIG = [
-  { label: "TOTAL_VIDEOS", code: "01", icon: "film" as FeatherIconName, accent: "#8b5cf6" },
-  { label: "FOLDERS", code: "02", icon: "folder" as FeatherIconName, accent: "#06b6d4" },
-  { label: "TAGS_USED", code: "03", icon: "tag" as FeatherIconName, accent: "#10b981" },
+  { label: "TOTAL_VIDEOS", code: "01", icon: "film" as FeatherIconName, accent: "#8b5cf6", key: "totalVideos" },
+  { label: "FOLDERS", code: "02", icon: "folder" as FeatherIconName, accent: "#06b6d4", key: "totalFolders" },
+  { label: "TAGS_USED", code: "03", icon: "tag" as FeatherIconName, accent: "#10b981", key: "totalTags" },
 ];
 
 function EtchedStatCard({
@@ -69,32 +71,19 @@ function EtchedStatCard({
         styles.etchedCard,
         {
           backgroundColor: colors.card,
-          borderColor: colors.border,
+          borderColor: "rgba(139,92,246,0.10)",
         },
       ]}
     >
-      {/* Top row: code number + icon */}
       <View style={styles.etchedTop}>
         <Text style={[styles.etchedCode, { color: colors.mutedForeground }]}>{code}</Text>
-        <Feather name={icon} size={14} color={accent + "60"} />
+        <Feather name={icon} size={15} color={accent + "55"} />
       </View>
-
-      {/* Accent label */}
       <Text style={[styles.etchedLabel, { color: accent + "99" }]}>{label}</Text>
-
-      {/* Large value */}
       <Text style={[styles.etchedValue, { color: colors.foreground }]}>
         {value.toString().padStart(2, "0")}
       </Text>
-
-      {/* Radial glow decoration */}
-      <View
-        style={[
-          styles.etchedGlow,
-          { backgroundColor: accent },
-        ]}
-        pointerEvents="none"
-      />
+      <View style={[styles.etchedGlow, { backgroundColor: accent }]} pointerEvents="none" />
     </View>
   );
 }
@@ -104,6 +93,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const qc = useQueryClient();
+
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const { data: stats, isLoading, refetch, isRefetching } = useQuery<Stats>({
     queryKey: ["stats"],
@@ -124,120 +115,152 @@ export default function HomeScreen() {
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
   const gridColor = isDark ? "rgba(139,92,246,0.055)" : "rgba(139,92,246,0.06)";
 
+  const recentVideos = stats?.recentVideos ?? [];
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GridBackground color={gridColor} />
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ paddingBottom: botInset + 100 }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
-    >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topInset + 16 }]}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>//SYSTEM_STATUS</Text>
-          <Text style={[styles.name, { color: colors.foreground }]}>{displayName}{"'"}s Vault</Text>
-          <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>KNOWLEDGE_BASE // ACTIVE</Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/videos")}
-          style={[styles.addBtn, { backgroundColor: colors.primary }]}
-          activeOpacity={0.85}
-        >
-          <Feather name="plus" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
 
-      {/* Stats */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>OVERVIEW</Text>
-          <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-        </View>
-        {isLoading ? (
-          <View style={styles.statsGrid}>
-            {[1, 2, 3].map((i) => <StatCardSkeleton key={i} />)}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: botInset + 100 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+      >
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: topInset + 16 }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.greeting, { color: colors.mutedForeground }]}>//SYSTEM_STATUS</Text>
+            <Text style={[styles.name, { color: colors.foreground }]}>
+              {displayName}{"'"}s Vault
+            </Text>
+            <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>
+              KNOWLEDGE_BASE // ACTIVE
+            </Text>
           </View>
-        ) : (
-          <View style={styles.statsGrid}>
-            {STAT_CONFIG.map((cfg, i) => (
-              <EtchedStatCard
-                key={cfg.code}
-                code={cfg.code}
-                label={cfg.label}
-                icon={cfg.icon}
-                accent={cfg.accent}
-                value={
-                  i === 0
-                    ? stats?.totalVideos ?? 0
-                    : i === 1
-                    ? stats?.totalFolders ?? 0
-                    : stats?.totalTags ?? 0
-                }
-              />
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* Recently Added */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>//RECENTLY_SAVED</Text>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Latest Captures</Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
-            <Text style={[styles.viewAll, { color: colors.mutedForeground }]}>VIEW_ALL →</Text>
+          <TouchableOpacity
+            onPress={() => setShowSaveModal(true)}
+            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <Feather name="plus" size={18} color="#fff" />
+            <Text style={styles.saveBtnLabel}>SAVE</Text>
           </TouchableOpacity>
         </View>
-        {isLoading ? (
-          <>
-            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={4} />
-            <Skeleton height={72} style={{ marginBottom: 10 }} borderRadius={4} />
-            <Skeleton height={72} borderRadius={4} />
-          </>
-        ) : stats?.recentVideos && stats.recentVideos.length > 0 ? (
-          stats.recentVideos.slice(0, 5).map((video: Video) => (
-            <VideoListCard
-              key={video.id}
-              video={video}
-              onPress={() => router.push(`/video/${video.id}`)}
-              onToggleFavorite={() => favoriteMutation.mutate(video.id)}
-            />
-          ))
-        ) : (
-          <EmptyState
-            icon="film"
-            title="No videos yet"
-            subtitle="Add your first YouTube video to get started"
-            actionLabel="Add Video"
-            onAction={() => router.push("/(tabs)/videos")}
-          />
-        )}
-      </View>
 
-      {stats?.favoriteVideos && stats.favoriteVideos.length > 0 && (
+        {/* Stat Cards — full-width vertical stack */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <View>
-              <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>//STARRED</Text>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Favorites</Text>
-            </View>
-            <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>OVERVIEW</Text>
+            <View style={[styles.sectionLine, { backgroundColor: "rgba(139,92,246,0.15)" }]} />
           </View>
-          {stats.favoriteVideos.slice(0, 3).map((video: Video) => (
-            <VideoListCard
-              key={video.id}
-              video={video}
-              onPress={() => router.push(`/video/${video.id}`)}
-              onToggleFavorite={() => favoriteMutation.mutate(video.id)}
-            />
-          ))}
+
+          {isLoading ? (
+            <View style={{ gap: 10 }}>
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} height={110} borderRadius={4} />
+              ))}
+            </View>
+          ) : (
+            <View style={{ gap: 10 }}>
+              {STAT_CONFIG.map((cfg) => (
+                <EtchedStatCard
+                  key={cfg.code}
+                  code={cfg.code}
+                  label={cfg.label}
+                  icon={cfg.icon}
+                  accent={cfg.accent}
+                  value={(stats as any)?.[cfg.key] ?? 0}
+                />
+              ))}
+            </View>
+          )}
         </View>
-      )}
-    </ScrollView>
+
+        {/* Recently Added — horizontal scroll */}
+        <View style={styles.sectionNoHPad}>
+          <View style={[styles.sectionHeader, { paddingHorizontal: 20 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>//RECENTLY_SAVED</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Latest Captures</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
+              <Text style={[styles.viewAll, { color: colors.mutedForeground }]}>VIEW_ALL →</Text>
+            </TouchableOpacity>
+          </View>
+
+          {isLoading ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} height={180} width={RECENT_CARD_W} borderRadius={4} />
+              ))}
+            </ScrollView>
+          ) : recentVideos.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+              decelerationRate="fast"
+              snapToInterval={RECENT_CARD_W + 12}
+              snapToAlignment="start"
+            >
+              {recentVideos.slice(0, 8).map((video: Video, index: number) => (
+                <VideoCard
+                  key={video.id}
+                  video={video}
+                  cardWidth={RECENT_CARD_W}
+                  isNew={index === 0}
+                  onPress={() => router.push(`/video/${video.id}`)}
+                  onToggleFavorite={() => favoriteMutation.mutate(video.id)}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={{ paddingHorizontal: 20 }}>
+              <EmptyState
+                icon="film"
+                title="Vault is empty"
+                subtitle="Save your first YouTube video to get started"
+                actionLabel="Save Video"
+                onAction={() => setShowSaveModal(true)}
+                code="00"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Favorites section */}
+        {stats?.favoriteVideos && stats.favoriteVideos.length > 0 && (
+          <View style={[styles.sectionNoHPad, { marginTop: 8 }]}>
+            <View style={[styles.sectionHeader, { paddingHorizontal: 20 }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>//STARRED</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Favorites</Text>
+              </View>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+              decelerationRate="fast"
+              snapToInterval={RECENT_CARD_W + 12}
+              snapToAlignment="start"
+            >
+              {stats.favoriteVideos.slice(0, 5).map((video: Video) => (
+                <VideoCard
+                  key={video.id}
+                  video={video}
+                  cardWidth={RECENT_CARD_W}
+                  onPress={() => router.push(`/video/${video.id}`)}
+                  onToggleFavorite={() => favoriteMutation.mutate(video.id)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </ScrollView>
+
+      <SaveToVaultModal visible={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </View>
   );
 }
@@ -249,6 +272,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 24,
+    gap: 12,
   },
   greeting: {
     fontSize: 9,
@@ -268,28 +292,39 @@ const styles = StyleSheet.create({
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 1.5,
   },
-  addBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 4,
+  saveBtn: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginTop: 6,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  saveBtnLabel: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
   },
   section: {
     paddingHorizontal: 20,
+    marginBottom: 28,
+  },
+  sectionNoHPad: {
     marginBottom: 28,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 14,
     gap: 12,
   },
   sectionLine: {
     flex: 1,
     height: 1,
+    marginBottom: 4,
   },
   sectionLabel: {
     fontSize: 10,
@@ -303,7 +338,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Raleway_900Black",
     letterSpacing: -0.3,
   },
@@ -311,28 +346,21 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 1.5,
-    paddingBottom: 2,
-  },
-  statsGrid: {
-    flexDirection: "row",
-    gap: 10,
+    paddingBottom: 3,
   },
 
-  /* Etched slab card — mirrors web etched-slab style */
   etchedCard: {
-    flex: 1,
-    padding: 14,
+    padding: 16,
     borderWidth: 1,
     borderRadius: 4,
     overflow: "hidden",
-    gap: 4,
-    minHeight: 110,
+    minHeight: 100,
   },
   etchedTop: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   etchedCode: {
     fontSize: 9,
@@ -344,21 +372,21 @@ const styles = StyleSheet.create({
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 1.5,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 6,
   },
   etchedValue: {
-    fontSize: 38,
+    fontSize: 44,
     fontFamily: "Raleway_900Black",
-    lineHeight: 42,
-    letterSpacing: -1,
+    lineHeight: 48,
+    letterSpacing: -2,
   },
   etchedGlow: {
     position: "absolute",
-    bottom: -20,
-    right: -20,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    bottom: -24,
+    right: -24,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     opacity: 0.05,
   },
 });

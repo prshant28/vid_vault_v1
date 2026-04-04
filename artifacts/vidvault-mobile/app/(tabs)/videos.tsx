@@ -5,13 +5,11 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
-  Modal,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
+import Svg, { Line } from "react-native-svg";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +21,26 @@ import { VideoCard } from "@/components/VideoCard";
 import { VideoCardSkeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { SearchBar } from "@/components/SearchBar";
+import { SaveToVaultModal } from "@/components/SaveToVaultModal";
+import { Dimensions } from "react-native";
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+const GRID_CELL = 56;
+
+function GridBackground({ color }: { color: string }) {
+  const cols = Math.ceil(SCREEN_W / GRID_CELL) + 1;
+  const rows = Math.ceil(SCREEN_H / GRID_CELL) + 1;
+  return (
+    <Svg width={SCREEN_W} height={SCREEN_H} style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      {Array.from({ length: cols }).map((_, i) => (
+        <Line key={`v${i}`} x1={i * GRID_CELL} y1={0} x2={i * GRID_CELL} y2={SCREEN_H} stroke={color} strokeWidth={1} />
+      ))}
+      {Array.from({ length: rows }).map((_, i) => (
+        <Line key={`h${i}`} x1={0} y1={i * GRID_CELL} x2={SCREEN_W} y2={i * GRID_CELL} stroke={color} strokeWidth={1} />
+      ))}
+    </Svg>
+  );
+}
 
 interface Tag {
   id: string;
@@ -34,14 +52,12 @@ export default function VideosScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
+  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
 
   const [search, setSearch] = useState("");
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addUrl, setAddUrl] = useState("");
-  const [addLoading, setAddLoading] = useState(false);
-  const [addError, setAddError] = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["videos", search, showFavorites, selectedTagId],
@@ -63,72 +79,74 @@ export default function VideosScreen() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["videos"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
   });
-
-  const addMutation = useMutation({
-    mutationFn: (url: string) => api.addVideo(url),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["videos"] });
-      qc.invalidateQueries({ queryKey: ["stats"] });
-      setShowAddModal(false);
-      setAddUrl("");
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    },
-    onError: (e: Error) => {
-      setAddError(e.message || "Failed to add video");
-    },
-  });
-
-  const handleAdd = useCallback(async () => {
-    if (!addUrl.trim()) {
-      setAddError("Please paste a YouTube URL");
-      return;
-    }
-    setAddError("");
-    setAddLoading(true);
-    try {
-      await addMutation.mutateAsync(addUrl.trim());
-    } finally {
-      setAddLoading(false);
-    }
-  }, [addUrl, addMutation]);
 
   const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const videos = data?.videos ?? [];
   const tags: Tag[] = tagsData?.tags ?? [];
+  const gridColor = isDark ? "rgba(139,92,246,0.055)" : "rgba(139,92,246,0.06)";
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
-        <View>
+      <GridBackground color={gridColor} />
+
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>VIDEO_VAULT</Text>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Library</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => setShowSaveModal(true)}
+          style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+          activeOpacity={0.85}
+        >
+          <Feather name="plus" size={16} color="#fff" />
+          <Text style={styles.saveBtnText}>SAVE</Text>
+        </TouchableOpacity>
       </View>
 
+      {/* Search + Filters */}
       <View style={styles.controls}>
-        <SearchBar value={search} onChangeText={setSearch} placeholder="Search videos..." />
+        <SearchBar value={search} onChangeText={setSearch} placeholder="Search vault..." />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chipsContent}>
           <TouchableOpacity
             onPress={() => { setShowFavorites(false); setSelectedTagId(null); }}
-            style={[styles.chip, { backgroundColor: !showFavorites && !selectedTagId ? colors.primary : colors.secondary, borderRadius: 100 }]}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: !showFavorites && !selectedTagId
+                  ? colors.primary
+                  : isDark ? "rgba(255,255,255,0.04)" : colors.secondary,
+                borderColor: !showFavorites && !selectedTagId ? colors.primary : "transparent",
+              },
+            ]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.chipText, { color: !showFavorites && !selectedTagId ? colors.primaryForeground : colors.foreground }]}>
-              All
+            <Text style={[styles.chipText, { color: !showFavorites && !selectedTagId ? "#fff" : colors.mutedForeground }]}>
+              ALL
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => { setShowFavorites(!showFavorites); setSelectedTagId(null); }}
-            style={[styles.chip, { backgroundColor: showFavorites ? colors.primary : colors.secondary, borderRadius: 100 }]}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: showFavorites
+                  ? "rgba(239,68,68,0.15)"
+                  : isDark ? "rgba(255,255,255,0.04)" : colors.secondary,
+                borderColor: showFavorites ? "rgba(239,68,68,0.4)" : "transparent",
+              },
+            ]}
             activeOpacity={0.8}
           >
-            <Feather name="heart" size={12} color={showFavorites ? colors.primaryForeground : colors.foreground} style={{ marginRight: 4 }} />
-            <Text style={[styles.chipText, { color: showFavorites ? colors.primaryForeground : colors.foreground }]}>Favorites</Text>
+            <Feather name="heart" size={11} color={showFavorites ? "#ef4444" : colors.mutedForeground} />
+            <Text style={[styles.chipText, { color: showFavorites ? "#ef4444" : colors.mutedForeground }]}>FAV</Text>
           </TouchableOpacity>
 
           {tags.map((tag) => (
@@ -138,14 +156,20 @@ export default function VideosScreen() {
                 setSelectedTagId(selectedTagId === tag.id ? null : tag.id);
                 setShowFavorites(false);
               }}
-              style={[styles.chip, {
-                backgroundColor: selectedTagId === tag.id ? (tag.color || colors.primary) : colors.secondary,
-                borderRadius: 100,
-              }]}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: selectedTagId === tag.id
+                    ? (tag.color || colors.primary) + "25"
+                    : isDark ? "rgba(255,255,255,0.04)" : colors.secondary,
+                  borderColor: selectedTagId === tag.id ? (tag.color || colors.primary) + "60" : "transparent",
+                },
+              ]}
               activeOpacity={0.8}
             >
-              <Text style={[styles.chipText, { color: selectedTagId === tag.id ? "#fff" : colors.foreground }]}>
-                {tag.name}
+              <View style={[styles.tagDot, { backgroundColor: tag.color || colors.primary }]} />
+              <Text style={[styles.chipText, { color: selectedTagId === tag.id ? (tag.color || colors.primary) : colors.mutedForeground }]}>
+                {tag.name.toUpperCase()}
               </Text>
             </TouchableOpacity>
           ))}
@@ -153,20 +177,26 @@ export default function VideosScreen() {
       </View>
 
       {isLoading ? (
-        <View style={styles.grid}>
-          {[1, 2, 3, 4].map((i) => (
-            <View key={i} style={{ width: "48%" }}>
+        <FlatList
+          data={[1, 2, 3, 4]}
+          keyExtractor={(item) => String(item)}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+          renderItem={() => (
+            <View style={{ width: "48%" }}>
               <VideoCardSkeleton />
             </View>
-          ))}
-        </View>
+          )}
+        />
       ) : videos.length === 0 ? (
         <EmptyState
           icon="film"
-          title={search ? "No results found" : "No videos yet"}
-          subtitle={search ? "Try a different search term" : "Tap the + button to save your first YouTube video"}
-          actionLabel={search ? undefined : "Add Video"}
-          onAction={search ? undefined : () => setShowAddModal(true)}
+          title={search ? "No results" : "Vault is empty"}
+          subtitle={search ? "Try a different search term" : "Save your first YouTube video"}
+          actionLabel={search ? undefined : "Save Video"}
+          onAction={search ? undefined : () => setShowSaveModal(true)}
+          code={search ? "Ø" : "00"}
         />
       ) : (
         <FlatList
@@ -178,9 +208,10 @@ export default function VideosScreen() {
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
           onRefresh={refetch}
-          renderItem={({ item }: { item: { id: string; title: string; thumbnail?: string | null; channelName?: string | null; duration?: string | null; isFavorite: boolean } }) => (
+          renderItem={({ item, index }: { item: any; index: number }) => (
             <VideoCard
               video={item}
+              isNew={index === 0 && !search && !showFavorites && !selectedTagId}
               onPress={() => router.push(`/video/${item.id}`)}
               onToggleFavorite={() => favMutation.mutate(item.id)}
             />
@@ -188,102 +219,83 @@ export default function VideosScreen() {
         />
       )}
 
+      {/* FAB */}
       <TouchableOpacity
-        onPress={() => setShowAddModal(true)}
+        onPress={() => setShowSaveModal(true)}
         style={[styles.fab, { backgroundColor: colors.primary, bottom: botInset + 90 }]}
         activeOpacity={0.85}
       >
         <Feather name="plus" size={24} color="#fff" />
       </TouchableOpacity>
 
-      <Modal visible={showAddModal} transparent animationType="slide" onRequestClose={() => setShowAddModal(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowAddModal(false)} />
-          <View style={[styles.sheet, { backgroundColor: colors.card, borderRadius: colors.radius, paddingBottom: botInset + 24 }]}>
-            <View style={styles.sheetHandle} />
-            <View style={styles.sheetHeader}>
-              <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Add YouTube Video</Text>
-              <TouchableOpacity onPress={() => setShowAddModal(false)}>
-                <Feather name="x" size={22} color={colors.mutedForeground} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.sheetSubtitle, { color: colors.mutedForeground }]}>
-              Paste a YouTube URL to save it to your library
-            </Text>
-            <TextInput
-              value={addUrl}
-              onChangeText={(t) => { setAddUrl(t); setAddError(""); }}
-              placeholder="https://youtube.com/watch?v=..."
-              placeholderTextColor={colors.mutedForeground}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[styles.urlInput, { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius - 4 }]}
-            />
-            {addError ? (
-              <Text style={[styles.addError, { color: colors.destructive }]}>{addError}</Text>
-            ) : null}
-            <TouchableOpacity
-              onPress={handleAdd}
-              disabled={addLoading}
-              style={[styles.addBtn, { backgroundColor: addLoading ? colors.primary + "80" : colors.primary, borderRadius: colors.radius }]}
-              activeOpacity={0.85}
-            >
-              {addLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.addBtnText}>Save Video</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <SaveToVaultModal visible={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 12,
+    gap: 12,
   },
   headerEyebrow: {
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2,
+    marginBottom: 3,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontFamily: "Raleway_900Black",
+    letterSpacing: -0.5,
+  },
+  saveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 4,
+  },
+  saveBtnText: {
+    color: "#fff",
     fontSize: 10,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 2,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.5,
   },
   controls: {
     paddingHorizontal: 16,
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   chipsScroll: {
     flexGrow: 0,
   },
   chipsContent: {
-    gap: 8,
+    gap: 6,
     paddingRight: 4,
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderRadius: 3,
   },
   chipText: {
-    fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 1.5,
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 16,
-    gap: 12,
+  tagDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   columnWrapper: {
     gap: 12,
@@ -292,68 +304,15 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: "#8b5cf6",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     elevation: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  sheet: {
-    padding: 20,
-    paddingTop: 12,
-    gap: 14,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#ccc",
-    alignSelf: "center",
-    marginBottom: 8,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sheetTitle: {
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
-  },
-  sheetSubtitle: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 20,
-  },
-  urlInput: {
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-    borderWidth: 1,
-  },
-  addError: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
-  addBtn: {
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  addBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
   },
 });
