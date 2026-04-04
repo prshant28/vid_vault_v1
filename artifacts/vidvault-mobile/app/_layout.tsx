@@ -25,7 +25,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance, Platform } from "react-native";
+import { Appearance, Platform, View } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -72,6 +72,12 @@ function RootLayoutNav() {
       router.replace("/splash");
     }
   }, [user, isLoading]);
+
+  // While auth state is being restored from storage, show a blank dark screen
+  // so the home tab never flashes before the correct route is pushed.
+  if (isLoading) {
+    return <View style={{ flex: 1, backgroundColor: "#0a0a0b" }} />;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
