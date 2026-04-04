@@ -31,30 +31,49 @@ async function secureGet(key: string): Promise<string | null> {
       return null;
     }
   }
-  const SecureStore = await import("expo-secure-store");
-  return SecureStore.getItemAsync(key);
+  try {
+    const SecureStore = await import("expo-secure-store");
+    return await SecureStore.getItemAsync(key);
+  } catch {
+    return null;
+  }
 }
 
 async function secureSet(key: string, value: string): Promise<void> {
+  if (!value || typeof value !== "string") return;
   if (Platform.OS === "web") {
     try {
       if (typeof window !== "undefined") window.localStorage.setItem(key, value);
-    } catch { /* ignore */ }
+    } catch { }
     return;
   }
-  const SecureStore = await import("expo-secure-store");
-  return SecureStore.setItemAsync(key, value);
+  try {
+    const SecureStore = await import("expo-secure-store");
+    // SecureStore has a 2048-byte limit per value on some platforms
+    // Truncate safely or skip if too large
+    if (value.length > 2000) {
+      console.warn("[Auth] Skipping SecureStore for key", key, "- value too large");
+      return;
+    }
+    await SecureStore.setItemAsync(key, value);
+  } catch (err) {
+    console.warn("[Auth] SecureStore setItem failed for key", key, err);
+  }
 }
 
 async function secureDelete(key: string): Promise<void> {
   if (Platform.OS === "web") {
     try {
       if (typeof window !== "undefined") window.localStorage.removeItem(key);
-    } catch { /* ignore */ }
+    } catch { }
     return;
   }
-  const SecureStore = await import("expo-secure-store");
-  return SecureStore.deleteItemAsync(key);
+  try {
+    const SecureStore = await import("expo-secure-store");
+    await SecureStore.deleteItemAsync(key);
+  } catch (err) {
+    console.warn("[Auth] SecureStore deleteItem failed for key", key, err);
+  }
 }
 
 const BASE_URL = `https://${process.env.EXPO_PUBLIC_DOMAIN}`;
@@ -74,11 +93,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(JSON.parse(storedUser));
         }
       } catch {
-        // Ignore load errors
+        // Ignore load errors — user will need to sign in again
       } finally {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  const persistSession = useCallback(async (sessionId: string, authUser: AuthUser) => {
+    // Store token (64-char hex, always safe)
+    await secureSet(TOKEN_KEY, sessionId);
+
+    // Store user — keep payload compact to avoid SecureStore size limits
+    const compactUser = {
+      id: authUser.id,
+      email: authUser.email,
+      firstName: authUser.firstName,
+      lastName: authUser.lastName,
+      profileImageUrl: null, // skip large URLs from storage
+    };
+    await secureSet(USER_KEY, JSON.stringify(compactUser));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -93,9 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const data = (await res.json()) as { sessionId: string; user: AuthUser };
 
-    await secureSet(TOKEN_KEY, data.sessionId);
-    setToken(data.sessionId);
-
     const authUser: AuthUser = {
       id: data.user.id,
       email: data.user.email,
@@ -103,9 +134,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastName: data.user.lastName || null,
       profileImageUrl: data.user.profileImageUrl || null,
     };
-    await secureSet(USER_KEY, JSON.stringify(authUser));
+
+    // Set state immediately so the user is logged in even if persistence fails
+    setToken(data.sessionId);
     setUser(authUser);
-  }, []);
+
+    // Persist in background — don't await to avoid blocking navigation
+    persistSession(data.sessionId, authUser).catch(console.warn);
+  }, [persistSession]);
 
   const register = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
     const res = await fetch(`${BASE_URL}/api/register`, {
@@ -119,9 +155,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const data = (await res.json()) as { sessionId: string; user: AuthUser };
 
-    await secureSet(TOKEN_KEY, data.sessionId);
-    setToken(data.sessionId);
-
     const authUser: AuthUser = {
       id: data.user.id,
       email: data.user.email,
@@ -129,15 +162,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastName: data.user.lastName || null,
       profileImageUrl: data.user.profileImageUrl || null,
     };
-    await secureSet(USER_KEY, JSON.stringify(authUser));
+
+    // Set state immediately so the user is logged in even if persistence fails
+    setToken(data.sessionId);
     setUser(authUser);
-  }, []);
+
+    // Persist in background — don't await to avoid blocking navigation
+    persistSession(data.sessionId, authUser).catch(console.warn);
+  }, [persistSession]);
 
   const logout = useCallback(async () => {
-    await secureDelete(TOKEN_KEY);
-    await secureDelete(USER_KEY);
     setToken(null);
     setUser(null);
+    await secureDelete(TOKEN_KEY);
+    await secureDelete(USER_KEY);
   }, []);
 
   return (

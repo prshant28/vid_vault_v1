@@ -9,17 +9,101 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
-import { router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 
+const LOGO = require("@/assets/images/logo.png");
+
+const PURPLE = "#8b5cf6";
+const PURPLE_DIM = "#6d28d9";
+const BG = "#0a0a0f";
+const CARD_BG = "#13131a";
+const BORDER = "#1e1e2e";
+const BORDER_FOCUS = "rgba(139,92,246,0.55)";
+const TEXT = "#f1f5f9";
+const MUTED = "#64748b";
+const INPUT_BG = "#1a1a27";
+const ERROR_BG = "rgba(239,68,68,0.12)";
+const ERROR_COLOR = "#f87171";
+
+function EyeIcon({ visible }: { visible: boolean }) {
+  if (visible) {
+    return (
+      <Text style={{ color: MUTED, fontSize: 16 }}>👁</Text>
+    );
+  }
+  return (
+    <Text style={{ color: MUTED, fontSize: 16 }}>🙈</Text>
+  );
+}
+
+function FocusableInput({
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+  autoCapitalize,
+  autoCorrect,
+  secureTextEntry,
+  onSubmitEditing,
+  returnKeyType,
+  rightElement,
+}: {
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  keyboardType?: "email-address" | "default";
+  autoCapitalize?: "none" | "words" | "sentences";
+  autoCorrect?: boolean;
+  secureTextEntry?: boolean;
+  onSubmitEditing?: () => void;
+  returnKeyType?: "done" | "next" | "go";
+  rightElement?: React.ReactNode;
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <View
+      style={[
+        styles.inputWrapper,
+        {
+          borderColor: focused ? BORDER_FOCUS : BORDER,
+          backgroundColor: INPUT_BG,
+          shadowColor: focused ? PURPLE : "transparent",
+          shadowOpacity: focused ? 0.2 : 0,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: focused ? 4 : 0,
+        },
+      ]}
+    >
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={MUTED}
+        keyboardType={keyboardType ?? "default"}
+        autoCapitalize={autoCapitalize ?? "sentences"}
+        autoCorrect={autoCorrect ?? true}
+        secureTextEntry={secureTextEntry}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onSubmitEditing={onSubmitEditing}
+        returnKeyType={returnKeyType}
+        style={styles.inputField}
+      />
+      {rightElement && (
+        <View style={styles.inputRight}>{rightElement}</View>
+      )}
+    </View>
+  );
+}
+
 export default function LoginScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -30,23 +114,47 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
 
-  const { register } = useAuth();
+  const switchMode = (m: "login" | "register") => {
+    setMode(m);
+    setError("");
+  };
 
   const submit = async () => {
-    if (!email.trim() || !password.trim()) {
-      setError("Email and password are required");
+    const emailTrimmed = email.trim();
+    const passTrimmed = password.trim();
+
+    if (!emailTrimmed) {
+      setError("Please enter your email address");
       return;
     }
+    if (!emailTrimmed.includes("@")) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (!passTrimmed) {
+      setError("Please enter your password");
+      return;
+    }
+    if (mode === "register" && passTrimmed.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setError("");
     setLoading(true);
     try {
       if (mode === "login") {
-        await login(email.trim(), password);
+        await login(emailTrimmed, passTrimmed);
       } else {
-        await register(email.trim(), password, firstName.trim() || undefined, lastName.trim() || undefined);
+        await register(
+          emailTrimmed,
+          passTrimmed,
+          firstName.trim() || undefined,
+          lastName.trim() || undefined,
+        );
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -54,110 +162,154 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: BG }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={[styles.container, { paddingTop: insets.top + (Platform.OS === "web" ? 67 : 20), paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 20) }]}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          {
+            paddingTop: insets.top + 40,
+            paddingBottom: insets.bottom + 32,
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.logo, { backgroundColor: colors.accent }]}>
-            <Feather name="film" size={28} color={colors.primary} />
+          <View style={styles.logoContainer}>
+            <Image source={LOGO} style={styles.logoImage} resizeMode="contain" />
           </View>
-          <Text style={[styles.appName, { color: colors.foreground }]}>VidVault AI</Text>
-          <Text style={[styles.tagline, { color: colors.mutedForeground }]}>Your YouTube knowledge vault</Text>
+          <Text style={styles.appName}>VidVault AI</Text>
+          <Text style={styles.tagline}>Your second brain for videos</Text>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}>
-          <View style={[styles.tabs, { backgroundColor: colors.secondary, borderRadius: colors.radius - 2 }]}>
+        {/* Card */}
+        <View style={styles.card}>
+          {/* Tab switcher */}
+          <View style={styles.tabBar}>
             <TouchableOpacity
-              onPress={() => { setMode("login"); setError(""); }}
-              style={[styles.tab, mode === "login" && { backgroundColor: colors.card, borderRadius: colors.radius - 4 }]}
-              activeOpacity={0.8}
+              onPress={() => switchMode("login")}
+              style={[styles.tabBtn, mode === "login" && styles.tabBtnActive]}
+              activeOpacity={0.75}
             >
-              <Text style={[styles.tabText, { color: mode === "login" ? colors.foreground : colors.mutedForeground, fontFamily: mode === "login" ? "Inter_600SemiBold" : "Inter_400Regular" }]}>
+              <Text style={[styles.tabText, mode === "login" && styles.tabTextActive]}>
                 Sign In
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => { setMode("register"); setError(""); }}
-              style={[styles.tab, mode === "register" && { backgroundColor: colors.card, borderRadius: colors.radius - 4 }]}
-              activeOpacity={0.8}
+              onPress={() => switchMode("register")}
+              style={[styles.tabBtn, mode === "register" && styles.tabBtnActive]}
+              activeOpacity={0.75}
             >
-              <Text style={[styles.tabText, { color: mode === "register" ? colors.foreground : colors.mutedForeground, fontFamily: mode === "register" ? "Inter_600SemiBold" : "Inter_400Regular" }]}>
+              <Text style={[styles.tabText, mode === "register" && styles.tabTextActive]}>
                 Register
               </Text>
             </TouchableOpacity>
           </View>
 
+          {/* Name fields (register only) */}
           {mode === "register" && (
-            <View style={styles.row}>
-              <TextInput
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="First name"
-                placeholderTextColor={colors.mutedForeground}
-                style={[styles.input, styles.halfInput, { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius - 4 }]}
-              />
-              <TextInput
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="Last name"
-                placeholderTextColor={colors.mutedForeground}
-                style={[styles.input, styles.halfInput, { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius - 4 }]}
-              />
+            <View style={styles.nameRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>First Name</Text>
+                <FocusableInput
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="Prashant"
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Last Name</Text>
+                <FocusableInput
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Maurya"
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                />
+              </View>
             </View>
           )}
 
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email address"
-            placeholderTextColor={colors.mutedForeground}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={[styles.input, { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius - 4 }]}
-          />
-
-          <View style={[styles.passwordRow, { backgroundColor: colors.secondary, borderColor: colors.border, borderRadius: colors.radius - 4 }]}>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Password"
-              placeholderTextColor={colors.mutedForeground}
-              secureTextEntry={!showPass}
-              style={[styles.passwordInput, { color: colors.foreground }]}
-              onSubmitEditing={submit}
+          {/* Email */}
+          <View>
+            <Text style={styles.label}>Email Address</Text>
+            <FocusableInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
             />
-            <TouchableOpacity onPress={() => setShowPass(!showPass)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name={showPass ? "eye-off" : "eye"} size={18} color={colors.mutedForeground} />
-            </TouchableOpacity>
           </View>
 
+          {/* Password */}
+          <View>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.passwordOuter}>
+              <FocusableInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder={mode === "register" ? "Min. 6 characters" : "Your password"}
+                secureTextEntry={!showPass}
+                onSubmitEditing={submit}
+                returnKeyType="done"
+                rightElement={
+                  <TouchableOpacity onPress={() => setShowPass(!showPass)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <EyeIcon visible={showPass} />
+                  </TouchableOpacity>
+                }
+              />
+            </View>
+          </View>
+
+          {/* Error */}
           {error ? (
-            <View style={[styles.errorBox, { backgroundColor: colors.destructive + "15", borderRadius: colors.radius - 4 }]}>
-              <Feather name="alert-circle" size={14} color={colors.destructive} />
-              <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorIcon}>⚠</Text>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
 
+          {/* Submit */}
           <TouchableOpacity
             onPress={submit}
             disabled={loading}
-            style={[styles.submitBtn, { backgroundColor: loading ? colors.primary + "80" : colors.primary, borderRadius: colors.radius - 4 }]}
+            style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
             activeOpacity={0.85}
           >
             {loading ? (
-              <ActivityIndicator color={colors.primaryForeground} />
+              <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+              <Text style={styles.submitText}>
                 {mode === "login" ? "Sign In" : "Create Account"}
               </Text>
             )}
           </TouchableOpacity>
+
+          {/* Switch hint */}
+          <View style={styles.switchHint}>
+            <Text style={styles.switchHintText}>
+              {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+            </Text>
+            <TouchableOpacity onPress={() => switchMode(mode === "login" ? "register" : "login")}>
+              <Text style={styles.switchHintLink}>
+                {mode === "login" ? "Register" : "Sign In"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Footer badge */}
+        <View style={styles.footerBadge}>
+          <Text style={styles.footerBadgeText}>✦ AI-POWERED VIDEO KNOWLEDGE</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -165,95 +317,210 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    justifyContent: "center",
+    alignItems: "stretch",
     gap: 24,
   },
+
+  /* Header */
   header: {
     alignItems: "center",
-    gap: 8,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  appName: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
-  },
-  tagline: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-  },
-  card: {
-    padding: 20,
-    borderWidth: 1,
-    gap: 12,
-  },
-  tabs: {
-    flexDirection: "row",
-    padding: 4,
+    gap: 10,
     marginBottom: 4,
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
+  logoContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 22,
+    backgroundColor: "#12101e",
+    borderWidth: 1,
+    borderColor: "rgba(139,92,246,0.3)",
     alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+    shadowColor: PURPLE,
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  logoImage: {
+    width: 64,
+    height: 64,
+  },
+  appName: {
+    fontSize: 30,
+    fontFamily: "Inter_700Bold",
+    color: TEXT,
+    letterSpacing: -0.5,
+  },
+  tagline: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    color: MUTED,
+    letterSpacing: 0.3,
+  },
+
+  /* Card */
+  card: {
+    backgroundColor: CARD_BG,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: 22,
+    gap: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+  },
+
+  /* Tab bar */
+  tabBar: {
+    flexDirection: "row",
+    backgroundColor: "#0a0a0f",
+    borderRadius: 10,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  tabBtnActive: {
+    backgroundColor: PURPLE,
   },
   tabText: {
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: MUTED,
+    letterSpacing: 0.2,
   },
-  input: {
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-    borderWidth: 1,
+  tabTextActive: {
+    color: "#fff",
   },
-  row: {
+
+  /* Name row */
+  nameRow: {
     flexDirection: "row",
-    gap: 10,
+    gap: 12,
   },
-  halfInput: {
-    flex: 1,
+
+  /* Labels */
+  label: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: MUTED,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginBottom: 7,
   },
-  passwordRow: {
+
+  /* Input */
+  inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 13,
     borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    minHeight: 48,
   },
-  passwordInput: {
+  inputField: {
     flex: 1,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    padding: 0,
+    color: TEXT,
+    paddingVertical: Platform.OS === "ios" ? 12 : 8,
   },
+  inputRight: {
+    paddingLeft: 8,
+  },
+  passwordOuter: {},
+
+  /* Error */
   errorBox: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
-    padding: 10,
+    backgroundColor: ERROR_BG,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.2)",
+  },
+  errorIcon: {
+    color: ERROR_COLOR,
+    fontSize: 14,
+    marginTop: 1,
   },
   errorText: {
+    flex: 1,
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    flex: 1,
+    color: ERROR_COLOR,
+    lineHeight: 18,
   },
+
+  /* Submit button */
   submitBtn: {
-    paddingVertical: 14,
+    backgroundColor: PURPLE,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 2,
+    shadowColor: PURPLE,
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  submitBtnDisabled: {
+    backgroundColor: PURPLE_DIM,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitText: {
     fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    color: "#fff",
+    letterSpacing: 0.3,
+  },
+
+  /* Switch hint */
+  switchHint: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 2,
+    marginTop: 2,
+  },
+  switchHintText: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: MUTED,
+  },
+  switchHintLink: {
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
+    color: PURPLE,
+  },
+
+  /* Footer */
+  footerBadge: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  footerBadgeText: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(139,92,246,0.5)",
+    letterSpacing: 2,
+    textTransform: "uppercase",
   },
 });
