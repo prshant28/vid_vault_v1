@@ -160,11 +160,43 @@ pnpm --filter @workspace/db run push
   - **Single Video**: Simple URL input → save video
   - **Playlist**: URL + optional folder name → imports all videos
 
+## Mobile App (Expo / React Native)
+
+Located at `artifacts/vidvault-mobile/`. Full-featured companion app mirroring the web app.
+
+### Design System — Brutalist Dark
+- **Palette**: `#0a0a0f` background, `#13131a` card, `#8b5cf6` purple primary, `borderRadius: 4` (sharp)
+- **Fonts**: Raleway_900Black (headings), JetBrainsMono_400Regular (labels/badges), Inter (body)
+- **Grid background**: SVG `rgba(139,92,246,0.07)` lines at 56px cell — used on dashboard, loading, onboarding
+- **Etched-slab stat cards**: code numbers "01/02/03", accent radial glow, Raleway_900Black values
+- **PolygonButton**: clip-path polygon CTA button used in login + onboarding
+
+### Key Screens
+- `_layout.tsx` — branded loading screen (logo + SVG grid) while auth restores
+- `splash.tsx` — native animated splash
+- `onboarding.tsx` — brutalist onboarding with slides, big decorative code numbers
+- `login.tsx` — email/password + JWT auth
+- `(tabs)/index.tsx` — dashboard (stat cards, recent videos, favorites)
+- `(tabs)/videos.tsx` — full library with search + tag/favorites filter, add-video modal
+- `(tabs)/folders.tsx` — folder management
+- `(tabs)/profile.tsx` — settings + theme toggle
+- `video/[id].tsx` — in-app YouTube player (WebView), AI content cards, timestamped notes
+
+### Auth
+- JWT stored in SecureStore, sent as `Authorization: Bearer <token>` header
+- `setApiToken(token)` in `services/api.ts` wires the token to all requests
+
+### Key Dependencies Added
+- `react-native-webview` — in-app YouTube embed player
+- `react-native-svg` — SVG grid backgrounds
+- `expo-haptics` — haptic feedback
+- `expo-secure-store` — secure JWT storage
+
 ## Notes
 
 - YouTube API key required for full metadata (duration, view count, exact titles)
 - Playlist imports use YouTube Data API v3 to fetch all video IDs
 - AI features use Replit's OpenAI integration (billed to Replit credits)
-- Dark mode enabled by default with glassmorphism UI
+- Dark mode enabled by default with glassmorphism UI on web; brutalist dark on mobile
 - Responsive design for mobile, tablet, desktop
-- Framer Motion animations for smooth interactions
+- Framer Motion animations for smooth interactions on web

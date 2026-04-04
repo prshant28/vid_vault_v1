@@ -73,7 +73,7 @@ const colors = {
     skeleton: "#1e1e2e",
     skeletonHighlight: "#252535",
   },
-  radius: 12,
+  radius: 4,
 };
 
 export default colors;

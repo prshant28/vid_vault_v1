@@ -32,6 +32,7 @@ interface VideoCardProps {
 
 export function VideoCard({ video, onPress, onToggleFavorite }: VideoCardProps) {
   const colors = useColors();
+  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
 
   const handleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -42,27 +43,27 @@ export function VideoCard({ video, onPress, onToggleFavorite }: VideoCardProps) 
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      style={[styles.card, { width: CARD_WIDTH, backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}
+      style={[styles.card, { width: CARD_WIDTH, backgroundColor: colors.card, borderColor: isDark ? "rgba(139,92,246,0.12)" : colors.border }]}
     >
       <View style={styles.thumbnailContainer}>
         {video.thumbnail ? (
-          <Image source={{ uri: video.thumbnail }} style={[styles.thumbnail, { borderRadius: colors.radius - 2 }]} resizeMode="cover" />
+          <Image source={{ uri: video.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbnailPlaceholder, { borderRadius: colors.radius - 2, backgroundColor: colors.secondary }]}>
-            <Feather name="film" size={28} color={colors.mutedForeground} />
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: colors.secondary }]}>
+            <Feather name="film" size={28} color={isDark ? "rgba(139,92,246,0.4)" : colors.mutedForeground} />
           </View>
         )}
         {video.duration && (
-          <View style={[styles.duration, { backgroundColor: "rgba(0,0,0,0.75)" }]}>
+          <View style={styles.duration}>
             <Text style={styles.durationText}>{video.duration}</Text>
           </View>
         )}
         <TouchableOpacity onPress={handleFavorite} style={styles.favoriteBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Feather
             name="heart"
-            size={16}
+            size={15}
             color={video.isFavorite ? "#ef4444" : "#ffffff"}
-            style={video.isFavorite ? { opacity: 1 } : { opacity: 0.8 }}
+            style={video.isFavorite ? { opacity: 1 } : { opacity: 0.75 }}
           />
         </TouchableOpacity>
       </View>
@@ -83,6 +84,7 @@ export function VideoCard({ video, onPress, onToggleFavorite }: VideoCardProps) 
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
+    borderRadius: 4,
     overflow: "hidden",
     marginBottom: 12,
   },
@@ -101,36 +103,38 @@ const styles = StyleSheet.create({
   },
   duration: {
     position: "absolute",
-    bottom: 6,
-    right: 6,
-    paddingHorizontal: 6,
+    bottom: 5,
+    right: 5,
+    backgroundColor: "rgba(0,0,0,0.75)",
+    borderRadius: 3,
+    paddingHorizontal: 5,
     paddingVertical: 2,
-    borderRadius: 4,
   },
   durationText: {
     color: "#fff",
-    fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
   },
   favoriteBtn: {
     position: "absolute",
-    top: 6,
-    right: 6,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    borderRadius: 16,
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 3,
     padding: 5,
   },
   info: {
     padding: 10,
+    gap: 3,
   },
   title: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Inter_600SemiBold",
-    lineHeight: 18,
-    marginBottom: 4,
+    lineHeight: 17,
   },
   channel: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 0.3,
   },
 });

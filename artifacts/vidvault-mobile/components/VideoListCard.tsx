@@ -21,19 +21,26 @@ interface VideoListCardProps {
 
 export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCardProps) {
   const colors = useColors();
+  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
 
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      style={[styles.card, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: isDark ? "rgba(139,92,246,0.12)" : colors.border,
+        },
+      ]}
     >
       <View style={styles.thumbnailWrapper}>
         {video.thumbnail ? (
-          <Image source={{ uri: video.thumbnail }} style={[styles.thumbnail, { borderRadius: 8 }]} resizeMode="cover" />
+          <Image source={{ uri: video.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbPlaceholder, { borderRadius: 8, backgroundColor: colors.secondary }]}>
-            <Feather name="play-circle" size={22} color={colors.mutedForeground} />
+          <View style={[styles.thumbPlaceholder, { backgroundColor: colors.secondary }]}>
+            <Feather name="play-circle" size={20} color={isDark ? "rgba(139,92,246,0.5)" : colors.mutedForeground} />
           </View>
         )}
         {video.duration && (
@@ -61,7 +68,7 @@ export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCar
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.favBtn}
         >
-          <Feather name="heart" size={18} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
+          <Feather name="heart" size={16} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>
@@ -72,21 +79,24 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: 8,
     borderWidth: 1,
+    borderRadius: 4,
+    gap: 10,
   },
   thumbnailWrapper: {
     position: "relative",
-    marginRight: 12,
   },
   thumbnail: {
-    width: 96,
-    height: 54,
+    width: 88,
+    height: 50,
+    borderRadius: 2,
   },
   thumbPlaceholder: {
-    width: 96,
-    height: 54,
+    width: 88,
+    height: 50,
+    borderRadius: 2,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -94,31 +104,31 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 3,
     right: 3,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    borderRadius: 3,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    borderRadius: 2,
     paddingHorizontal: 4,
     paddingVertical: 1,
   },
   badgeText: {
     color: "#fff",
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 9,
+    fontFamily: "JetBrainsMono_400Regular",
   },
   content: {
     flex: 1,
+    gap: 3,
   },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
-    lineHeight: 19,
-    marginBottom: 4,
+    lineHeight: 18,
   },
   channel: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 0.3,
   },
   favBtn: {
     padding: 4,
-    marginLeft: 8,
   },
 });
