@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,110 +9,263 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
+  Dimensions,
 } from "react-native";
+import Svg, { Path, Polygon, Rect, Circle, Line, G } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 
-const LOGO = require("@/assets/images/logo.png");
-
+const BG = "#0a0a0b";
+const CARD = "#0f0f12";
 const PURPLE = "#8b5cf6";
-const PURPLE_DIM = "#6d28d9";
-const BG = "#0a0a0f";
-const CARD_BG = "#13131a";
-const BORDER = "#1e1e2e";
-const BORDER_FOCUS = "rgba(139,92,246,0.55)";
-const TEXT = "#f1f5f9";
-const MUTED = "#64748b";
-const INPUT_BG = "#1a1a27";
-const ERROR_BG = "rgba(239,68,68,0.12)";
+const PURPLE_DIM = "rgba(139,92,246,0.15)";
+const WHITE = "#ffffff";
+const MUTED = "#555566";
+const MUTED2 = "#3a3a4a";
+const BORDER = "rgba(255,255,255,0.08)";
+const BORDER_FOCUS = "rgba(139,92,246,0.5)";
+const INPUT_BG = "#0c0c0e";
+const ERROR_BG = "rgba(239,68,68,0.08)";
 const ERROR_COLOR = "#f87171";
 
-function EyeIcon({ visible }: { visible: boolean }) {
-  if (visible) {
-    return (
-      <Text style={{ color: MUTED, fontSize: 16 }}>👁</Text>
-    );
-  }
+function MailIcon({ focused }: { focused: boolean }) {
   return (
-    <Text style={{ color: MUTED, fontSize: 16 }}>🙈</Text>
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Rect x={2} y={4} width={20} height={16} rx={2} stroke={focused ? PURPLE : MUTED} strokeWidth={1.5} />
+      <Path d="M2 7l10 7 10-7" stroke={focused ? PURPLE : MUTED} strokeWidth={1.5} strokeLinecap="round" />
+    </Svg>
   );
 }
 
-function FocusableInput({
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-  autoCapitalize,
-  autoCorrect,
-  secureTextEntry,
-  onSubmitEditing,
-  returnKeyType,
-  rightElement,
+function LockIcon({ focused }: { focused: boolean }) {
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Rect x={5} y={11} width={14} height={10} rx={2} stroke={focused ? PURPLE : MUTED} strokeWidth={1.5} />
+      <Path d="M8 11V7a4 4 0 018 0v4" stroke={focused ? PURPLE : MUTED} strokeWidth={1.5} strokeLinecap="round" />
+      <Circle cx={12} cy={16} r={1.5} fill={focused ? PURPLE : MUTED} />
+    </Svg>
+  );
+}
+
+function EyeIcon({ visible }: { visible: boolean }) {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+      {visible ? (
+        <>
+          <Path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke={MUTED} strokeWidth={1.5} />
+          <Circle cx={12} cy={12} r={3} stroke={MUTED} strokeWidth={1.5} />
+        </>
+      ) : (
+        <>
+          <Path d="M3 3l18 18M10.5 10.7A3 3 0 0013.3 13.5" stroke={MUTED} strokeWidth={1.5} strokeLinecap="round" />
+          <Path d="M6.2 6.2C4 7.9 2 12 2 12s3.5 7 10 7a9.9 9.9 0 005.8-1.8M9 5.3A9.9 9.9 0 0112 5c6.5 0 10 7 10 7a16.5 16.5 0 01-2.2 3.3" stroke={MUTED} strokeWidth={1.5} strokeLinecap="round" />
+        </>
+      )}
+    </Svg>
+  );
+}
+
+function ReplitIcon() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 4h7v5H4V4zM11 9h5v5h-5V9zM4 14h7v6H4v-6z" fill={MUTED} />
+    </Svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 12h14M13 6l6 6-6 6" stroke={PURPLE} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/* Polygon-style button using SVG backing (matches web app clip-path) */
+function PolygonButton({
+  label,
+  onPress,
+  loading,
+  disabled,
 }: {
+  label: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+}) {
+  const [pressed, setPressed] = useState(false);
+  const { width } = Dimensions.get("window");
+  const btnW = Math.min(width - 48, 500);
+  const btnH = 52;
+  const cut = 12;
+  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled || loading}
+      activeOpacity={0.85}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+    >
+      <View style={{ width: btnW, height: btnH }}>
+        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
+          <Polygon
+            points={points}
+            fill={pressed ? "#d0d0d0" : WHITE}
+          />
+        </Svg>
+        <View style={[StyleSheet.absoluteFillObject, styles.polygonInner]}>
+          {loading ? (
+            <ActivityIndicator color={BG} size="small" />
+          ) : (
+            <Text style={styles.polygonText}>{label}</Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+/* Ghost polygon button */
+function GhostButton({
+  label,
+  onPress,
+  icon,
+}: {
+  label: string;
+  onPress: () => void;
+  icon?: React.ReactNode;
+}) {
+  const [pressed, setPressed] = useState(false);
+  const { width } = Dimensions.get("window");
+  const btnW = Math.min(width - 48, 500);
+  const btnH = 48;
+  const cut = 10;
+  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+    >
+      <View style={{ width: btnW, height: btnH }}>
+        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
+          <Polygon
+            points={points}
+            fill={pressed ? "rgba(255,255,255,0.05)" : "transparent"}
+            stroke="rgba(255,255,255,0.12)"
+            strokeWidth={1}
+          />
+        </Svg>
+        <View style={[StyleSheet.absoluteFillObject, styles.polygonInner]}>
+          {icon && <View style={{ marginRight: 8 }}>{icon}</View>}
+          <Text style={styles.ghostText}>{label}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+interface FormInputProps {
   value: string;
   onChangeText: (v: string) => void;
   placeholder: string;
   keyboardType?: "email-address" | "default";
   autoCapitalize?: "none" | "words" | "sentences";
-  autoCorrect?: boolean;
   secureTextEntry?: boolean;
   onSubmitEditing?: () => void;
   returnKeyType?: "done" | "next" | "go";
-  rightElement?: React.ReactNode;
-}) {
+  icon?: "mail" | "lock";
+  rightNode?: React.ReactNode;
+  autoFocus?: boolean;
+}
+
+/* Smart input — tracks focus for border color, no re-mount issues */
+const FormInput = React.forwardRef<TextInput, FormInputProps>(function FormInput(
+  {
+    value,
+    onChangeText,
+    placeholder,
+    keyboardType,
+    autoCapitalize,
+    secureTextEntry,
+    onSubmitEditing,
+    returnKeyType,
+    icon,
+    rightNode,
+    autoFocus,
+  },
+  ref,
+) {
   const [focused, setFocused] = useState(false);
+  const innerRef = useRef<TextInput>(null);
+  const resolvedRef = (ref as React.RefObject<TextInput>) || innerRef;
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={() => resolvedRef.current?.focus()}
       style={[
-        styles.inputWrapper,
+        styles.inputRow,
         {
           borderColor: focused ? BORDER_FOCUS : BORDER,
           backgroundColor: INPUT_BG,
-          shadowColor: focused ? PURPLE : "transparent",
-          shadowOpacity: focused ? 0.2 : 0,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 0 },
-          elevation: focused ? 4 : 0,
         },
       ]}
     >
+      {icon && (
+        <View style={styles.inputIcon}>
+          {icon === "mail" ? (
+            <MailIcon focused={focused} />
+          ) : (
+            <LockIcon focused={focused} />
+          )}
+        </View>
+      )}
       <TextInput
+        ref={resolvedRef}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={MUTED}
         keyboardType={keyboardType ?? "default"}
         autoCapitalize={autoCapitalize ?? "sentences"}
-        autoCorrect={autoCorrect ?? true}
+        autoCorrect={false}
+        autoComplete="off"
         secureTextEntry={secureTextEntry}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onSubmitEditing={onSubmitEditing}
         returnKeyType={returnKeyType}
-        style={styles.inputField}
+        autoFocus={autoFocus}
+        style={[styles.inputText, { color: WHITE }]}
+        selectionColor={PURPLE}
+        cursorColor={PURPLE}
       />
-      {rightElement && (
-        <View style={styles.inputRight}>{rightElement}</View>
-      )}
-    </View>
+      {rightNode && <View style={styles.inputRight}>{rightNode}</View>}
+    </TouchableOpacity>
   );
-}
+});
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login, register } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
+
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const switchMode = (m: "login" | "register") => {
     setMode(m);
@@ -120,22 +273,13 @@ export default function LoginScreen() {
   };
 
   const submit = async () => {
-    const emailTrimmed = email.trim();
-    const passTrimmed = password.trim();
+    const e = email.trim();
+    const p = password;
 
-    if (!emailTrimmed) {
-      setError("Please enter your email address");
-      return;
-    }
-    if (!emailTrimmed.includes("@")) {
-      setError("Please enter a valid email address");
-      return;
-    }
-    if (!passTrimmed) {
-      setError("Please enter your password");
-      return;
-    }
-    if (mode === "register" && passTrimmed.length < 6) {
+    if (!e) { setError("Email address is required"); return; }
+    if (!e.includes("@")) { setError("Please enter a valid email"); return; }
+    if (!p) { setError("Password is required"); return; }
+    if (mode === "register" && p.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
@@ -144,93 +288,87 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       if (mode === "login") {
-        await login(emailTrimmed, passTrimmed);
+        await login(e, p);
       } else {
-        await register(
-          emailTrimmed,
-          passTrimmed,
-          firstName.trim() || undefined,
-          lastName.trim() || undefined,
-        );
+        await register(e, p, firstName.trim() || undefined, lastName.trim() || undefined);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
+  const loginWithReplit = () => {
+    setError("Replit sign-in is available on the web app");
+  };
+
+  const isRegister = mode === "register";
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: BG }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={[
           styles.scroll,
-          {
-            paddingTop: insets.top + 40,
-            paddingBottom: insets.bottom + 32,
-          },
+          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 },
         ]}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image source={LOGO} style={styles.logoImage} resizeMode="contain" />
-          </View>
-          <Text style={styles.appName}>VidVault AI</Text>
-          <Text style={styles.tagline}>Your second brain for videos</Text>
+        {/* Mode badge */}
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
+            {isRegister ? "CREATE_ACCOUNT" : "SIGN_IN"}
+          </Text>
         </View>
 
-        {/* Card */}
-        <View style={styles.card}>
-          {/* Tab switcher */}
-          <View style={styles.tabBar}>
-            <TouchableOpacity
-              onPress={() => switchMode("login")}
-              style={[styles.tabBtn, mode === "login" && styles.tabBtnActive]}
-              activeOpacity={0.75}
-            >
-              <Text style={[styles.tabText, mode === "login" && styles.tabTextActive]}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => switchMode("register")}
-              style={[styles.tabBtn, mode === "register" && styles.tabBtnActive]}
-              activeOpacity={0.75}
-            >
-              <Text style={[styles.tabText, mode === "register" && styles.tabTextActive]}>
-                Register
-              </Text>
-            </TouchableOpacity>
-          </View>
+        {/* Heading */}
+        <View style={styles.headingBlock}>
+          <Text style={styles.heading}>
+            {isRegister ? "Join VidVault" : "Welcome Back"}
+          </Text>
+          <Text style={styles.subheading}>
+            {isRegister ? "BUILD YOUR KNOWLEDGE VAULT" : "SIGN IN TO YOUR VAULT"}
+          </Text>
+        </View>
 
-          {/* Name fields (register only) */}
-          {mode === "register" && (
+        {/* Form */}
+        <View style={styles.form}>
+          {/* Name row (register only) */}
+          {isRegister && (
             <View style={styles.nameRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.label}>First Name</Text>
-                <FocusableInput
+                <Text style={styles.label}>FIRST NAME</Text>
+                <FormInput
                   value={firstName}
                   onChangeText={setFirstName}
-                  placeholder="Prashant"
+                  placeholder="John"
                   autoCapitalize="words"
                   returnKeyType="next"
+                  onSubmitEditing={() => lastNameRef.current?.focus()}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.label}>Last Name</Text>
-                <FocusableInput
+                <Text style={styles.label}>LAST NAME</Text>
+                <TextInput
+                  ref={lastNameRef}
                   value={lastName}
                   onChangeText={setLastName}
-                  placeholder="Maurya"
+                  placeholder="Doe"
+                  placeholderTextColor={MUTED}
                   autoCapitalize="words"
+                  autoCorrect={false}
                   returnKeyType="next"
+                  onSubmitEditing={() => emailRef.current?.focus()}
+                  style={[styles.inputRow, styles.inputText, { color: WHITE, borderColor: BORDER, backgroundColor: INPUT_BG }]}
+                  selectionColor={PURPLE}
+                  cursorColor={PURPLE}
                 />
               </View>
             </View>
@@ -238,78 +376,103 @@ export default function LoginScreen() {
 
           {/* Email */}
           <View>
-            <Text style={styles.label}>Email Address</Text>
-            <FocusableInput
+            <Text style={styles.label}>EMAIL_ADDRESS</Text>
+            <FormInput
+              ref={emailRef}
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
-              autoCorrect={false}
+              icon="mail"
               returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
 
           {/* Password */}
           <View>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.passwordOuter}>
-              <FocusableInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder={mode === "register" ? "Min. 6 characters" : "Your password"}
-                secureTextEntry={!showPass}
-                onSubmitEditing={submit}
-                returnKeyType="done"
-                rightElement={
-                  <TouchableOpacity onPress={() => setShowPass(!showPass)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <EyeIcon visible={showPass} />
-                  </TouchableOpacity>
-                }
-              />
-            </View>
+            <Text style={styles.label}>PASSWORD</Text>
+            <FormInput
+              ref={passwordRef}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              secureTextEntry={!showPass}
+              icon="lock"
+              returnKeyType="done"
+              onSubmitEditing={submit}
+              rightNode={
+                <TouchableOpacity
+                  onPress={() => setShowPass(!showPass)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <EyeIcon visible={showPass} />
+                </TouchableOpacity>
+              }
+            />
           </View>
 
           {/* Error */}
-          {error ? (
+          {!!error && (
             <View style={styles.errorBox}>
               <Text style={styles.errorIcon}>⚠</Text>
               <Text style={styles.errorText}>{error}</Text>
             </View>
-          ) : null}
+          )}
 
-          {/* Submit */}
-          <TouchableOpacity
+          {/* Main button */}
+          <PolygonButton
+            label={isRegister ? "CREATE ACCOUNT" : "SIGN IN"}
             onPress={submit}
+            loading={loading}
             disabled={loading}
-            style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
-            activeOpacity={0.85}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.submitText}>
-                {mode === "login" ? "Sign In" : "Create Account"}
-              </Text>
-            )}
-          </TouchableOpacity>
+          />
 
-          {/* Switch hint */}
-          <View style={styles.switchHint}>
-            <Text style={styles.switchHintText}>
-              {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Replit button */}
+          <GhostButton
+            label="CONTINUE WITH REPLIT"
+            onPress={loginWithReplit}
+            icon={<ReplitIcon />}
+          />
+
+          {/* Switch mode */}
+          <View style={styles.switchRow}>
+            <Text style={styles.switchText}>
+              {isRegister ? "HAVE AN ACCOUNT? " : "NEW TO VIDVAULT? "}
             </Text>
-            <TouchableOpacity onPress={() => switchMode(mode === "login" ? "register" : "login")}>
-              <Text style={styles.switchHintLink}>
-                {mode === "login" ? "Register" : "Sign In"}
-              </Text>
+            <TouchableOpacity
+              onPress={() => switchMode(isRegister ? "login" : "register")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <Text style={styles.switchLink}>
+                  {isRegister ? "SIGN IN" : "REGISTER"}
+                </Text>
+                <ArrowIcon />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Footer badge */}
-        <View style={styles.footerBadge}>
-          <Text style={styles.footerBadgeText}>✦ AI-POWERED VIDEO KNOWLEDGE</Text>
+        {/* Bottom grid dots decoration */}
+        <View style={styles.gridDots}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                { opacity: 0.06 + (i % 3) * 0.03 },
+              ]}
+            />
+          ))}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -320,90 +483,48 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    alignItems: "stretch",
-    gap: 24,
   },
 
-  /* Header */
-  header: {
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 4,
-  },
-  logoContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 22,
-    backgroundColor: "#12101e",
+  /* Badge */
+  badge: {
+    alignSelf: "flex-start",
     borderWidth: 1,
-    borderColor: "rgba(139,92,246,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-    shadowColor: PURPLE,
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    borderColor: PURPLE,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 28,
   },
-  logoImage: {
-    width: 64,
-    height: 64,
+  badgeText: {
+    fontFamily: "JetBrainsMono_600SemiBold",
+    fontSize: 11,
+    color: PURPLE,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
   },
-  appName: {
-    fontSize: 30,
-    fontFamily: "Inter_700Bold",
-    color: TEXT,
+
+  /* Heading */
+  headingBlock: {
+    marginBottom: 32,
+    gap: 8,
+  },
+  heading: {
+    fontFamily: "Raleway_900Black",
+    fontSize: 38,
+    color: WHITE,
+    lineHeight: 42,
     letterSpacing: -0.5,
   },
-  tagline: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
+  subheading: {
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 11,
     color: MUTED,
-    letterSpacing: 0.3,
+    letterSpacing: 2,
+    textTransform: "uppercase",
   },
 
-  /* Card */
-  card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: BORDER,
-    padding: 22,
-    gap: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
-  },
-
-  /* Tab bar */
-  tabBar: {
-    flexDirection: "row",
-    backgroundColor: "#0a0a0f",
-    borderRadius: 10,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 9,
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  tabBtnActive: {
-    backgroundColor: PURPLE,
-  },
-  tabText: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-    color: MUTED,
-    letterSpacing: 0.2,
-  },
-  tabTextActive: {
-    color: "#fff",
+  /* Form */
+  form: {
+    gap: 18,
   },
 
   /* Name row */
@@ -414,34 +535,35 @@ const styles = StyleSheet.create({
 
   /* Labels */
   label: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 10,
     color: MUTED,
-    letterSpacing: 0.8,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
-    marginBottom: 7,
+    marginBottom: 8,
   },
 
-  /* Input */
-  inputWrapper: {
+  /* Inputs */
+  inputRow: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    minHeight: 48,
+    height: 48,
+    paddingHorizontal: 12,
   },
-  inputField: {
+  inputIcon: {
+    marginRight: 10,
+  },
+  inputText: {
     flex: 1,
-    fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: TEXT,
-    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+    fontSize: 14,
+    padding: 0,
+    height: 48,
   },
   inputRight: {
     paddingLeft: 8,
   },
-  passwordOuter: {},
 
   /* Error */
   errorBox: {
@@ -449,78 +571,97 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
     backgroundColor: ERROR_BG,
-    borderRadius: 10,
-    padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(239,68,68,0.2)",
+    borderColor: "rgba(239,68,68,0.15)",
+    padding: 12,
   },
   errorIcon: {
     color: ERROR_COLOR,
-    fontSize: 14,
-    marginTop: 1,
+    fontSize: 13,
   },
   errorText: {
     flex: 1,
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 12,
     color: ERROR_COLOR,
+    letterSpacing: 0.3,
     lineHeight: 18,
   },
 
-  /* Submit button */
-  submitBtn: {
-    backgroundColor: PURPLE,
-    borderRadius: 12,
-    paddingVertical: 15,
+  /* Polygon button internals */
+  polygonInner: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
-    shadowColor: PURPLE,
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    justifyContent: "center",
+    gap: 8,
   },
-  submitBtnDisabled: {
-    backgroundColor: PURPLE_DIM,
-    shadowOpacity: 0,
-    elevation: 0,
+  polygonText: {
+    fontFamily: "Raleway_700Bold",
+    fontSize: 13,
+    color: BG,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
   },
-  submitText: {
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-    color: "#fff",
-    letterSpacing: 0.3,
+  ghostText: {
+    fontFamily: "Raleway_700Bold",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.6)",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
   },
 
-  /* Switch hint */
-  switchHint: {
+  /* Divider */
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginVertical: -4,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: BORDER,
+  },
+  dividerText: {
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 11,
+    color: MUTED,
+    letterSpacing: 2,
+  },
+
+  /* Switch row */
+  switchRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 2,
-    marginTop: 2,
+    flexWrap: "wrap",
+    marginTop: 4,
   },
-  switchHintText: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
+  switchText: {
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 10,
     color: MUTED,
+    letterSpacing: 1.5,
   },
-  switchHintLink: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+  switchLink: {
+    fontFamily: "JetBrainsMono_600SemiBold",
+    fontSize: 10,
     color: PURPLE,
+    letterSpacing: 1.5,
   },
 
-  /* Footer */
-  footerBadge: {
-    alignItems: "center",
-    marginTop: 8,
+  /* Grid dots decoration */
+  gridDots: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 18,
+    justifyContent: "center",
+    marginTop: 40,
   },
-  footerBadgeText: {
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-    color: "rgba(139,92,246,0.5)",
-    letterSpacing: 2,
-    textTransform: "uppercase",
+  dot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: WHITE,
   },
 });

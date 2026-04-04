@@ -4,8 +4,17 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
+  Inter_900Black,
   useFonts,
 } from "@expo-google-fonts/inter";
+import {
+  Raleway_700Bold,
+  Raleway_900Black,
+} from "@expo-google-fonts/raleway";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_600SemiBold,
+} from "@expo-google-fonts/jetbrains-mono";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -95,6 +104,11 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Inter_900Black,
+    Raleway_700Bold,
+    Raleway_900Black,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_600SemiBold,
   });
 
   useEffect(() => {
