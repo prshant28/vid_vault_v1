@@ -44,10 +44,12 @@ export default function VideoDetail() {
         <div className="rounded-2xl overflow-hidden glass-panel aspect-video shadow-2xl">
           {ytId ? (
             <iframe
-              src={`https://www.youtube.com/embed/${ytId}?autoplay=0`}
+              src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1`}
               className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
