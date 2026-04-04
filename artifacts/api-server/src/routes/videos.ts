@@ -196,7 +196,7 @@ async function fetchVideoMeta(url: string) {
   }
 }
 
-function parseDuration(iso: string): string | null {
+export function parseDuration(iso: string): string | null {
   if (!iso) return null;
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return null;
