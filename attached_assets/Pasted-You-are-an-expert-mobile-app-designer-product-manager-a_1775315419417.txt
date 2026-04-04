@@ -1,0 +1,101 @@
+You are an expert mobile app designer, product manager, and senior frontend engineer.
+
+I have an existing web application. Your task is to convert it into a fully functional, modern, high-performance mobile application with exceptional UI/UX.
+
+### 🎯 Objective:
+
+Transform the web app into a mobile-first experience that feels native, smooth, and premium—not just a basic conversion.
+
+---
+
+### 📱 Core Requirements:
+
+1. **Platform**
+
+* Build for both Android and iOS
+* Use React Native (preferred) or Flutter
+* Ensure responsive design for all screen sizes
+
+---
+
+### 🎨 UI/UX Design (Next-Level Experience)
+
+* Redesign UI with modern mobile design principles (not just copy web UI)
+* Use clean typography, proper spacing, and visual hierarchy
+* Add smooth animations and transitions (micro-interactions)
+* Implement dark mode + light mode
+* Use gesture-based navigation where possible
+* Maintain design consistency across all screens
+
+---
+
+### 🧠 UX Improvements (Very Important)
+
+* Simplify user flows (reduce steps)
+* Add onboarding screens for new users
+* Improve navigation (bottom tabs, stack navigation)
+* Optimize loading states (skeleton loaders, shimmer effects)
+* Add meaningful empty states and error states
+* Make app fast, intuitive, and addictive to use
+
+---
+
+### ⚙️ Features Enhancement
+
+Upgrade the existing features and also add:
+
+* User authentication (Email, Google, OTP if relevant)
+* Push notifications
+* Offline support (cache data)
+* Search with filters
+* Real-time updates (if applicable)
+* Profile management
+* Settings page (theme, preferences)
+* Analytics-ready structure
+
+---
+
+### 🚀 Performance Optimization
+
+* Lazy loading
+* Efficient state management (Redux / Zustand / Provider)
+* API optimization (debouncing, caching)
+* Minimize re-renders
+
+---
+
+### 📦 Code Quality
+
+* Clean, modular, scalable code structure
+* Use reusable components
+* Follow best practices and naming conventions
+* Separate UI, logic, and services properly
+
+---
+
+### 📂 Deliverables:
+
+1. Complete mobile app UI screens (all pages)
+2. Component structure
+3. Navigation flow
+4. Sample API integration structure
+5. Folder structure
+6. Key code snippets for main screens
+
+---
+
+### 💡 Bonus (Make it Stand Out)
+
+* Add AI-powered features (if relevant)
+* Add personalization (recommendations, recent activity)
+* Include subtle haptic feedback
+* Add modern UI elements (cards, floating buttons, bottom sheets)
+
+---
+
+### ⚠️ Important:
+
+Do NOT just replicate the web app.
+Reimagine it as a premium mobile product like Instagram, Notion, or Airbnb.
+
+Make it visually stunning, highly usable, and production-ready.
