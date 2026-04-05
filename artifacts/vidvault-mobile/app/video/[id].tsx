@@ -57,6 +57,7 @@ function extractYouTubeId(url: string): string | null {
 
 function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal: () => void }) {
   const colors = useColors();
+  const [playerError, setPlayerError] = useState(false);
   const playerHeight = SCREEN_WIDTH * (9 / 16);
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
 
@@ -65,9 +66,10 @@ function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal:
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="referrer" content="no-referrer-when-downgrade">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: ${isDark ? "#09090c" : "#000"}; overflow: hidden; }
+body { background: #000; overflow: hidden; }
 .player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 iframe { width: 100%; height: 100%; border: none; }
 </style>
@@ -75,14 +77,49 @@ iframe { width: 100%; height: 100%; border: none; }
 <body>
 <div class="player">
   <iframe
-    src="https://www.youtube.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1"
-    allow="autoplay; encrypted-media; fullscreen"
+    src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1"
+    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
     allowfullscreen
+    referrerpolicy="no-referrer-when-downgrade"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
   ></iframe>
 </div>
+<script>
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.event === 'onError') {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', code: e.data.info }));
+  }
+});
+</script>
 </body>
 </html>
   `;
+
+  if (playerError) {
+    return (
+      <View style={[styles.playerWrapper, { height: playerHeight, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }]}>
+        <View style={{ alignItems: "center", gap: 14 }}>
+          <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: "rgba(239,68,68,0.12)", borderWidth: 1, borderColor: "rgba(239,68,68,0.25)", alignItems: "center", justifyContent: "center" }}>
+            <Feather name="youtube" size={24} color="#ef4444" />
+          </View>
+          <View style={{ alignItems: "center", gap: 4 }}>
+            <Text style={{ color: "#fff", fontSize: 13, fontFamily: "Inter_600SemiBold" }}>Embedding restricted</Text>
+            <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "JetBrainsMono_400Regular", textAlign: "center", paddingHorizontal: 32, lineHeight: 16 }}>
+              This video can't be embedded.{"\n"}Watch it directly on YouTube.
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onOpenExternal}
+            style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: "#ef4444", borderRadius: 4 }}
+            activeOpacity={0.85}
+          >
+            <Feather name="external-link" size={14} color="#fff" />
+            <Text style={{ color: "#fff", fontSize: 11, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1 }}>OPEN IN YOUTUBE</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.playerWrapper, { height: playerHeight, backgroundColor: "#000" }]}>
@@ -95,6 +132,15 @@ iframe { width: 100%; height: 100%; border: none; }
         javaScriptEnabled
         domStorageEnabled
         scrollEnabled={false}
+        onMessage={(e) => {
+          try {
+            const msg = JSON.parse(e.nativeEvent.data);
+            if (msg.type === "error") setPlayerError(true);
+          } catch {}
+        }}
+        onHttpError={(e) => {
+          if (e.nativeEvent.statusCode >= 400) setPlayerError(true);
+        }}
       />
       <TouchableOpacity onPress={onOpenExternal} style={styles.openExtBtn} activeOpacity={0.8}>
         <Feather name="youtube" size={13} color="rgba(255,255,255,0.7)" />

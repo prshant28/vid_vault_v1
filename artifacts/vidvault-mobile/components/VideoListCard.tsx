@@ -31,16 +31,34 @@ export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCar
         styles.card,
         {
           backgroundColor: colors.card,
+          borderRadius: colors.radius,
           borderColor: isDark ? "rgba(139,92,246,0.12)" : colors.border,
         },
       ]}
     >
+      {/* Thumbnail */}
       <View style={styles.thumbnailWrapper}>
         {video.thumbnail ? (
-          <Image source={{ uri: video.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+          <Image
+            source={{ uri: video.thumbnail }}
+            style={[styles.thumbnail, { borderRadius: colors.radius - 2 }]}
+            resizeMode="cover"
+          />
         ) : (
-          <View style={[styles.thumbPlaceholder, { backgroundColor: colors.secondary }]}>
-            <Feather name="play-circle" size={20} color={isDark ? "rgba(139,92,246,0.5)" : colors.mutedForeground} />
+          <View
+            style={[
+              styles.thumbPlaceholder,
+              {
+                borderRadius: colors.radius - 2,
+                backgroundColor: isDark ? "#1a1a22" : colors.secondary,
+              },
+            ]}
+          >
+            <Feather
+              name="play-circle"
+              size={22}
+              color={isDark ? "rgba(139,92,246,0.5)" : colors.mutedForeground}
+            />
           </View>
         )}
         {video.duration && (
@@ -49,6 +67,8 @@ export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCar
           </View>
         )}
       </View>
+
+      {/* Content */}
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
           {video.title}
@@ -59,6 +79,8 @@ export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCar
           </Text>
         )}
       </View>
+
+      {/* Favorite button */}
       {onToggleFavorite && (
         <TouchableOpacity
           onPress={() => {
@@ -68,7 +90,11 @@ export function VideoListCard({ video, onPress, onToggleFavorite }: VideoListCar
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.favBtn}
         >
-          <Feather name="heart" size={16} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
+          <Feather
+            name="heart"
+            size={16}
+            color={video.isFavorite ? "#ef4444" : colors.mutedForeground}
+          />
         </TouchableOpacity>
       )}
     </TouchableOpacity>
@@ -82,21 +108,19 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderRadius: 4,
     gap: 10,
   },
   thumbnailWrapper: {
     position: "relative",
+    flexShrink: 0,
   },
   thumbnail: {
-    width: 88,
-    height: 50,
-    borderRadius: 2,
+    width: 96,
+    height: 54,
   },
   thumbPlaceholder: {
-    width: 88,
-    height: 50,
-    borderRadius: 2,
+    width: 96,
+    height: 54,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -130,5 +154,6 @@ const styles = StyleSheet.create({
   },
   favBtn: {
     padding: 4,
+    flexShrink: 0,
   },
 });
