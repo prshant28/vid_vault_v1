@@ -5,17 +5,16 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions,
   Image,
 } from "react-native";
-import Svg, { Path, Polygon, Rect, Circle, Line, G } from "react-native-svg";
+import Svg, { Path, Rect, Circle } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
+import { AppButton } from "@/components/ui/AppButton";
 
 const BG = "#0a0a0b";
 const CARD = "#0f0f12";
@@ -83,93 +82,6 @@ function ArrowIcon() {
   );
 }
 
-/* Polygon-style button using SVG backing (matches web app clip-path) */
-function PolygonButton({
-  label,
-  onPress,
-  loading,
-  disabled,
-}: {
-  label: string;
-  onPress: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-}) {
-  const [pressed, setPressed] = useState(false);
-  const { width } = Dimensions.get("window");
-  const btnW = Math.min(width - 48, 500);
-  const btnH = 52;
-  const cut = 12;
-  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.85}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={{ width: btnW, height: btnH }}>
-        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
-          <Polygon
-            points={points}
-            fill={pressed ? "#d0d0d0" : WHITE}
-          />
-        </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.polygonInner]}>
-          {loading ? (
-            <ActivityIndicator color={BG} size="small" />
-          ) : (
-            <Text style={styles.polygonText}>{label}</Text>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-/* Ghost polygon button */
-function GhostButton({
-  label,
-  onPress,
-  icon,
-}: {
-  label: string;
-  onPress: () => void;
-  icon?: React.ReactNode;
-}) {
-  const [pressed, setPressed] = useState(false);
-  const { width } = Dimensions.get("window");
-  const btnW = Math.min(width - 48, 500);
-  const btnH = 48;
-  const cut = 10;
-  const points = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={{ width: btnW, height: btnH }}>
-        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
-          <Polygon
-            points={points}
-            fill={pressed ? "rgba(255,255,255,0.05)" : "transparent"}
-            stroke="rgba(255,255,255,0.12)"
-            strokeWidth={1}
-          />
-        </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.polygonInner]}>
-          {icon && <View style={{ marginRight: 8 }}>{icon}</View>}
-          <Text style={styles.ghostText}>{label}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
 
 interface FormInputProps {
   value: string;
@@ -437,11 +349,14 @@ export default function LoginScreen() {
           )}
 
           {/* Main button */}
-          <PolygonButton
+          <AppButton
             label={isRegister ? "CREATE ACCOUNT" : "SIGN IN"}
             onPress={submit}
             loading={loading}
             disabled={loading}
+            size="lg"
+            variant="primary"
+            fullWidth
           />
 
           {/* Divider */}
@@ -452,10 +367,13 @@ export default function LoginScreen() {
           </View>
 
           {/* Replit button */}
-          <GhostButton
+          <AppButton
             label="CONTINUE WITH REPLIT"
             onPress={loginWithReplit}
-            icon={<ReplitIcon />}
+            customIcon={<ReplitIcon />}
+            size="md"
+            variant="ghost"
+            fullWidth
           />
 
           {/* Switch mode */}
@@ -631,26 +549,6 @@ const styles = StyleSheet.create({
     color: ERROR_COLOR,
     letterSpacing: 0.3,
     lineHeight: 17,
-  },
-
-  /* Polygon button internals */
-  polygonInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  polygonText: {
-    fontFamily: "AlegreyaSansSC_700Bold",
-    fontSize: 13,
-    color: BG,
-    letterSpacing: 2,
-  },
-  ghostText: {
-    fontFamily: "AlegreyaSansSC_700Bold",
-    fontSize: 11,
-    color: "rgba(255,255,255,0.55)",
-    letterSpacing: 2,
   },
 
   /* Divider */

@@ -21,6 +21,7 @@ interface AppButtonProps {
   onPress: () => void;
   label?: string;
   icon?: FeatherIconName;
+  customIcon?: React.ReactNode;
   variant?: AppButtonVariant;
   size?: AppButtonSize;
   loading?: boolean;
@@ -40,6 +41,7 @@ export function AppButton({
   onPress,
   label,
   icon,
+  customIcon,
   variant = "primary",
   size = "md",
   loading = false,
@@ -63,7 +65,7 @@ export function AppButton({
     btnW = h;
   } else {
     const textLen = (label?.length ?? 0) * (fontSize * 0.62);
-    const iconW = icon ? iconSize + 6 : 0;
+    const iconW = (icon || customIcon) ? iconSize + 6 : 0;
     btnW = Math.ceil(px * 2 + textLen + iconW);
   }
 
@@ -122,12 +124,13 @@ export function AppButton({
             strokeWidth={variant === "ghost" ? 1 : 0}
           />
         </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.inner, { gap: icon && label ? 6 : 0 }]}>
+        <View style={[StyleSheet.absoluteFillObject, styles.inner, { gap: (icon || customIcon) && label ? 8 : 0 }]}>
           {loading ? (
             <ActivityIndicator color={textColor} size="small" />
           ) : (
             <>
               {icon && <Feather name={icon} size={iconSize} color={textColor} />}
+              {customIcon && customIcon}
               {label && (
                 <Text style={[styles.label, { color: textColor, fontSize }]} numberOfLines={1}>
                   {label}
