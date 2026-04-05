@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     height: 28,
   },
   logoName: {
-    fontFamily: "Raleway_900Black",
+    fontFamily: "Poppins_900Black",
     fontSize: 22,
     color: WHITE,
     letterSpacing: -0.5,
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heading: {
-    fontFamily: "Raleway_900Black",
+    fontFamily: "Poppins_900Black",
     fontSize: 34,
     color: WHITE,
     lineHeight: 40,
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     flex: 1,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     fontSize: 14,
     padding: 0,
     height: 52,
@@ -641,13 +641,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   polygonText: {
-    fontFamily: "Raleway_700Bold",
+    fontFamily: "Poppins_700Bold",
     fontSize: 13,
     color: BG,
     letterSpacing: 2,
   },
   ghostText: {
-    fontFamily: "Raleway_700Bold",
+    fontFamily: "Poppins_700Bold",
     fontSize: 11,
     color: "rgba(255,255,255,0.55)",
     letterSpacing: 2,

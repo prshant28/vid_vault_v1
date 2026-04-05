@@ -17,6 +17,7 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoListCard } from "@/components/VideoListCard";
 import { VideoCardSkeleton } from "@/components/SkeletonLoader";
@@ -34,11 +35,35 @@ interface Tag {
 
 type ViewMode = "grid" | "list";
 
+function FilterChip({
+  label, active, onPress, activeColor, colors, icon, dot,
+}: {
+  label: string; active: boolean; onPress: () => void;
+  activeColor: string; colors: any; icon?: string; dot?: string;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.chip,
+        {
+          backgroundColor: active ? activeColor + "20" : colors.card,
+          borderColor: active ? activeColor + "55" : colors.border,
+        },
+      ]}
+      activeOpacity={0.75}
+    >
+      {dot && !icon && <View style={[styles.tagDot, { backgroundColor: dot }]} />}
+      {icon && <Feather name={icon as any} size={10} color={active ? activeColor : colors.mutedForeground} />}
+      <Text style={[styles.chipText, { color: active ? activeColor : colors.mutedForeground }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function VideosScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
-  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
 
   const [search, setSearch] = useState("");
   const [showFavorites, setShowFavorites] = useState(false);
@@ -70,119 +95,99 @@ export default function VideosScreen() {
     },
   });
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const videos = data?.videos ?? [];
   const tags: Tag[] = tagsData?.tags ?? [];
+
   const toggleViewMode = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setViewMode((v) => (v === "grid" ? "list" : "grid"));
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topInset + 16 }]}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>VIDEO_VAULT</Text>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Library</Text>
-        </View>
-        <View style={styles.headerRight}>
-          {/* View toggle */}
-          <TouchableOpacity
-            onPress={toggleViewMode}
-            style={[styles.viewToggleBtn, { borderColor: isDark ? "rgba(255,255,255,0.1)" : colors.border }]}
-            activeOpacity={0.75}
-          >
-            <Feather
-              name={viewMode === "grid" ? "list" : "grid"}
-              size={16}
-              color={colors.mutedForeground}
-            />
-          </TouchableOpacity>
-          {/* Save button */}
-          <TouchableOpacity
-            onPress={() => setShowSaveModal(true)}
-            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={15} color="#fff" />
-            <Text style={styles.saveBtnText}>SAVE</Text>
-          </TouchableOpacity>
-        </View>
+
+      <TopAppBar
+        rightAction={
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              onPress={toggleViewMode}
+              style={[styles.viewToggleBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+              activeOpacity={0.75}
+            >
+              <Feather name={viewMode === "grid" ? "list" : "grid"} size={16} color={colors.mutedForeground} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setShowSaveModal(true)}
+              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <Feather name="plus" size={15} color="#fff" />
+              <Text style={styles.saveBtnText}>SAVE</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
+
+      {/* Subtitle */}
+      <View style={styles.subHeader}>
+        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//VIDEO_VAULT</Text>
+        <Text style={[styles.subTitle, { color: colors.foreground }]}>Library</Text>
       </View>
 
       {/* Search + Filter chips */}
       <View style={styles.controls}>
         <SearchBar value={search} onChangeText={setSearch} placeholder="Search vault…" />
         <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.chipsScroll}
-          contentContainerStyle={styles.chipsContent}
+          horizontal showsHorizontalScrollIndicator={false}
+          style={styles.chipsScroll} contentContainerStyle={styles.chipsContent}
         >
           <FilterChip
-            label="ALL"
-            active={!showFavorites && !selectedTagId}
+            label="ALL" active={!showFavorites && !selectedTagId} colors={colors}
             onPress={() => { setShowFavorites(false); setSelectedTagId(null); }}
             activeColor={colors.primary}
-            isDark={isDark}
           />
           <FilterChip
-            label="FAV"
-            active={showFavorites}
+            label="FAV" active={showFavorites} colors={colors}
             onPress={() => { setShowFavorites(!showFavorites); setSelectedTagId(null); }}
-            activeColor="#ef4444"
-            isDark={isDark}
-            icon="heart"
+            activeColor="#ef4444" icon="heart"
           />
           {tags.map((tag) => (
             <FilterChip
-              key={tag.id}
-              label={tag.name.toUpperCase()}
-              active={selectedTagId === tag.id}
+              key={tag.id} label={tag.name.toUpperCase()}
+              active={selectedTagId === tag.id} colors={colors}
               onPress={() => { setSelectedTagId(selectedTagId === tag.id ? null : tag.id); setShowFavorites(false); }}
               activeColor={tag.color || colors.primary}
-              isDark={isDark}
               dot={tag.color || colors.primary}
             />
           ))}
         </ScrollView>
       </View>
 
-      {/* Count row */}
       {!isLoading && videos.length > 0 && (
         <View style={styles.countRow}>
           <Text style={[styles.countText, { color: colors.mutedForeground }]}>
             {videos.length} VIDEO{videos.length !== 1 ? "S" : ""}
           </Text>
-          <View style={[styles.countDivider, { backgroundColor: colors.mutedForeground + "30" }]} />
+          <View style={[styles.countDivider, { backgroundColor: colors.border }]} />
           <Text style={[styles.countText, { color: colors.mutedForeground }]}>
             {viewMode === "grid" ? "GRID" : "LIST"}
           </Text>
         </View>
       )}
 
-      {/* Content */}
       {isLoading ? (
         viewMode === "grid" ? (
           <FlatList
-            data={[1, 2, 3, 4]}
-            keyExtractor={(item) => String(item)}
-            numColumns={2}
-            columnWrapperStyle={styles.columnWrapper}
+            data={[1, 2, 3, 4]} keyExtractor={(item) => String(item)}
+            numColumns={2} columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
-            renderItem={() => (
-              <View style={{ width: "48%" }}>
-                <VideoCardSkeleton />
-              </View>
-            )}
+            renderItem={() => <View style={{ width: "48%" }}><VideoCardSkeleton /></View>}
           />
         ) : (
           <FlatList
-            data={[1, 2, 3, 4, 5]}
-            keyExtractor={(item) => String(item)}
+            data={[1, 2, 3, 4, 5]} keyExtractor={(item) => String(item)}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
             renderItem={() => <VideoCardSkeleton listMode />}
           />
@@ -198,14 +203,11 @@ export default function VideosScreen() {
         />
       ) : viewMode === "grid" ? (
         <FlatList
-          data={videos}
-          keyExtractor={(item: { id: string }) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
+          data={videos} keyExtractor={(item: { id: string }) => item.id}
+          numColumns={2} columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
-          refreshing={isRefetching}
-          onRefresh={refetch}
+          refreshing={isRefetching} onRefresh={refetch}
           renderItem={({ item, index }: { item: any; index: number }) => (
             <VideoCard
               video={item}
@@ -217,12 +219,10 @@ export default function VideosScreen() {
         />
       ) : (
         <FlatList
-          data={videos}
-          keyExtractor={(item: { id: string }) => item.id}
+          data={videos} keyExtractor={(item: { id: string }) => item.id}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
-          refreshing={isRefetching}
-          onRefresh={refetch}
+          refreshing={isRefetching} onRefresh={refetch}
           renderItem={({ item }: { item: any }) => (
             <VideoListCard
               video={item}
@@ -233,7 +233,6 @@ export default function VideosScreen() {
         />
       )}
 
-      {/* FAB */}
       <TouchableOpacity
         onPress={() => setShowSaveModal(true)}
         style={[styles.fab, { backgroundColor: colors.primary, bottom: botInset + 90 }]}
@@ -247,151 +246,34 @@ export default function VideosScreen() {
   );
 }
 
-function FilterChip({
-  label,
-  active,
-  onPress,
-  activeColor,
-  isDark,
-  icon,
-  dot,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-  activeColor: string;
-  isDark: boolean;
-  icon?: string;
-  dot?: string;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[
-        styles.chip,
-        {
-          backgroundColor: active
-            ? activeColor + "20"
-            : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-          borderColor: active ? activeColor + "55" : "transparent",
-        },
-      ]}
-      activeOpacity={0.75}
-    >
-      {dot && !icon && <View style={[styles.tagDot, { backgroundColor: dot }]} />}
-      {icon && <Feather name={icon as any} size={10} color={active ? activeColor : "rgba(255,255,255,0.4)"} />}
-      <Text style={[styles.chipText, { color: active ? activeColor : "rgba(255,255,255,0.4)" }]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  headerEyebrow: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 3,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.5,
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  viewToggleBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 6,
-  },
-  saveBtnText: {
-    color: "#fff",
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-  },
-  controls: {
-    paddingHorizontal: 16,
-    gap: 10,
-    marginBottom: 6,
-  },
+  root: { flex: 1 },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  viewToggleBtn: { width: 36, height: 36, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  saveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4 },
+  saveBtnText: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
+
+  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
+  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+
+  controls: { paddingHorizontal: 16, gap: 10, marginBottom: 6 },
   chipsScroll: { flexGrow: 0 },
   chipsContent: { gap: 6, paddingRight: 4 },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderRadius: 6,
-  },
-  chipText: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1.5,
-  },
-  tagDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  countRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-    gap: 8,
-  },
-  countText: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1.5,
-  },
-  countDivider: {
-    width: 1,
-    height: 10,
-  },
-  columnWrapper: {
-    gap: 12,
-    marginBottom: 0,
-  },
+  chip: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderRadius: 6 },
+  chipText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  tagDot: { width: 5, height: 5, borderRadius: 2.5 },
+
+  countRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 10, gap: 8 },
+  countText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  countDivider: { width: 1, height: 10 },
+
+  columnWrapper: { gap: 12, marginBottom: 0 },
+
   fab: {
-    position: "absolute",
-    right: 20,
-    width: 52,
-    height: 52,
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#8b5cf6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    position: "absolute", right: 20, width: 52, height: 52, borderRadius: 4,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#8b5cf6", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
   },
 });

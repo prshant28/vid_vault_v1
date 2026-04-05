@@ -21,6 +21,7 @@ import * as Haptics from "expo-haptics";
 import WebView from "react-native-webview";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
+import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { GridBackground } from "@/components/GridBackground";
@@ -31,8 +32,8 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PLAYER_HEIGHT = Math.round(SCREEN_WIDTH * (9 / 16));
 const CARD_GAP = 10;
-const CARD_H_PADDING = 16;
-const CARD_WIDTH = (SCREEN_WIDTH - CARD_H_PADDING * 2 - CARD_GAP) / 2;
+const CARD_H_PAD = 16;
+const CARD_WIDTH = (SCREEN_WIDTH - CARD_H_PAD * 2 - CARD_GAP) / 2;
 
 const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
@@ -44,12 +45,12 @@ const BLUE   = "#3b82f6";
 const AI_TOOLS: Array<{
   type: string; label: string; icon: FeatherIconName; color: string; desc: string;
 }> = [
-  { type: "summary",     label: "Summary",     icon: "file-text",   color: CYAN,   desc: "Concise overview of key points" },
-  { type: "key_insights",label: "Key Insights",icon: "zap",         color: ORANGE, desc: "Top actionable takeaways" },
-  { type: "mcq",         label: "Quiz (MCQ)",  icon: "check-circle",color: GREEN,  desc: "Test your understanding" },
-  { type: "ppt_outline", label: "PPT Outline", icon: "monitor",     color: BLUE,   desc: "Slide deck structure" },
-  { type: "flashcards",  label: "Flashcards",  icon: "layers",      color: PINK,   desc: "Spaced repetition cards" },
-  { type: "notes",       label: "Study Notes", icon: "book-open",   color: PURPLE, desc: "Organised bullet notes" },
+  { type: "summary",      label: "Summary",      icon: "file-text",    color: CYAN,   desc: "Concise overview of the video content" },
+  { type: "key_insights", label: "Key Insights",  icon: "zap",          color: ORANGE, desc: "Most important takeaways" },
+  { type: "mcq",          label: "Quiz (MCQ)",    icon: "check-circle", color: GREEN,  desc: "Test your knowledge" },
+  { type: "ppt_outline",  label: "PPT Outline",   icon: "monitor",      color: BLUE,   desc: "Slide deck structure for presentation" },
+  { type: "flashcards",   label: "Flashcards",    icon: "layers",       color: PINK,   desc: "Spaced repetition review cards" },
+  { type: "notes",        label: "Study Notes",   icon: "book-open",    color: PURPLE, desc: "Organised bullet study notes" },
 ];
 
 function extractYouTubeId(url: string): string | null {
@@ -67,10 +68,9 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
-/* ─── YouTube WebView Player (native only) ─── */
+/* ── YouTube WebView Player ── */
 function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal: () => void }) {
   const [error, setError] = useState(false);
-
   const html = `<!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden}.wrap{position:absolute;inset:0}iframe{width:100%;height:100%;border:none}</style>
@@ -83,16 +83,14 @@ function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal:
 
   if (error) {
     return (
-      <View style={[styles.player, { alignItems: "center", justifyContent: "center", backgroundColor: "#0a0a0f" }]}>
-        <View style={styles.embedErrorBox}>
-          <Feather name="youtube" size={28} color="#ef4444" />
-          <Text style={styles.embedErrorTitle}>Embedding Restricted</Text>
-          <Text style={styles.embedErrorSub}>This video can't play here.{"\n"}Watch it on YouTube instead.</Text>
-          <TouchableOpacity onPress={onOpenExternal} style={styles.embedErrorBtn} activeOpacity={0.85}>
-            <Feather name="external-link" size={14} color="#fff" />
-            <Text style={styles.embedErrorBtnText}>OPEN IN YOUTUBE</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.player, { alignItems: "center", justifyContent: "center", backgroundColor: "#0d0d14" }]}>
+        <Feather name="youtube" size={28} color="#ef4444" />
+        <Text style={[styles.embedErrTitle, { marginTop: 10 }]}>Embedding Restricted</Text>
+        <Text style={styles.embedErrSub}>Watch on YouTube instead.</Text>
+        <TouchableOpacity onPress={onOpenExternal} style={styles.embedErrBtn} activeOpacity={0.85}>
+          <Feather name="external-link" size={14} color="#fff" />
+          <Text style={styles.embedErrBtnText}>OPEN IN YOUTUBE</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -102,36 +100,22 @@ function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal:
       <WebView
         style={{ flex: 1, backgroundColor: "#000" }}
         source={{ html }}
-        allowsFullscreenVideo
-        allowsInlineMediaPlayback
+        allowsFullscreenVideo allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
-        javaScriptEnabled
-        domStorageEnabled
-        scrollEnabled={false}
+        javaScriptEnabled domStorageEnabled scrollEnabled={false}
         onHttpError={(e) => { if (e.nativeEvent.statusCode >= 400) setError(true); }}
       />
       <TouchableOpacity onPress={onOpenExternal} style={styles.ytExtBtn} activeOpacity={0.8}>
-        <Feather name="youtube" size={11} color="#fff" />
+        <Feather name="youtube" size={11} color="#ff0000" />
         <Text style={styles.ytExtText}>Watch on YouTube</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-/* ─── Thumbnail Player (web or non-YouTube) ─── */
-function ThumbnailPlayer({
-  thumbnail,
-  ytId,
-  onOpenExternal,
-}: {
-  thumbnail?: string | null;
-  ytId?: string | null;
-  onOpenExternal: () => void;
-}) {
-  const thumbUrl = ytId
-    ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
-    : thumbnail;
-
+/* ── Thumbnail Player (web / fallback) ── */
+function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: string | null; ytId?: string | null; onOpenExternal: () => void }) {
+  const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : thumbnail;
   return (
     <TouchableOpacity onPress={onOpenExternal} activeOpacity={0.93} style={styles.player}>
       {thumbUrl ? (
@@ -141,10 +125,7 @@ function ThumbnailPlayer({
           <Feather name="film" size={40} color="rgba(139,92,246,0.3)" />
         </View>
       )}
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.72)"]}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <LinearGradient colors={["transparent", "rgba(0,0,0,0.75)"]} style={StyleSheet.absoluteFillObject} />
       <View style={styles.thumbCenter}>
         <View style={styles.playCircle}>
           <Feather name="play" size={24} color="#fff" />
@@ -158,17 +139,30 @@ function ThumbnailPlayer({
   );
 }
 
-/* ─── AI Tool Card (2-column grid, vertical) ─── */
+/* ── Quick Action Pill ── */
+function QuickPill({ label, icon, color, onPress }: { label: string; icon: FeatherIconName; color: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      style={[styles.quickPill, { borderColor: color + "55", backgroundColor: color + "12" }]}
+    >
+      <Feather name={icon} size={10} color={color} />
+      <Text style={[styles.quickPillText, { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+/* ── AI Tool Card (2-column) ── */
 function AiToolCard({
-  tool, existingOutput, onGenerate, isGenerating, onView,
+  tool, index, existingOutput, onGenerate, isGenerating, onView,
 }: {
-  tool: typeof AI_TOOLS[0];
-  existingOutput?: AiOutput | null;
-  onGenerate: () => void;
-  isGenerating: boolean;
-  onView: () => void;
+  tool: typeof AI_TOOLS[0]; index: number;
+  existingOutput?: AiOutput | null; onGenerate: () => void;
+  isGenerating: boolean; onView: () => void;
 }) {
   const done = !!existingOutput;
+  const num = String(index + 1).padStart(2, "0");
 
   return (
     <MotiView
@@ -176,29 +170,22 @@ function AiToolCard({
         borderColor: isGenerating
           ? tool.color + "70"
           : done
-          ? GREEN + "50"
+          ? GREEN + "45"
           : "rgba(255,255,255,0.08)",
         opacity: 1,
       }}
       from={{ opacity: 0 }}
-      transition={
-        isGenerating
-          ? { type: "timing", duration: 900, loop: true }
-          : { type: "timing", duration: 300 }
-      }
+      transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
       style={[styles.toolCard, { width: CARD_WIDTH }]}
     >
-      <TouchableOpacity
-        onPress={done ? onView : onGenerate}
-        activeOpacity={0.78}
-        style={styles.toolCardInner}
-      >
-        {/* Icon + done badge */}
+      <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.78} style={styles.toolCardInner}>
+        {/* Number badge + icon */}
         <View style={styles.toolCardTop}>
+          <Text style={[styles.toolNum, { color: tool.color + "70" }]}>{num}</Text>
           <MotiView
-            animate={{ backgroundColor: isGenerating ? tool.color + "35" : tool.color + "1a" }}
+            animate={{ backgroundColor: isGenerating ? tool.color + "35" : tool.color + "18" }}
             transition={{ type: "timing", duration: 500 }}
-            style={[styles.toolIconBox, { borderColor: tool.color + "35" }]}
+            style={[styles.toolIconBox, { borderColor: tool.color + "30" }]}
           >
             {isGenerating ? (
               <MotiView
@@ -206,30 +193,23 @@ function AiToolCard({
                 animate={{ rotate: "360deg" }}
                 transition={{ type: "timing", duration: 1200, loop: true }}
               >
-                <Feather name="cpu" size={16} color={tool.color} />
+                <Feather name="cpu" size={15} color={tool.color} />
               </MotiView>
             ) : (
-              <Feather name={tool.icon} size={16} color={tool.color} />
+              <Feather name={tool.icon} size={15} color={tool.color} />
             )}
           </MotiView>
-          {done && !isGenerating && (
-            <View style={styles.doneBadge}>
-              <Feather name="check" size={8} color={GREEN} />
-            </View>
-          )}
         </View>
 
-        {/* Label */}
+        {/* Title + desc */}
         <Text style={styles.toolLabel} numberOfLines={1}>{tool.label}</Text>
-        {/* Desc */}
         <Text style={styles.toolDesc} numberOfLines={2}>{tool.desc}</Text>
 
-        {/* Footer action */}
+        {/* Footer */}
         <View style={styles.toolCardFooter}>
           {isGenerating ? (
             <MotiView
-              from={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
+              from={{ opacity: 0.5 }} animate={{ opacity: 1 }}
               transition={{ type: "timing", duration: 700, loop: true }}
               style={[styles.generatingPill, { borderColor: tool.color + "40", backgroundColor: tool.color + "15" }]}
             >
@@ -252,12 +232,8 @@ function AiToolCard({
   );
 }
 
-/* ─── AI Output Viewer ─── */
-function AiOutputPanel({
-  output, tool, onClose, onRegenerate,
-}: {
-  output: AiOutput; tool: typeof AI_TOOLS[0]; onClose: () => void; onRegenerate: () => void;
-}) {
+/* ── AI Output Panel ── */
+function AiOutputPanel({ output, tool, onClose, onRegenerate }: { output: AiOutput; tool: typeof AI_TOOLS[0]; onClose: () => void; onRegenerate: () => void }) {
   return (
     <MotiView
       from={{ opacity: 0, translateY: 12 }}
@@ -266,7 +242,7 @@ function AiOutputPanel({
       style={styles.outputPanel}
     >
       <View style={styles.outputPanelHeader}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <View style={[styles.outputPanelIcon, { backgroundColor: tool.color + "22" }]}>
             <Feather name={tool.icon} size={16} color={tool.color} />
           </View>
@@ -291,10 +267,8 @@ function AiOutputPanel({
   );
 }
 
-/* ─── Note Item ─── */
-function NoteItem({
-  note, onDelete, onUpdate,
-}: {
+/* ── Note Item ── */
+function NoteItem({ note, onDelete, onUpdate }: {
   note: Note; onDelete: () => void; onUpdate: (content: string, ts?: number | null) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -304,7 +278,6 @@ function NoteItem({
       ? `${Math.floor(note.timestamp / 60)}:${(note.timestamp % 60).toString().padStart(2, "0")}`
       : ""
   );
-
   const parseTs = (t: string): number | undefined => {
     const parts = t.split(":").map(Number);
     if (parts.length === 2 && !parts.some(isNaN)) return parts[0] * 60 + parts[1];
@@ -324,35 +297,27 @@ function NoteItem({
       {editing ? (
         <View style={{ gap: 8 }}>
           <TextInput
-            value={editContent}
-            onChangeText={setEditContent}
-            style={styles.noteEditInput}
-            multiline
-            autoFocus
+            value={editContent} onChangeText={setEditContent}
+            style={styles.noteEditInput} multiline autoFocus
             placeholderTextColor="rgba(255,255,255,0.3)"
           />
           <TextInput
-            value={editTs}
-            onChangeText={setEditTs}
-            placeholder="Timestamp (1:30)"
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            value={editTs} onChangeText={setEditTs}
+            placeholder="Timestamp (1:30)" placeholderTextColor="rgba(255,255,255,0.3)"
             style={styles.tsInput}
           />
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
-              onPress={() => {
-                onUpdate(editContent.trim(), editTs.trim() ? parseTs(editTs) : null);
-                setEditing(false);
-              }}
+              onPress={() => { onUpdate(editContent.trim(), editTs.trim() ? parseTs(editTs) : null); setEditing(false); }}
               style={[styles.noteActionBtn, { backgroundColor: PURPLE }]}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "Inter_600SemiBold" }}>Save</Text>
+              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "Poppins_600SemiBold" }}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setEditing(false)}
               style={[styles.noteActionBtn, { backgroundColor: "rgba(255,255,255,0.08)" }]}
             >
-              <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, fontFamily: "Inter_500Medium" }}>Cancel</Text>
+              <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, fontFamily: "Poppins_500Medium" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -376,13 +341,14 @@ function NoteItem({
   );
 }
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════
    MAIN SCREEN
-═══════════════════════════════════════════ */
+═══════════════════════════════════ */
 export default function VideoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
+  const colors = useColors();
 
   const [activeTab, setActiveTab] = useState<"ai" | "notes">("ai");
   const [generatingType, setGeneratingType] = useState<string | null>(null);
@@ -422,7 +388,7 @@ export default function VideoDetailScreen() {
     },
     onError: (err: any) => {
       setGeneratingType(null);
-      Alert.alert("Generation Failed", err.message || "Could not generate content. Check AI API key.");
+      Alert.alert("Generation Failed", err.message || "Could not generate content.");
     },
   });
 
@@ -467,17 +433,21 @@ export default function VideoDetailScreen() {
   const aiOutputMap: Record<string, AiOutput> = Object.fromEntries(
     ((aiOutputsData as any)?.outputs || video?.aiOutputs || []).map((o: AiOutput) => [o.type, o])
   );
+  const aiCount = Object.keys(aiOutputMap).length;
+
+  // Quick action pills: tools that already have generated output
+  const quickPills = AI_TOOLS.filter((t) => aiOutputMap[t.type]);
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
         <GridBackground />
-        <View style={{ height: PLAYER_HEIGHT, backgroundColor: "#13131a" }} />
+        <View style={{ height: PLAYER_HEIGHT, backgroundColor: colors.card }} />
         <View style={{ padding: 16, gap: 10 }}>
-          <Skeleton height={22} width="80%" borderRadius={6} />
+          <Skeleton height={22} width="80%" borderRadius={4} />
           <Skeleton height={14} width="45%" borderRadius={4} />
-          <Skeleton height={44} borderRadius={12} style={{ marginTop: 8 }} />
-          {[1, 2, 3].map((i) => <Skeleton key={i} height={68} borderRadius={10} />)}
+          <Skeleton height={44} borderRadius={4} style={{ marginTop: 8 }} />
+          {[1, 2, 3].map((i) => <Skeleton key={i} height={68} borderRadius={4} />)}
         </View>
       </View>
     );
@@ -485,9 +455,9 @@ export default function VideoDetailScreen() {
 
   if (!video) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
+      <View style={[styles.root, { backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
         <GridBackground />
-        <Text style={{ color: "rgba(255,255,255,0.4)", fontFamily: "JetBrainsMono_400Regular" }}>VIDEO_NOT_FOUND</Text>
+        <Text style={{ color: colors.mutedForeground, fontFamily: "JetBrainsMono_400Regular" }}>VIDEO_NOT_FOUND</Text>
       </View>
     );
   }
@@ -496,16 +466,17 @@ export default function VideoDetailScreen() {
   const useWebView = !!ytId && Platform.OS !== "web";
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
-      {/* Nav */}
-      <View style={[styles.nav, { paddingTop: topInset + 8 }]}>
+
+      {/* Top nav */}
+      <View style={[styles.nav, { paddingTop: topInset + 8, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Feather name="arrow-left" size={20} color="#fff" />
+          <Feather name="arrow-left" size={20} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={styles.navTitle} numberOfLines={1}>Video</Text>
+        <Text style={[styles.navTitle, { color: colors.foreground }]} numberOfLines={1}>Video Detail</Text>
         <TouchableOpacity onPress={() => favMutation.mutate()} style={styles.navBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Feather name="heart" size={20} color={video.isFavorite ? "#ef4444" : "rgba(255,255,255,0.65)"} />
+          <Feather name="heart" size={20} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
         </TouchableOpacity>
       </View>
 
@@ -519,44 +490,70 @@ export default function VideoDetailScreen() {
         )}
 
         {/* Info block */}
-        <View style={styles.infoBlock}>
-          <Text style={styles.videoTitle}>{video.title}</Text>
+        <View style={[styles.infoBlock, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.videoTitle, { color: colors.foreground }]}>{video.title}</Text>
+
           <View style={styles.metaRow}>
             {video.channelName && (
-              <View style={styles.metaChip}>
-                <Feather name="music" size={11} color={PURPLE} />
-                <Text style={styles.metaChipText}>{video.channelName.toUpperCase()}</Text>
+              <View style={[styles.metaChip, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "25" }]}>
+                <Feather name="music" size={10} color={PURPLE} />
+                <Text style={[styles.metaChipText, { color: PURPLE }]}>{video.channelName.toUpperCase()}</Text>
               </View>
             )}
             {video.duration && (
-              <View style={[styles.metaChip, { borderColor: "rgba(255,255,255,0.06)" }]}>
-                <Feather name="clock" size={11} color="rgba(255,255,255,0.4)" />
-                <Text style={[styles.metaChipText, { color: "rgba(255,255,255,0.4)" }]}>{video.duration}</Text>
+              <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Feather name="clock" size={10} color={colors.mutedForeground} />
+                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{video.duration}</Text>
               </View>
             )}
           </View>
+
+          {/* Tag pills */}
           {video.tags && video.tags.length > 0 && (
             <View style={styles.tagsRow}>
               {video.tags.map((tag: Tag) => (
-                <View key={tag.id} style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "20", borderColor: (tag.color || PURPLE) + "40" }]}>
+                <View key={tag.id} style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "18", borderColor: (tag.color || PURPLE) + "35" }]}>
                   <Text style={[styles.tagPillText, { color: tag.color || PURPLE }]}>{tag.name}</Text>
                 </View>
               ))}
             </View>
           )}
+
+          {/* Quick action pills — show shortcuts to already-generated outputs */}
+          {quickPills.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }} contentContainerStyle={{ gap: 8 }}>
+              {quickPills.map((tool) => (
+                <QuickPill
+                  key={tool.type}
+                  label={tool.label.toUpperCase()}
+                  icon={tool.icon}
+                  color={tool.color}
+                  onPress={() => {
+                    const out = aiOutputMap[tool.type];
+                    if (out) { setViewingOutput({ output: out, tool }); setActiveTab("ai"); }
+                  }}
+                />
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabRow}>
+        <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
           {(["ai", "notes"] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
-              style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
+              style={[styles.tabBtn, {
+                backgroundColor: activeTab === tab ? PURPLE + "18" : colors.card,
+                borderColor: activeTab === tab ? PURPLE + "40" : colors.border,
+              }]}
               activeOpacity={0.75}
             >
-              <Text style={[styles.tabBtnText, activeTab === tab && styles.tabBtnTextActive]}>
-                {tab === "ai" ? "AI INSIGHTS" : `MY NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`}
+              <Text style={[styles.tabBtnText, { color: activeTab === tab ? PURPLE : colors.mutedForeground }]}>
+                {tab === "ai"
+                  ? `AI INSIGHTS${aiCount > 0 ? ` (${aiCount})` : ""}`
+                  : `MY NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`}
               </Text>
             </TouchableOpacity>
           ))}
@@ -570,19 +567,18 @@ export default function VideoDetailScreen() {
                 output={viewingOutput.output}
                 tool={viewingOutput.tool}
                 onClose={() => setViewingOutput(null)}
-                onRegenerate={() => {
-                  setViewingOutput(null);
-                  handleGenerate(viewingOutput.tool.type);
-                }}
+                onRegenerate={() => { setViewingOutput(null); handleGenerate(viewingOutput.tool.type); }}
               />
             ) : (
               <>
-                <Text style={styles.sectionLabel}>CHOOSE A TOOL</Text>
+                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_GENERATE</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose a Tool</Text>
                 <View style={styles.toolGrid}>
-                  {AI_TOOLS.map((tool) => (
+                  {AI_TOOLS.map((tool, index) => (
                     <AiToolCard
                       key={tool.type}
                       tool={tool}
+                      index={index}
                       existingOutput={aiOutputMap[tool.type]}
                       isGenerating={generatingType === tool.type}
                       onGenerate={() => handleGenerate(tool.type)}
@@ -618,42 +614,39 @@ export default function VideoDetailScreen() {
         {/* ── Notes Tab ── */}
         {activeTab === "notes" && (
           <View style={styles.section}>
-            <View style={styles.noteInputCard}>
+            <View style={[styles.noteInputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <TextInput
-                value={newNote}
-                onChangeText={setNewNote}
+                value={newNote} onChangeText={setNewNote}
                 placeholder="Add a note about this video…"
-                placeholderTextColor="rgba(255,255,255,0.25)"
-                multiline
-                style={styles.noteInput}
+                placeholderTextColor={colors.mutedForeground}
+                multiline style={[styles.noteInput, { color: colors.foreground }]}
               />
               <View style={styles.noteInputFooter}>
                 <TextInput
-                  value={noteTs}
-                  onChangeText={setNoteTs}
+                  value={noteTs} onChangeText={setNoteTs}
                   placeholder="Timestamp (1:30)"
-                  placeholderTextColor="rgba(255,255,255,0.25)"
-                  style={styles.tsInput}
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[styles.tsInput, { backgroundColor: colors.secondary, borderColor: colors.border, color: colors.foreground }]}
                   keyboardType="numbers-and-punctuation"
                 />
                 <TouchableOpacity
                   onPress={handleAddNote}
                   disabled={!newNote.trim()}
-                  style={[styles.noteAddBtn, { backgroundColor: newNote.trim() ? PURPLE : "rgba(255,255,255,0.06)" }]}
+                  style={[styles.noteAddBtn, { backgroundColor: newNote.trim() ? PURPLE : colors.secondary }]}
                   activeOpacity={0.85}
                 >
-                  <Feather name="plus" size={18} color={newNote.trim() ? "#fff" : "rgba(255,255,255,0.3)"} />
+                  <Feather name="plus" size={18} color={newNote.trim() ? "#fff" : colors.mutedForeground} />
                 </TouchableOpacity>
               </View>
             </View>
 
             {(!video.notes || video.notes.length === 0) ? (
               <View style={{ alignItems: "center", paddingVertical: 36 }}>
-                <View style={styles.emptyNoteIcon}>
-                  <Feather name="edit-3" size={22} color="rgba(139,92,246,0.45)" />
+                <View style={[styles.emptyNoteIcon, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "20" }]}>
+                  <Feather name="edit-3" size={22} color={PURPLE + "80"} />
                 </View>
-                <Text style={styles.emptyNoteText}>No notes yet</Text>
-                <Text style={styles.emptyNoteSub}>Capture your thoughts above</Text>
+                <Text style={[styles.emptyNoteText, { color: colors.mutedForeground }]}>No notes yet</Text>
+                <Text style={[styles.emptyNoteSub, { color: colors.mutedForeground + "80" }]}>Capture your thoughts above</Text>
               </View>
             ) : (
               <View style={{ gap: 10 }}>
@@ -661,9 +654,7 @@ export default function VideoDetailScreen() {
                   <NoteItem
                     key={note.id}
                     note={note}
-                    onUpdate={(content, timestamp) =>
-                      updateNoteMutation.mutate({ noteId: note.id, content, timestamp })
-                    }
+                    onUpdate={(content, timestamp) => updateNoteMutation.mutate({ noteId: note.id, content, timestamp })}
                     onDelete={() =>
                       Alert.alert("Delete Note", "Delete this note?", [
                         { text: "Cancel", style: "cancel" },
@@ -681,232 +672,129 @@ export default function VideoDetailScreen() {
   );
 }
 
+/* ═══ STYLES ═══ */
 const styles = StyleSheet.create({
+  root: { flex: 1 },
+
   /* Nav */
   nav: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingBottom: 10,
-    backgroundColor: "transparent",
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 8, paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.06)",
   },
   navBtn: { padding: 10, width: 44, alignItems: "center" },
   navTitle: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-    color: "#fff",
-    textAlign: "center",
-    letterSpacing: 0.3,
+    flex: 1, fontSize: 15, fontFamily: "Poppins_600SemiBold",
+    textAlign: "center", letterSpacing: -0.2,
   },
 
   /* Player */
-  player: {
-    width: "100%",
-    height: PLAYER_HEIGHT,
-    backgroundColor: "#000",
-    position: "relative",
-  },
+  player: { width: "100%", height: PLAYER_HEIGHT, backgroundColor: "#000", position: "relative" },
   ytExtBtn: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
+    position: "absolute", bottom: 10, right: 10,
+    flexDirection: "row", alignItems: "center", gap: 5,
     backgroundColor: "rgba(0,0,0,0.72)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  ytExtText: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-  },
-  thumbCenter: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  ytExtText: { color: "rgba(255,255,255,0.9)", fontSize: 10, fontFamily: "Poppins_600SemiBold" },
+  thumbCenter: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" },
   playCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(139,92,246,0.85)",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: PURPLE,
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
+    width: 60, height: 60, borderRadius: 30, backgroundColor: "rgba(139,92,246,0.85)",
+    alignItems: "center", justifyContent: "center",
+    shadowColor: PURPLE, shadowOpacity: 0.5, shadowRadius: 12, elevation: 8,
   },
   watchOnYtRow: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
+    position: "absolute", bottom: 10, right: 10,
+    flexDirection: "row", alignItems: "center", gap: 5,
     backgroundColor: "rgba(0,0,0,0.65)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  watchOnYtText: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-  },
-
-  /* Embed error */
-  embedErrorBox: { alignItems: "center", gap: 12, paddingHorizontal: 32 },
-  embedErrorTitle: { color: "#fff", fontSize: 14, fontFamily: "Inter_600SemiBold", marginTop: 4 },
-  embedErrorSub: {
-    color: "rgba(255,255,255,0.4)", fontSize: 11,
-    fontFamily: "JetBrainsMono_400Regular", textAlign: "center", lineHeight: 17,
-  },
-  embedErrorBtn: {
+  watchOnYtText: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontFamily: "Poppins_600SemiBold" },
+  embedErrTitle: { color: "#fff", fontSize: 14, fontFamily: "Poppins_600SemiBold" },
+  embedErrSub: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Poppins_400Regular", textAlign: "center", marginTop: 4 },
+  embedErrBtn: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    paddingHorizontal: 20, paddingVertical: 10,
-    backgroundColor: "#ef4444", borderRadius: 6, marginTop: 4,
+    paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#ef4444",
+    borderRadius: 6, marginTop: 12,
   },
-  embedErrorBtnText: {
-    color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.2,
-  },
+  embedErrBtnText: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.2 },
 
   /* Info */
-  infoBlock: {
-    padding: 16, gap: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.06)",
-  },
-  videoTitle: {
-    fontSize: 17, fontFamily: "Raleway_700Bold",
-    color: "#fff", lineHeight: 25, letterSpacing: -0.2,
-  },
+  infoBlock: { padding: 16, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  videoTitle: { fontSize: 17, fontFamily: "Poppins_700Bold", lineHeight: 26, letterSpacing: -0.3 },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metaChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 5,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 6, borderWidth: 1, borderColor: "rgba(139,92,246,0.2)",
+    borderRadius: 6, borderWidth: 1,
   },
-  metaChipText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: PURPLE, letterSpacing: 0.5 },
-  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 2 },
+  metaChipText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   tagPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 5, borderWidth: 1 },
-  tagPillText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  tagPillText: { fontSize: 10, fontFamily: "Poppins_500Medium", letterSpacing: 0.3 },
+
+  /* Quick pills */
+  quickPill: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1,
+  },
+  quickPillText: { fontSize: 9, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.2 },
 
   /* Tabs */
   tabRow: {
     flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, gap: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)",
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  tabBtn: {
-    flex: 1, paddingVertical: 10, alignItems: "center",
-    borderRadius: 8, backgroundColor: "rgba(255,255,255,0.04)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.06)",
-  },
-  tabBtnActive: {
-    backgroundColor: "rgba(139,92,246,0.15)", borderColor: "rgba(139,92,246,0.35)",
-  },
-  tabBtnText: {
-    fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold",
-    color: "rgba(255,255,255,0.4)", letterSpacing: 1.2,
-  },
-  tabBtnTextActive: { color: PURPLE },
+  tabBtn: { flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 8, borderWidth: 1 },
+  tabBtnText: { fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.1 },
 
   /* Section */
   section: { padding: 16, gap: 12 },
-  sectionLabel: {
-    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
-    color: "rgba(255,255,255,0.28)", letterSpacing: 2.5, marginBottom: 2,
-  },
+  sectionEyebrow: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5 },
+  sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3, marginTop: -4, marginBottom: 4 },
 
-  /* 2-column Tool Grid */
-  toolGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: CARD_GAP,
-  },
+  /* Tool grid */
+  toolGrid: { flexDirection: "row", flexWrap: "wrap", gap: CARD_GAP },
   toolCard: {
-    backgroundColor: "#13131a",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-    minHeight: 148,
+    backgroundColor: "#13131a", borderRadius: 12, borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)", minHeight: 148,
   },
-  toolCardInner: {
-    flex: 1,
-    padding: 12,
-    justifyContent: "space-between",
-  },
-  toolCardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
+  toolCardInner: { flex: 1, padding: 12, justifyContent: "space-between" },
+  toolCardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
+  toolNum: { fontSize: 11, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1 },
   toolIconBox: {
-    width: 36, height: 36, borderRadius: 10,
-    alignItems: "center", justifyContent: "center",
-    borderWidth: 1,
+    width: 34, height: 34, borderRadius: 9,
+    alignItems: "center", justifyContent: "center", borderWidth: 1,
   },
-  doneBadge: {
-    width: 18, height: 18, borderRadius: 9,
-    backgroundColor: GREEN + "20",
-    borderWidth: 1, borderColor: GREEN + "50",
-    alignItems: "center", justifyContent: "center",
-  },
-  toolLabel: {
-    fontSize: 12, fontFamily: "Inter_600SemiBold",
-    color: "#fff", letterSpacing: 0.1,
-  },
-  toolDesc: {
-    fontSize: 10, fontFamily: "Inter_400Regular",
-    color: "rgba(255,255,255,0.38)", lineHeight: 14,
-  },
-  toolCardFooter: {
-    paddingTop: 4,
-  },
+  toolLabel: { fontSize: 12, fontFamily: "Poppins_600SemiBold", color: "#fff", letterSpacing: 0 },
+  toolDesc: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.38)", lineHeight: 14 },
+  toolCardFooter: { paddingTop: 4 },
   generatingPill: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8, paddingVertical: 4,
+    alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 6, borderWidth: 1,
   },
   generatingPillText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
   viewBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    alignSelf: "flex-start",
+    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5,
-    backgroundColor: "rgba(139,92,246,0.12)",
-    borderRadius: 6, borderWidth: 1, borderColor: "rgba(139,92,246,0.25)",
+    backgroundColor: PURPLE + "18", borderRadius: 6, borderWidth: 1, borderColor: PURPLE + "30",
   },
   viewBtnText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: PURPLE },
   genBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    alignSelf: "flex-start",
-    paddingHorizontal: 10, paddingVertical: 5,
-    backgroundColor: PURPLE,
-    borderRadius: 6,
+    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
+    paddingHorizontal: 10, paddingVertical: 5, backgroundColor: PURPLE, borderRadius: 6,
   },
   genBtnText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: "#fff" },
 
   /* Generating banner */
   generatingBanner: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "rgba(139,92,246,0.07)",
-    borderWidth: 1, borderColor: "rgba(139,92,246,0.18)",
+    backgroundColor: PURPLE + "12", borderWidth: 1, borderColor: PURPLE + "30",
     borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
   },
-  generatingText: { fontSize: 12, fontFamily: "Inter_500Medium", color: PURPLE },
+  generatingText: { fontSize: 12, fontFamily: "Poppins_500Medium", color: PURPLE },
 
   /* Output Panel */
   outputPanel: {
@@ -917,80 +805,59 @@ const styles = StyleSheet.create({
   outputPanelHeader: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.07)",
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.07)",
   },
   outputPanelIcon: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  outputPanelTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#fff" },
+  outputPanelTitle: { fontSize: 14, fontFamily: "Poppins_600SemiBold", color: "#fff" },
   regenBtn: {
     width: 32, height: 32, borderRadius: 8,
-    backgroundColor: "rgba(139,92,246,0.1)",
-    borderWidth: 1, borderColor: "rgba(139,92,246,0.2)",
+    backgroundColor: PURPLE + "18", borderWidth: 1, borderColor: PURPLE + "30",
     alignItems: "center", justifyContent: "center",
   },
   closeBtn: {
     width: 32, height: 32, borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center",
   },
   outputScroll: { padding: 16, maxHeight: 400 },
-  outputText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.82)", lineHeight: 22 },
-  outputDate: {
-    marginTop: 14, fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    color: "rgba(255,255,255,0.25)", letterSpacing: 0.5,
-  },
+  outputText: { fontSize: 13, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.82)", lineHeight: 22 },
+  outputDate: { marginTop: 14, fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: "rgba(255,255,255,0.25)", letterSpacing: 0.5 },
 
   /* Notes */
-  noteInputCard: {
-    backgroundColor: "#13131a", borderRadius: 12,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    padding: 14, gap: 10,
-  },
-  noteInput: {
-    color: "#fff", fontFamily: "Inter_400Regular",
-    fontSize: 14, lineHeight: 21, minHeight: 56,
-    textAlignVertical: "top",
-  },
+  noteInputCard: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
+  noteInput: { fontFamily: "Poppins_400Regular", fontSize: 14, lineHeight: 21, minHeight: 56, textAlignVertical: "top" },
   noteInputFooter: { flexDirection: "row", alignItems: "center", gap: 10 },
   tsInput: {
-    flex: 1, backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 8, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    flex: 1, borderRadius: 8, borderWidth: 1,
     paddingHorizontal: 10, paddingVertical: 8,
-    color: "#fff", fontSize: 12, fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 12, fontFamily: "JetBrainsMono_400Regular",
   },
   noteAddBtn: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+
   noteCard: {
     backgroundColor: "#13131a", borderRadius: 12,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.07)",
     padding: 14, gap: 8,
   },
   noteTsBadge: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(139,92,246,0.1)",
-    borderRadius: 5, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: "rgba(139,92,246,0.2)",
+    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
+    backgroundColor: PURPLE + "15", borderRadius: 5,
+    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: PURPLE + "25",
   },
   noteTsText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: PURPLE },
-  noteContent: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.8)", lineHeight: 20 },
+  noteContent: { fontSize: 13, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.8)", lineHeight: 20 },
   noteFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
   noteDate: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", color: "rgba(255,255,255,0.25)" },
   noteEditInput: {
-    color: "#fff", fontFamily: "Inter_400Regular", fontSize: 13,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 8, padding: 10, minHeight: 60, textAlignVertical: "top",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+    color: "#fff", fontFamily: "Poppins_400Regular", fontSize: 13,
+    backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, padding: 10,
+    minHeight: 60, textAlignVertical: "top", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
   },
   noteActionBtn: { flex: 1, paddingVertical: 9, borderRadius: 8, alignItems: "center" },
 
-  /* Empty notes */
   emptyNoteIcon: {
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: "rgba(139,92,246,0.08)",
-    borderWidth: 1, borderColor: "rgba(139,92,246,0.15)",
+    width: 52, height: 52, borderRadius: 26, borderWidth: 1,
     alignItems: "center", justifyContent: "center", marginBottom: 12,
   },
-  emptyNoteText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.5)" },
-  emptyNoteSub: { fontSize: 11, fontFamily: "JetBrainsMono_400Regular", color: "rgba(255,255,255,0.25)", marginTop: 4 },
+  emptyNoteText: { fontSize: 14, fontFamily: "Poppins_600SemiBold" },
+  emptyNoteSub: { fontSize: 11, fontFamily: "Poppins_400Regular", marginTop: 4 },
 });

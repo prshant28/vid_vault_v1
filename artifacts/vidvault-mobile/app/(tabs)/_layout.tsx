@@ -75,9 +75,9 @@ function ClassicTabLayout() {
             />
           ) : null,
         tabBarLabelStyle: {
-          fontFamily: "JetBrainsMono_400Regular",
+          fontFamily: "Poppins_500Medium",
           fontSize: 9,
-          letterSpacing: 0.5,
+          letterSpacing: 0.2,
           marginTop: 2,
         },
       }}

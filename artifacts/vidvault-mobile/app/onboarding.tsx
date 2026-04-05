@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     height: 22,
   },
   logoName: {
-    fontFamily: "Raleway_900Black",
+    fontFamily: "Poppins_900Black",
     fontSize: 17,
     color: WHITE,
     letterSpacing: -0.3,
@@ -310,14 +310,14 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   title: {
-    fontFamily: "Raleway_900Black",
+    fontFamily: "Poppins_900Black",
     fontSize: 34,
     color: WHITE,
     letterSpacing: -0.8,
     lineHeight: 40,
   },
   subtitle: {
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     fontSize: 14,
     color: MUTED,
     lineHeight: 22,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   polyLabel: {
-    fontFamily: "Raleway_900Black",
+    fontFamily: "Poppins_900Black",
     fontSize: 13,
     color: BG,
     letterSpacing: 2,

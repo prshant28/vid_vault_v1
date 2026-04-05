@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 
@@ -97,25 +98,26 @@ export default function FoldersScreen() {
     ]);
   };
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const folders = data?.folders ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
-        <View>
-          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>ORGANIZE</Text>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Folders</Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => setShowModal(true)}
-          style={[styles.addBtn, { backgroundColor: colors.primary }]}
-          activeOpacity={0.85}
-        >
-          <Feather name="plus" size={20} color="#fff" />
-        </TouchableOpacity>
+      <TopAppBar
+        rightAction={
+          <TouchableOpacity
+            onPress={() => setShowModal(true)}
+            style={[styles.addBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <Feather name="plus" size={20} color="#fff" />
+          </TouchableOpacity>
+        }
+      />
+      <View style={styles.subHeader}>
+        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//ORGANIZE</Text>
+        <Text style={[styles.subTitle, { color: colors.foreground }]}>Folders</Text>
       </View>
 
       {isLoading ? (
@@ -210,24 +212,10 @@ export default function FoldersScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  headerEyebrow: {
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.5,
-  },
+  root: { flex: 1 },
+  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
+  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
   addBtn: {
     width: 40,
     height: 40,
@@ -262,13 +250,13 @@ const styles = StyleSheet.create({
   },
   folderName: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     textAlign: "center",
-    lineHeight: 18,
+    lineHeight: 20,
   },
   folderCount: {
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
   },
   deleteBtn: {
     position: "absolute",
@@ -316,13 +304,13 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 20,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Poppins_700Bold",
   },
   nameInput: {
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     borderWidth: 1,
   },
   colorRow: {
@@ -337,7 +325,7 @@ const styles = StyleSheet.create({
   },
   createError: {
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
   },
   createBtn: {
     paddingVertical: 14,
@@ -346,6 +334,6 @@ const styles = StyleSheet.create({
   createBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
   },
 });

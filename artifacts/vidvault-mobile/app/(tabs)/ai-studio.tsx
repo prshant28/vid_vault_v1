@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 
 interface Message {
   id: string;
@@ -55,13 +56,17 @@ const WELCOME_MESSAGE: Message = {
 function VideoResultCard({ video, onImport }: { video: VideoResult; onImport: () => void }) {
   const colors = useColors();
   return (
-    <View style={[styles.videoCard, { backgroundColor: colors.secondary, borderRadius: colors.radius - 4, borderColor: colors.border }]}>
+    <View style={[styles.videoCard, { backgroundColor: colors.secondary, borderRadius: colors.radius, borderColor: colors.border }]}>
       {video.thumbnail ? (
         <Image source={{ uri: video.thumbnail }} style={[styles.videoThumb, { borderRadius: 6 }]} resizeMode="cover" />
       ) : null}
       <View style={styles.videoInfo}>
-        <Text style={[styles.videoTitle, { color: colors.foreground }]} numberOfLines={2}>{video.title}</Text>
-        <Text style={[styles.videoChannel, { color: colors.mutedForeground }]} numberOfLines={1}>{video.channel}</Text>
+        <Text style={[styles.videoTitle, { color: colors.foreground, fontFamily: "Poppins_600SemiBold" }]} numberOfLines={2}>
+          {video.title}
+        </Text>
+        <Text style={[styles.videoChannel, { color: colors.mutedForeground, fontFamily: "Poppins_400Regular" }]} numberOfLines={1}>
+          {video.channel}
+        </Text>
       </View>
       <TouchableOpacity onPress={onImport} style={[styles.importBtn, { backgroundColor: colors.primary }]} activeOpacity={0.85}>
         <Feather name="download" size={14} color="#fff" />
@@ -75,16 +80,20 @@ function LibraryVideoCard({ video }: { video: LibraryVideo }) {
   return (
     <TouchableOpacity
       onPress={() => router.push(`/video/${video.id}`)}
-      style={[styles.videoCard, { backgroundColor: colors.secondary, borderRadius: colors.radius - 4, borderColor: colors.border }]}
+      style={[styles.videoCard, { backgroundColor: colors.secondary, borderRadius: colors.radius, borderColor: colors.border }]}
       activeOpacity={0.8}
     >
       {video.thumbnail ? (
         <Image source={{ uri: video.thumbnail }} style={[styles.videoThumb, { borderRadius: 6 }]} resizeMode="cover" />
       ) : null}
       <View style={styles.videoInfo}>
-        <Text style={[styles.videoTitle, { color: colors.foreground }]} numberOfLines={2}>{video.title}</Text>
+        <Text style={[styles.videoTitle, { color: colors.foreground, fontFamily: "Poppins_600SemiBold" }]} numberOfLines={2}>
+          {video.title}
+        </Text>
         {video.channelName && (
-          <Text style={[styles.videoChannel, { color: colors.mutedForeground }]} numberOfLines={1}>{video.channelName}</Text>
+          <Text style={[styles.videoChannel, { color: colors.mutedForeground, fontFamily: "Poppins_400Regular" }]} numberOfLines={1}>
+            {video.channelName}
+          </Text>
         )}
       </View>
       <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
@@ -102,39 +111,37 @@ function MessageBubble({ message, onImportVideo }: { message: Message; onImportV
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 280 }}
     >
-    <View style={[styles.bubbleRow, isUser ? styles.userRow : styles.assistantRow]}>
-      {!isUser && (
-        <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-          <Feather name="cpu" size={14} color={colors.primary} />
-        </View>
-      )}
-      <View style={{ maxWidth: "85%", gap: 6 }}>
-        <View style={[
-          styles.bubble,
-          isUser
-            ? { backgroundColor: colors.primary, borderRadius: colors.radius, borderBottomRightRadius: 4 }
-            : { backgroundColor: colors.card, borderRadius: colors.radius, borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 },
-        ]}>
-          <Text style={[styles.bubbleText, { color: isUser ? colors.primaryForeground : colors.foreground }]}>
-            {message.content}
-          </Text>
-        </View>
-        {message.videos && message.videos.length > 0 && (
-          <View style={{ gap: 6 }}>
-            {message.videos.map((v) => (
-              <VideoResultCard key={v.youtubeId} video={v} onImport={() => onImportVideo(v.url)} />
-            ))}
+      <View style={[styles.bubbleRow, isUser ? styles.userRow : styles.assistantRow]}>
+        {!isUser && (
+          <View style={[styles.avatar, { backgroundColor: colors.accent, borderRadius: 14 }]}>
+            <Feather name="cpu" size={14} color={colors.primary} />
           </View>
         )}
-        {message.libraryVideos && message.libraryVideos.length > 0 && (
-          <View style={{ gap: 6 }}>
-            {message.libraryVideos.map((v) => (
-              <LibraryVideoCard key={v.id} video={v} />
-            ))}
+        <View style={{ maxWidth: "85%", gap: 6 }}>
+          <View style={[
+            styles.bubble,
+            isUser
+              ? { backgroundColor: colors.primary, borderRadius: colors.radius, borderBottomRightRadius: 4 }
+              : { backgroundColor: colors.card, borderRadius: colors.radius, borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 },
+          ]}>
+            <Text style={[styles.bubbleText, { color: isUser ? colors.primaryForeground : colors.foreground, fontFamily: "Poppins_400Regular" }]}>
+              {message.content}
+            </Text>
           </View>
-        )}
+          {message.videos && message.videos.length > 0 && (
+            <View style={{ gap: 6 }}>
+              {message.videos.map((v) => (
+                <VideoResultCard key={v.youtubeId} video={v} onImport={() => onImportVideo(v.url)} />
+              ))}
+            </View>
+          )}
+          {message.libraryVideos && message.libraryVideos.length > 0 && (
+            <View style={{ gap: 6 }}>
+              {message.libraryVideos.map((v) => <LibraryVideoCard key={v.id} video={v} />)}
+            </View>
+          )}
+        </View>
       </View>
-    </View>
     </MotiView>
   );
 }
@@ -161,27 +168,20 @@ export default function AIStudioScreen() {
   const send = useCallback(async () => {
     const text = input.trim();
     if (!text || isSending) return;
-
     setInput("");
     Keyboard.dismiss();
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: text,
-    };
-
+    const userMsg: Message = { id: Date.now().toString(), role: "user", content: text };
     const currentMessages = [...messages, userMsg];
     setMessages(currentMessages);
     setIsSending(true);
 
     try {
-      const history: Array<{ role: "user" | "assistant"; content: string }> = messages
+      const history = messages
         .filter((m) => m.id !== "welcome")
-        .map((m) => ({ role: m.role, content: m.content }));
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
       const res = await api.globalChat(text, history);
-
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -191,35 +191,27 @@ export default function AIStudioScreen() {
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch {
-      const errMsg: Message = {
+      setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "Sorry, something went wrong. Please try again.",
-      };
-      setMessages((prev) => [...prev, errMsg]);
+      }]);
     } finally {
       setIsSending(false);
     }
   }, [input, isSending, messages]);
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: "#0a0a0f" }]}
-      behavior="padding"
-      keyboardVerticalOffset={0}
-    >
+    <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]} behavior="padding">
       <GridBackground />
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
-        <View style={[styles.headerIcon, { backgroundColor: "rgba(139,92,246,0.12)" }]}>
-          <Feather name="cpu" size={18} color={colors.primary} />
-        </View>
-        <View>
-          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>AI_STUDIO</Text>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI Studio</Text>
-        </View>
+      <TopAppBar />
+
+      {/* Studio heading */}
+      <View style={styles.subHeader}>
+        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//AI_STUDIO</Text>
+        <Text style={[styles.subTitle, { color: colors.foreground }]}>AI Studio</Text>
       </View>
 
       <FlatList
@@ -232,10 +224,7 @@ export default function AIStudioScreen() {
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         renderItem={({ item }) => (
-          <MessageBubble
-            message={item}
-            onImportVideo={(url) => addVideoMutation.mutate(url)}
-          />
+          <MessageBubble message={item} onImportVideo={(url) => addVideoMutation.mutate(url)} />
         )}
         ListFooterComponent={
           isSending ? (
@@ -254,7 +243,7 @@ export default function AIStudioScreen() {
             placeholder="Ask anything about videos..."
             placeholderTextColor={colors.mutedForeground}
             multiline
-            style={[styles.input, { color: colors.foreground, fontFamily: "Inter_400Regular" }]}
+            style={[styles.input, { color: colors.foreground, fontFamily: "Poppins_400Regular" }]}
             returnKeyType="send"
             onSubmitEditing={send}
             blurOnSubmit={false}
@@ -275,120 +264,27 @@ export default function AIStudioScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 0,
-  },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerEyebrow: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 2,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.3,
-  },
-  bubbleRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 8,
-  },
-  userRow: {
-    justifyContent: "flex-end",
-  },
-  assistantRow: {
-    justifyContent: "flex-start",
-  },
-  avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bubble: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  bubbleText: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 22,
-  },
-  typingBubble: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 4,
-  },
-  inputBar: {
-    borderTopWidth: 1,
-    paddingTop: 12,
-    paddingHorizontal: 16,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    borderWidth: 1,
-    padding: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    maxHeight: 100,
-  },
-  sendBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  videoCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    gap: 10,
-    borderWidth: 1,
-  },
-  videoThumb: {
-    width: 72,
-    height: 40,
-  },
-  videoInfo: {
-    flex: 1,
-  },
-  videoTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
-    lineHeight: 17,
-    marginBottom: 2,
-  },
-  videoChannel: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-  },
-  importBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
+  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+
+  bubbleRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  userRow: { justifyContent: "flex-end" },
+  assistantRow: { justifyContent: "flex-start" },
+  avatar: { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
+  bubble: { paddingHorizontal: 14, paddingVertical: 10 },
+  bubbleText: { fontSize: 15, lineHeight: 22 },
+  typingBubble: { alignSelf: "flex-start", borderWidth: 1, padding: 12, borderRadius: 12, marginTop: 4 },
+
+  inputBar: { borderTopWidth: 1, paddingTop: 12, paddingHorizontal: 16 },
+  inputWrapper: { flexDirection: "row", alignItems: "flex-end", borderWidth: 1, padding: 8 },
+  input: { flex: 1, fontSize: 15, paddingHorizontal: 8, paddingVertical: 6, maxHeight: 100 },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+
+  videoCard: { flexDirection: "row", alignItems: "center", padding: 10, gap: 10, borderWidth: 1 },
+  videoThumb: { width: 72, height: 40 },
+  videoInfo: { flex: 1 },
+  videoTitle: { fontSize: 13, lineHeight: 17, marginBottom: 2 },
+  videoChannel: { fontSize: 11 },
+  importBtn: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
 });

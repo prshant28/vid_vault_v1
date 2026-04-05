@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 import { api } from "@/services/api";
 import type { Video, Stats } from "@/types/api";
 import { Skeleton } from "@/components/SkeletonLoader";
@@ -30,44 +31,28 @@ const RECENT_CARD_W = SCREEN_W * 0.72;
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const STAT_CONFIG = [
-  { label: "TOTAL_VIDEOS", code: "01", icon: "film" as FeatherIconName, accent: "#8b5cf6", key: "totalVideos" },
-  { label: "FOLDERS", code: "02", icon: "folder" as FeatherIconName, accent: "#06b6d4", key: "totalFolders" },
-  { label: "TAGS_USED", code: "03", icon: "tag" as FeatherIconName, accent: "#10b981", key: "totalTags" },
+  { label: "Total Videos", code: "01", icon: "film" as FeatherIconName, accent: "#8b5cf6", key: "totalVideos" },
+  { label: "Folders", code: "02", icon: "folder" as FeatherIconName, accent: "#06b6d4", key: "totalFolders" },
+  { label: "Tags Used", code: "03", icon: "tag" as FeatherIconName, accent: "#10b981", key: "totalTags" },
 ];
 
 function EtchedStatCard({
-  label,
-  code,
-  value,
-  icon,
-  accent,
-}: {
-  label: string;
-  code: string;
-  value: number;
-  icon: FeatherIconName;
-  accent: string;
-}) {
+  label, code, value, icon, accent,
+}: { label: string; code: string; value: number; icon: FeatherIconName; accent: string }) {
   const colors = useColors();
   return (
-    <View
-      style={[
-        styles.etchedCard,
-        {
-          backgroundColor: colors.card,
-          borderColor: "rgba(139,92,246,0.10)",
-        },
-      ]}
-    >
+    <View style={[styles.etchedCard, { backgroundColor: colors.card, borderColor: accent + "20" }]}>
       <View style={styles.etchedTop}>
         <Text style={[styles.etchedCode, { color: colors.mutedForeground }]}>{code}</Text>
-        <Feather name={icon} size={15} color={accent + "55"} />
+        <View style={[styles.etchedIconBox, { backgroundColor: accent + "15", borderColor: accent + "30" }]}>
+          <Feather name={icon} size={14} color={accent} />
+        </View>
       </View>
-      <Text style={[styles.etchedLabel, { color: accent + "99" }]}>{label}</Text>
+      <Text style={[styles.etchedLabel, { color: colors.mutedForeground }]}>{label}</Text>
       <Text style={[styles.etchedValue, { color: colors.foreground }]}>
         {value.toString().padStart(2, "0")}
       </Text>
-      <View style={[styles.etchedGlow, { backgroundColor: accent }]} pointerEvents="none" />
+      <View style={[styles.etchedGlow, { backgroundColor: accent, pointerEvents: "none" }]} />
     </View>
   );
 }
@@ -77,7 +62,6 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const qc = useQueryClient();
-
   const [showSaveModal, setShowSaveModal] = useState(false);
 
   const { data: stats, isLoading, refetch, isRefetching } = useQuery<Stats>({
@@ -87,59 +71,55 @@ export default function HomeScreen() {
 
   const favoriteMutation = useMutation({
     mutationFn: (videoId: string) => api.toggleFavorite(videoId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["stats"] });
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["stats"] }),
   });
 
   const displayName = user?.firstName || user?.email?.split("@")[0] || "there";
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
-
   const recentVideos = stats?.recentVideos ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
+      <TopAppBar
+        rightAction={
+          <TouchableOpacity
+            onPress={() => setShowSaveModal(true)}
+            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <Feather name="plus" size={16} color="#fff" />
+            <Text style={styles.saveBtnLabel}>SAVE</Text>
+          </TouchableOpacity>
+        }
+      />
+
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: botInset + 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
       >
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: topInset + 16 }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.greeting, { color: colors.mutedForeground }]}>//SYSTEM_STATUS</Text>
-            <Text style={[styles.name, { color: colors.foreground }]}>
-              {displayName}{"'"}s Vault
-            </Text>
-            <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>
-              KNOWLEDGE_BASE // ACTIVE
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => setShowSaveModal(true)}
-            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={18} color="#fff" />
-            <Text style={styles.saveBtnLabel}>SAVE</Text>
-          </TouchableOpacity>
+        {/* Greeting */}
+        <View style={styles.greeting}>
+          <Text style={[styles.greetingLabel, { color: colors.mutedForeground }]}>//SYSTEM_STATUS</Text>
+          <Text style={[styles.greetingName, { color: colors.foreground }]}>
+            {displayName}{"'"}s Vault
+          </Text>
+          <Text style={[styles.greetingSub, { color: colors.mutedForeground }]}>
+            KNOWLEDGE_BASE // ACTIVE
+          </Text>
         </View>
 
-        {/* Stat Cards — full-width vertical stack */}
+        {/* Stats */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>OVERVIEW</Text>
-            <View style={[styles.sectionLine, { backgroundColor: "rgba(139,92,246,0.15)" }]} />
+            <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
           </View>
-
           {isLoading ? (
             <View style={{ gap: 10 }}>
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} height={110} borderRadius={4} />
-              ))}
+              {[1, 2, 3].map((i) => <Skeleton key={i} height={110} borderRadius={4} />)}
             </View>
           ) : (
             <View style={{ gap: 10 }}>
@@ -157,7 +137,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Recently Added — horizontal scroll */}
+        {/* Recently Added */}
         <View style={styles.sectionNoHPad}>
           <View style={[styles.sectionHeader, { paddingHorizontal: 20 }]}>
             <View style={{ flex: 1 }}>
@@ -165,15 +145,13 @@ export default function HomeScreen() {
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Latest Captures</Text>
             </View>
             <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
-              <Text style={[styles.viewAll, { color: colors.mutedForeground }]}>VIEW_ALL →</Text>
+              <Text style={[styles.viewAll, { color: colors.primary }]}>VIEW ALL →</Text>
             </TouchableOpacity>
           </View>
 
           {isLoading ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} height={180} width={RECENT_CARD_W} borderRadius={4} />
-              ))}
+              {[1, 2, 3].map((i) => <Skeleton key={i} height={180} width={RECENT_CARD_W} borderRadius={4} />)}
             </ScrollView>
           ) : recentVideos.length > 0 ? (
             <ScrollView
@@ -209,7 +187,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Favorites section */}
+        {/* Favorites */}
         {stats?.favoriteVideos && stats.favoriteVideos.length > 0 && (
           <View style={[styles.sectionNoHPad, { marginTop: 8 }]}>
             <View style={[styles.sectionHeader, { paddingHorizontal: 20 }]}>
@@ -246,127 +224,39 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    gap: 12,
-  },
-  greeting: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 6,
-  },
-  name: {
-    fontSize: 26,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.5,
-    lineHeight: 30,
-    marginBottom: 4,
-  },
-  subLabel: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1.5,
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  saveBtnLabel: {
-    color: "#fff",
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginBottom: 28,
-  },
-  sectionNoHPad: {
-    marginBottom: 28,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    marginBottom: 14,
-    gap: 12,
-  },
-  sectionLine: {
-    flex: 1,
-    height: 1,
-    marginBottom: 4,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-  },
-  sectionMicro: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.3,
-  },
-  viewAll: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1.5,
-    paddingBottom: 3,
-  },
+  root: { flex: 1 },
 
-  etchedCard: {
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 4,
-    overflow: "hidden",
-    minHeight: 100,
+  saveBtn: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 4,
   },
-  etchedTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginBottom: 4,
+  saveBtnLabel: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
+
+  greeting: { paddingHorizontal: 20, paddingBottom: 24, paddingTop: 8 },
+  greetingLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 6 },
+  greetingName: { fontSize: 26, fontFamily: "Poppins_700Bold", letterSpacing: -0.5, lineHeight: 34, marginBottom: 2 },
+  greetingSub: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+
+  section: { paddingHorizontal: 20, marginBottom: 28 },
+  sectionNoHPad: { marginBottom: 28 },
+  sectionHeader: {
+    flexDirection: "row", alignItems: "flex-end",
+    justifyContent: "space-between", marginBottom: 14, gap: 12,
   },
-  etchedCode: {
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-  },
-  etchedLabel: {
-    fontSize: 8,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 6,
-  },
-  etchedValue: {
-    fontSize: 44,
-    fontFamily: "Raleway_900Black",
-    lineHeight: 48,
-    letterSpacing: -2,
-  },
+  sectionLine: { flex: 1, height: 1, marginBottom: 4 },
+  sectionLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
+  sectionMicro: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3 },
+  viewAll: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingBottom: 3 },
+
+  etchedCard: { padding: 16, borderWidth: 1, borderRadius: 4, overflow: "hidden", minHeight: 100 },
+  etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 },
+  etchedIconBox: { width: 28, height: 28, borderRadius: 6, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  etchedCode: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginTop: 2 },
+  etchedLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 4 },
+  etchedValue: { fontSize: 44, fontFamily: "Poppins_700Bold", lineHeight: 50, letterSpacing: -2 },
   etchedGlow: {
-    position: "absolute",
-    bottom: -24,
-    right: -24,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    opacity: 0.05,
+    position: "absolute", bottom: -24, right: -24,
+    width: 80, height: 80, borderRadius: 40, opacity: 0.06,
   },
 });

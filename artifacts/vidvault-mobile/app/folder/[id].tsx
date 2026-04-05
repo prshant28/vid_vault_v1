@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   navTitle: {
     flex: 1,
     fontSize: 18,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Poppins_700Bold",
     textAlign: "center",
   },
   grid: {

@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 import { useThemeToggle } from "@/hooks/useThemeToggle";
 
 function SettingRow({
@@ -76,19 +77,20 @@ export default function ProfileScreen() {
     await setTheme(value ? "dark" : "light");
   };
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#0a0a0f" }}
-      contentContainerStyle={{ paddingBottom: botInset + 100 }}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GridBackground />
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
-        <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>USER_SETTINGS</Text>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Profile</Text>
+      <TopAppBar />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: botInset + 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+      <View style={styles.subHeader}>
+        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//USER_SETTINGS</Text>
+        <Text style={[styles.subTitle, { color: colors.foreground }]}>Profile</Text>
       </View>
 
       <View style={styles.profileSection}>
@@ -133,26 +135,16 @@ export default function ProfileScreen() {
       <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <SettingRow icon="log-out" label="Sign Out" onPress={handleLogout} danger />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  headerEyebrow: {
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
-    marginBottom: 4,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontFamily: "Raleway_900Black",
-    letterSpacing: -0.5,
-  },
+  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
+  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+
   profileSection: {
     alignItems: "center",
     paddingVertical: 24,
@@ -168,16 +160,16 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Poppins_700Bold",
   },
   displayName: {
     fontSize: 22,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Poppins_700Bold",
     marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
   },
   section: {
     marginHorizontal: 16,
@@ -187,9 +179,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   sectionLabel: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.5,
+    fontSize: 10,
+    fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 1.5,
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 6,
@@ -212,7 +204,7 @@ const styles = StyleSheet.create({
   rowLabel: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Poppins_500Medium",
   },
   rowRight: {
     flexDirection: "row",
@@ -221,6 +213,6 @@ const styles = StyleSheet.create({
   },
   rowValue: {
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
   },
 });

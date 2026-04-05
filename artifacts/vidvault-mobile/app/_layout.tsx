@@ -1,20 +1,22 @@
 import "../global.css";
 import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_900Black,
+} from "@expo-google-fonts/poppins";
+import {
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
-  Inter_900Black,
-  useFonts,
 } from "@expo-google-fonts/inter";
-import {
-  Raleway_700Bold,
-  Raleway_900Black,
-} from "@expo-google-fonts/raleway";
 import {
   JetBrainsMono_400Regular,
   JetBrainsMono_600SemiBold,
 } from "@expo-google-fonts/jetbrains-mono";
+import { useFonts } from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -25,7 +27,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance, Platform, View, Image, Text, Dimensions } from "react-native";
+import { Appearance, Platform, View, Image, Text, Dimensions, StyleSheet, useColorScheme } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -50,7 +52,6 @@ const asyncStoragePersister = createAsyncStoragePersister({
   throttleTime: 1000,
 });
 
-const ONBOARDING_KEY = "vidvault_onboarding_done";
 const THEME_KEY = "vidvault_theme_preference";
 
 function RootLayoutNav() {
@@ -69,22 +70,18 @@ function RootLayoutNav() {
         router.replace("/login");
         return;
       }
-      // On native show splash → onboarding or login
       router.replace("/splash");
     }
   }, [user, isLoading]);
 
-  // While auth state is being restored from storage, show a branded loading screen
-  // so the home tab never flashes before the correct route is pushed.
   if (isLoading) {
     const { width: W, height: H } = Dimensions.get("window");
     const CELL = 52;
     const cols = Math.ceil(W / CELL) + 1;
     const rows = Math.ceil(H / CELL) + 1;
     return (
-      <View style={{ flex: 1, backgroundColor: "#0a0a0b", alignItems: "center", justifyContent: "center" }}>
-        {/* Grid background */}
-        <Svg width={W} height={H} style={{ position: "absolute" }}>
+      <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
+        <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
           {Array.from({ length: cols }).map((_, i) => (
             <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
           ))}
@@ -92,12 +89,11 @@ function RootLayoutNav() {
             <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
           ))}
         </Svg>
-        {/* Logo ring */}
-        <View style={{ width: 90, height: 90, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-          <Image source={require("@/assets/images/logo.png")} style={{ width: 62, height: 62 }} resizeMode="contain" />
+        <View style={{ width: 88, height: 88, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+          <Image source={require("@/assets/images/logo.png")} style={{ width: 60, height: 60 }} resizeMode="contain" />
         </View>
-        <Text style={{ fontFamily: "Raleway_900Black", fontSize: 28, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
-        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 6 }}>AI KNOWLEDGE VAULT</Text>
+        <Text style={{ fontFamily: "Poppins_900Black", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
+        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
   }
@@ -129,13 +125,15 @@ function ThemeInitializer({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_900Black,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    Inter_900Black,
-    Raleway_700Bold,
-    Raleway_900Black,
     JetBrainsMono_400Regular,
     JetBrainsMono_600SemiBold,
   });
