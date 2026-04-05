@@ -43,13 +43,14 @@ export function YouTubePlayer({
   const youtubeUrl = `https://www.youtube.com/watch?v=${ytId}`;
 
   const embedUrl = [
-    `https://www.youtube-nocookie.com/embed/${ytId}`,
+    `https://www.youtube.com/embed/${ytId}`,
     `?autoplay=1`,
     `&rel=0`,
     `&modestbranding=1`,
     `&playsinline=1`,
     `&fs=1`,
-    `&color=white`,
+    `&controls=1`,
+    `&origin=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "https://www.youtube.com")}`,
   ].join("");
 
   const handlePlay = () => {
@@ -113,9 +114,8 @@ export function YouTubePlayer({
             display: "block",
           },
           allow:
-            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen",
+            "autoplay; fullscreen; accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share",
           allowFullScreen: true,
-          referrerPolicy: "strict-origin-when-cross-origin",
         })
       }
 
