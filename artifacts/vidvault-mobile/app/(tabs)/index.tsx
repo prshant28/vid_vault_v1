@@ -31,7 +31,7 @@ const RECENT_CARD_W = SCREEN_W * 0.72;
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const STAT_CONFIG = [
-  { label: "Total Videos", code: "01", icon: "film" as FeatherIconName, accent: "#8b5cf6", key: "totalVideos" },
+  { label: "Total Videos", code: "01", icon: "film" as FeatherIconName, accent: "#818cf8", key: "totalVideos" },
   { label: "Folders", code: "02", icon: "folder" as FeatherIconName, accent: "#06b6d4", key: "totalFolders" },
   { label: "Tags Used", code: "03", icon: "tag" as FeatherIconName, accent: "#10b981", key: "totalTags" },
 ];
@@ -114,7 +114,7 @@ export default function HomeScreen() {
         {/* Quick actions */}
         <View style={styles.quickActions}>
           {[
-            { icon: "cpu" as FeatherIconName, label: "AI Studio", accent: "#8b5cf6", onPress: () => router.push("/(tabs)/ai-studio") },
+            { icon: "cpu" as FeatherIconName, label: "AI Studio", accent: "#818cf8", onPress: () => router.push("/(tabs)/ai-studio") },
             { icon: "folder" as FeatherIconName, label: "Folders", accent: "#06b6d4", onPress: () => router.push("/(tabs)/folders") },
             { icon: "heart" as FeatherIconName, label: "Favorites", accent: "#ec4899", onPress: () => router.push("/(tabs)/videos") },
           ].map((a) => (

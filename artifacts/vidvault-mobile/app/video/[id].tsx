@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Modal,
   Platform,
   Linking,
   Image,
@@ -307,6 +308,7 @@ export default function VideoDetailScreen() {
   const [viewingOutput, setViewingOutput] = useState<{ output: AiOutput; tool: typeof AI_TOOLS[0] } | null>(null);
   const [newNote, setNewNote] = useState("");
   const [noteTs, setNoteTs] = useState("");
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
 
   const { data: video, isLoading } = useQuery<Video>({
     queryKey: ["video", id],
@@ -319,6 +321,12 @@ export default function VideoDetailScreen() {
     queryFn: () => api.listAiOutputs(id!),
     enabled: !!id,
   });
+
+  const { data: foldersData } = useQuery({
+    queryKey: ["folders"],
+    queryFn: () => api.listFolders(),
+  });
+  const folders: Array<{ id: string; name: string; color?: string | null }> = foldersData?.folders ?? [];
 
   const favMutation = useMutation({
     mutationFn: () => api.toggleFavorite(id!),
@@ -343,6 +351,46 @@ export default function VideoDetailScreen() {
       Alert.alert("Generation Failed", err.message || "Could not generate content.");
     },
   });
+
+  const updateVideoMutation = useMutation({
+    mutationFn: (data: { folderId?: string | null }) => api.updateVideo(id!, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["video", id] });
+      qc.invalidateQueries({ queryKey: ["videos"] });
+      setShowFolderPicker(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (err: any) => Alert.alert("Error", err.message || "Could not move video."),
+  });
+
+  const deleteVideoMutation = useMutation({
+    mutationFn: () => api.deleteVideo(id!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["videos"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      router.back();
+    },
+    onError: (err: any) => Alert.alert("Error", err.message || "Could not delete video."),
+  });
+
+  const handleDeleteVideo = () => {
+    Alert.alert(
+      "Delete Video",
+      "Remove this video from your vault permanently?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => deleteVideoMutation.mutate() },
+      ]
+    );
+  };
+
+  const handleMoreOptions = () => {
+    Alert.alert("Video Options", "", [
+      { text: "Move to Folder", onPress: () => setShowFolderPicker(true) },
+      { text: "Delete Video", style: "destructive", onPress: handleDeleteVideo },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
 
   const addNoteMutation = useMutation({
     mutationFn: ({ content, timestamp }: { content: string; timestamp?: number }) =>
@@ -425,20 +473,25 @@ export default function VideoDetailScreen() {
         showBack
         title={video.title}
         rightAction={
-          <TouchableOpacity
-            onPress={() => favMutation.mutate()}
-            style={[{
-              borderWidth: 1,
-              borderRadius: 6,
-              borderColor: video.isFavorite ? "#ef444455" : colors.border,
-              backgroundColor: video.isFavorite ? "#ef444415" : colors.card,
-              paddingHorizontal: 10,
-              paddingVertical: 7,
-            }]}
-            activeOpacity={0.75}
-          >
-            <Feather name="heart" size={16} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => favMutation.mutate()}
+              style={[styles.iconActionBtn, {
+                borderColor: video.isFavorite ? "#ef444455" : colors.border,
+                backgroundColor: video.isFavorite ? "#ef444415" : colors.card,
+              }]}
+              activeOpacity={0.75}
+            >
+              <Feather name="heart" size={15} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleMoreOptions}
+              style={[styles.iconActionBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+              activeOpacity={0.75}
+            >
+              <Feather name="more-horizontal" size={15} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
         }
       />
 
@@ -467,6 +520,26 @@ export default function VideoDetailScreen() {
                 <Feather name="clock" size={10} color={colors.mutedForeground} />
                 <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{video.duration}</Text>
               </View>
+            )}
+            {(video as any).folder && (
+              <TouchableOpacity
+                onPress={() => setShowFolderPicker(true)}
+                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                activeOpacity={0.75}
+              >
+                <Feather name="folder" size={10} color={colors.mutedForeground} />
+                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{(video as any).folder.name}</Text>
+              </TouchableOpacity>
+            )}
+            {!(video as any).folder && (
+              <TouchableOpacity
+                onPress={() => setShowFolderPicker(true)}
+                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                activeOpacity={0.75}
+              >
+                <Feather name="folder-plus" size={10} color={colors.mutedForeground} />
+                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>Add to folder</Text>
+              </TouchableOpacity>
             )}
           </View>
 
@@ -635,6 +708,62 @@ export default function VideoDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* ── Move to Folder Modal ── */}
+      <Modal visible={showFolderPicker} transparent animationType="fade" onRequestClose={() => setShowFolderPicker(false)}>
+        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowFolderPicker(false)}>
+          <View style={[styles.folderPickerBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.folderPickerHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={[styles.folderPickerIcon, { backgroundColor: PURPLE + "15", borderColor: PURPLE + "30" }]}>
+                  <Feather name="folder" size={15} color={PURPLE} />
+                </View>
+                <Text style={[styles.folderPickerTitle, { color: colors.foreground }]}>Move to Folder</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowFolderPicker(false)}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
+              {/* No folder option */}
+              <TouchableOpacity
+                onPress={() => updateVideoMutation.mutate({ folderId: null })}
+                style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                activeOpacity={0.75}
+              >
+                <Feather name="x-circle" size={16} color={colors.mutedForeground} />
+                <Text style={[styles.folderPickerItemText, { color: colors.mutedForeground }]}>Remove from folder</Text>
+                {!(video as any).folder && (
+                  <Feather name="check" size={14} color={PURPLE} style={{ marginLeft: "auto" }} />
+                )}
+              </TouchableOpacity>
+              {folders.map((f) => {
+                const dotColor = f.color || PURPLE;
+                const isCurrent = (video as any).folder?.id === f.id;
+                return (
+                  <TouchableOpacity
+                    key={f.id}
+                    onPress={() => updateVideoMutation.mutate({ folderId: f.id })}
+                    style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                    activeOpacity={0.75}
+                  >
+                    <View style={[styles.folderColorDot, { backgroundColor: dotColor }]} />
+                    <Text style={[styles.folderPickerItemText, { color: colors.foreground }]}>{f.name}</Text>
+                    {isCurrent && (
+                      <Feather name="check" size={14} color={PURPLE} style={{ marginLeft: "auto" }} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+              {folders.length === 0 && (
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No folders yet. Create one in the Folders tab.</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -828,4 +957,34 @@ const styles = StyleSheet.create({
   },
   emptyNoteText: { fontSize: 14, fontFamily: "Poppins_600SemiBold" },
   emptyNoteSub: { fontSize: 11, fontFamily: "Poppins_400Regular", marginTop: 4 },
+
+  iconActionBtn: {
+    width: 34, height: 34, borderRadius: 6,
+    borderWidth: 1, alignItems: "center", justifyContent: "center",
+  },
+
+  modalBackdrop: {
+    flex: 1, backgroundColor: "rgba(0,0,0,0.72)",
+    alignItems: "center", justifyContent: "center", padding: 24,
+  },
+  folderPickerBox: {
+    width: "100%", maxWidth: 420, borderRadius: 14,
+    borderWidth: 1, overflow: "hidden",
+  },
+  folderPickerHeader: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: 1,
+  },
+  folderPickerIcon: {
+    width: 32, height: 32, borderRadius: 8, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  folderPickerTitle: { fontSize: 14, fontFamily: "Poppins_600SemiBold", letterSpacing: -0.2 },
+  folderPickerItem: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  folderPickerItemText: { fontSize: 14, fontFamily: "Poppins_500Medium", flex: 1 },
+  folderColorDot: { width: 10, height: 10, borderRadius: 5 },
+  folderPickerEmpty: { fontSize: 13, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 20 },
 });

@@ -12,14 +12,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 
-const PURPLE = "#8b5cf6";
-
 interface TopAppBarProps {
   title?: string;
   showBack?: boolean;
   rightAction?: React.ReactNode;
-  onRightPress?: () => void;
-  rightIcon?: string;
   transparent?: boolean;
 }
 
@@ -27,14 +23,11 @@ export function TopAppBar({
   title,
   showBack = false,
   rightAction,
-  onRightPress,
-  rightIcon,
   transparent = false,
 }: TopAppBarProps) {
   const insets = useSafeAreaInsets();
   const colors = useColors();
 
-  /* Exactly match safe-area top — Dynamic Island aware on iOS */
   const topPad = Platform.OS === "web" ? 12 : insets.top;
 
   return (
@@ -48,19 +41,19 @@ export function TopAppBar({
         },
       ]}
     >
-      {/* Left */}
-      <View style={styles.side}>
+      {/* Left: back button or brand logo */}
+      <View style={styles.left}>
         {showBack ? (
           <TouchableOpacity
             onPress={() => router.back()}
-            style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+            style={[styles.iconBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
             activeOpacity={0.75}
           >
             <Feather name="arrow-left" size={16} color={colors.foreground} />
           </TouchableOpacity>
         ) : (
           <View style={styles.logoRow}>
-            <View style={[styles.logoBox, { borderColor: PURPLE + "40", backgroundColor: PURPLE + "12" }]}>
+            <View style={[styles.logoBox, { borderColor: colors.border, backgroundColor: colors.card }]}>
               <Image
                 source={require("@/assets/images/logo.png")}
                 style={styles.logoImg}
@@ -71,7 +64,21 @@ export function TopAppBar({
           </View>
         )}
       </View>
-     </View>
+
+      {/* Center: title when in detail view */}
+      {showBack && title ? (
+        <Text style={[styles.centerTitle, { color: colors.foreground }]} numberOfLines={1}>
+          {title}
+        </Text>
+      ) : (
+        <View style={{ flex: 1 }} />
+      )}
+
+      {/* Right: action slot */}
+      <View style={styles.right}>
+        {rightAction ?? null}
+      </View>
+    </View>
   );
 }
 
@@ -84,10 +91,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     zIndex: 10,
   },
-  side: {
-    width: 130,
+  left: {
     flexDirection: "row",
     alignItems: "center",
+    minWidth: 110,
+  },
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    minWidth: 80,
   },
   logoRow: {
     flexDirection: "row",
@@ -95,62 +108,36 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoBox: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 6,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   logoImg: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
   },
   brandText: {
     fontFamily: "Poppins_700Bold",
-    fontSize: 17,
+    fontSize: 16,
     letterSpacing: -0.3,
   },
-  aiBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  aiBadgeText: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 9,
-    letterSpacing: 0.5,
-  },
-  centerTitle: {
-    flex: 1,
-    fontFamily: "Poppins_600SemiBold",
-    fontSize: 15,
-    textAlign: "center",
-    letterSpacing: -0.2,
-  },
-  /* Badge-style button — matches login "SIGN_IN" badge */
-  badgeBtn: {
-    flexDirection: "row",
+  iconBtn: {
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
     borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    position: "relative",
+    width: 34,
+    height: 34,
   },
-  rightDefault: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  notifDot: {
-    position: "absolute",
-    top: 5,
-    right: 6,
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    zIndex: 1,
+  centerTitle: {
+    flex: 1,
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 14,
+    textAlign: "center",
+    letterSpacing: -0.2,
+    paddingHorizontal: 8,
   },
 });

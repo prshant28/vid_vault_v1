@@ -1,9 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
-  Text,
-  FlatList,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
@@ -14,9 +11,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
+import { TopAppBar } from "@/components/TopAppBar";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoCardSkeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
+import { FlatList, TouchableOpacity } from "react-native";
 
 export default function FolderDetailScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
@@ -38,22 +37,17 @@ export default function FolderDetailScreen() {
     },
   });
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const videos = data?.videos ?? [];
+  const folderName = decodeURIComponent(name || "Folder");
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GridBackground />
-      <View style={[styles.navBar, { paddingTop: topInset + 8, backgroundColor: "transparent", borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
-          <Feather name="arrow-left" size={22} color={colors.foreground} />
-        </TouchableOpacity>
-        <Text style={[styles.navTitle, { color: colors.foreground }]} numberOfLines={1}>
-          {decodeURIComponent(name || "Folder")}
-        </Text>
-        <View style={{ width: 48 }} />
-      </View>
+      <TopAppBar
+        showBack
+        title={folderName}
+      />
 
       {isLoading ? (
         <View style={styles.grid}>
@@ -75,7 +69,7 @@ export default function FolderDetailScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 24 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 24, paddingTop: 4 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
           onRefresh={refetch}
@@ -93,24 +87,6 @@ export default function FolderDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  navBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  navBtn: {
-    padding: 10,
-    width: 48,
-    alignItems: "center",
-  },
-  navTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: "Poppins_700Bold",
-    textAlign: "center",
-  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -120,6 +96,6 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     gap: 12,
-    marginBottom: 0,
+    marginBottom: 12,
   },
 });

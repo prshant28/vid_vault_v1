@@ -19,13 +19,13 @@ import { GridBackground } from "@/components/GridBackground";
 
 const BG = "#0a0a0b";
 const CARD = "#0f0f12";
-const PURPLE = "#8b5cf6";
-const PURPLE_DIM = "rgba(139,92,246,0.15)";
+const PURPLE = "#818cf8";
+const PURPLE_DIM = "rgba(129,140,248,0.12)";
 const WHITE = "#ffffff";
 const MUTED = "#555566";
 const MUTED2 = "#3a3a4a";
 const BORDER = "rgba(255,255,255,0.08)";
-const BORDER_FOCUS = "rgba(139,92,246,0.5)";
+const BORDER_FOCUS = "rgba(129,140,248,0.45)";
 const INPUT_BG = "#0c0c0e";
 const ERROR_BG = "rgba(239,68,68,0.08)";
 const ERROR_COLOR = "#f87171";
@@ -513,8 +513,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: "rgba(139,92,246,0.3)",
-    backgroundColor: "rgba(139,92,246,0.08)",
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.05)",
     alignItems: "center",
     justifyContent: "center",
   },

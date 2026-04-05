@@ -125,6 +125,37 @@ export const api = {
     const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/outputs`, { headers: authHeaders() });
     return handleRes(res);
   },
+  async updateVideo(videoId: string, data: { folderId?: string | null; title?: string }) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleRes(res);
+  },
+  async addTagToVideo(videoId: string, tagId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/tags`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ tagId }),
+    });
+    return handleRes(res);
+  },
+  async removeTagFromVideo(videoId: string, tagId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/tags/${tagId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async createTag(name: string, color?: string) {
+    const res = await fetch(`${BASE_URL}/tags`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ name, color }),
+    });
+    return handleRes(res);
+  },
   async globalChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>) {
     const res = await fetch(`${BASE_URL}/ai/global-chat`, {
       method: "POST",

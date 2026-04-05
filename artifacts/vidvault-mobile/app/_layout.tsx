@@ -82,13 +82,13 @@ function RootLayoutNav() {
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
         <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
           {Array.from({ length: cols }).map((_, i) => (
-            <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
+            <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke="rgba(255,255,255,0.035)" strokeWidth={1} />
           ))}
           {Array.from({ length: rows }).map((_, i) => (
-            <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke="rgba(139,92,246,0.07)" strokeWidth={1} />
+            <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke="rgba(255,255,255,0.035)" strokeWidth={1} />
           ))}
         </Svg>
-        <View style={{ width: 88, height: 88, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+        <View style={{ width: 88, height: 88, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
           <Image source={require("@/assets/images/logo.png")} style={{ width: 60, height: 60 }} resizeMode="contain" />
         </View>
         <Text style={{ fontFamily: "Poppins_900Black", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
@@ -142,7 +142,7 @@ export default function RootLayout() {
   if (!fontsReady) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
-        <View style={{ width: 72, height: 72, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+        <View style={{ width: 72, height: 72, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
           <Image source={require("@/assets/images/logo.png")} style={{ width: 48, height: 48 }} resizeMode="contain" />
         </View>
         <Text style={{ fontSize: 24, color: "#ffffff", fontWeight: "900", letterSpacing: -0.5 }}>VidVault</Text>
