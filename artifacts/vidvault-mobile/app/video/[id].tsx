@@ -107,7 +107,7 @@ function QuickPill({ label, icon, color, onPress }: { label: string; icon: Feath
   );
 }
 
-/* ── AI Tool Card (2-column) ── */
+/* ── AI Tool Card (etched-slab, matches web app) ── */
 function AiToolCard({
   tool, index, existingOutput, onGenerate, isGenerating, onView,
 }: {
@@ -122,24 +122,31 @@ function AiToolCard({
     <MotiView
       animate={{
         borderColor: isGenerating
-          ? tool.color + "70"
+          ? tool.color + "55"
           : done
-          ? GREEN + "45"
-          : "rgba(255,255,255,0.08)",
+          ? GREEN + "35"
+          : "rgba(255,255,255,0.04)",
         opacity: 1,
       }}
       from={{ opacity: 0 }}
       transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
       style={styles.toolCard}
     >
-      <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.78} style={styles.toolCardInner}>
-        {/* Number badge + icon */}
+      <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
+
+        {/* Bottom-right glow — visible when done or generating (web etched-slab hover effect) */}
+        {(done || isGenerating) && (
+          <View style={styles.toolGlowCorner} pointerEvents="none">
+            <View style={[styles.toolGlowCircle, { backgroundColor: tool.color + "28" }]} />
+          </View>
+        )}
+
+        {/* Number code (top-left) + bare icon (top-right) — exact web layout */}
         <View style={styles.toolCardTop}>
-          <Text style={[styles.toolNum, { color: tool.color + "70" }]}>{num}</Text>
+          <Text style={styles.toolNum}>{num}</Text>
           <MotiView
-            animate={{ backgroundColor: isGenerating ? tool.color + "35" : tool.color + "18" }}
-            transition={{ type: "timing", duration: 500 }}
-            style={[styles.toolIconBox, { borderColor: tool.color + "30" }]}
+            animate={{ opacity: isGenerating ? 1.0 : done ? 0.85 : 0.4 }}
+            transition={{ type: "timing", duration: 400 }}
           >
             {isGenerating ? (
               <MotiView
@@ -147,36 +154,41 @@ function AiToolCard({
                 animate={{ rotate: "360deg" }}
                 transition={{ type: "timing", duration: 1200, loop: true }}
               >
-                <Feather name="cpu" size={15} color={tool.color} />
+                <Feather name="cpu" size={14} color={tool.color} />
               </MotiView>
             ) : (
-              <Feather name={tool.icon} size={15} color={tool.color} />
+              <Feather name={tool.icon} size={14} color={tool.color} />
             )}
           </MotiView>
         </View>
 
-        {/* Title + desc */}
-        <Text style={styles.toolLabel} numberOfLines={1}>{tool.label}</Text>
+        {/* Tool name — mono, tiny, uppercase, tool color at 60% */}
+        <Text style={[styles.toolLabel, { color: tool.color + "99" }]} numberOfLines={1}>
+          {tool.label}
+        </Text>
+
+        {/* Description — mono, 8px, very muted */}
         <Text style={styles.toolDesc} numberOfLines={2}>{tool.desc}</Text>
 
         {/* Footer */}
         <View style={styles.toolCardFooter}>
           {isGenerating ? (
             <MotiView
-              from={{ opacity: 0.5 }} animate={{ opacity: 1 }}
+              from={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               transition={{ type: "timing", duration: 700, loop: true }}
-              style={[styles.generatingPill, { borderColor: tool.color + "40", backgroundColor: tool.color + "15" }]}
+              style={[styles.generatingPill, { borderColor: tool.color + "40", backgroundColor: tool.color + "12" }]}
             >
-              <Text style={[styles.generatingPillText, { color: tool.color }]}>Generating…</Text>
+              <Text style={[styles.generatingPillText, { color: tool.color }]}>GENERATING…</Text>
             </MotiView>
           ) : done ? (
             <View style={styles.viewBadge}>
-              <Feather name="arrow-right" size={10} color={PURPLE} />
+              <Feather name="arrow-right" size={9} color={PURPLE} />
               <Text style={[styles.viewBadgeText, { color: PURPLE }]}>VIEW</Text>
             </View>
           ) : (
             <View style={styles.genBadge}>
-              <Feather name="zap" size={10} color="#fff" />
+              <Feather name="zap" size={9} color="rgba(255,255,255,0.6)" />
               <Text style={styles.genBadgeText}>GENERATE</Text>
             </View>
           )}
@@ -981,25 +993,50 @@ const styles = StyleSheet.create({
   /* Section */
   section: { padding: 16, gap: 12 },
   sectionEyebrow: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5 },
-  sectionTitle: { fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3, marginTop: -4, marginBottom: 4 },
+  sectionTitle: {
+    fontSize: 14, fontFamily: "AlegreyaSansSC_800ExtraBold",
+    letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
+  },
 
-  /* Tool grid */
+  /* Tool grid — etched-slab, matches web */
   toolGrid: { flexDirection: "column", gap: CARD_GAP },
   toolRow: { flexDirection: "row", gap: CARD_GAP },
   toolCard: {
-    backgroundColor: "#13131a", borderRadius: 12, borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)", minHeight: 148,
+    backgroundColor: "#0f0f13",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.04)",
+    minHeight: 140,
+    overflow: "hidden",
   },
-  toolCardInner: { flex: 1, padding: 12, justifyContent: "space-between" },
-  toolCardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  toolNum: { fontSize: 11, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1 },
-  toolIconBox: {
-    width: 34, height: 34, borderRadius: 9,
-    alignItems: "center", justifyContent: "center", borderWidth: 1,
+  toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
+  toolCardTop: {
+    flexDirection: "row", alignItems: "flex-start",
+    justifyContent: "space-between", marginBottom: 12,
   },
-  toolLabel: { fontSize: 12, fontFamily: "Poppins_600SemiBold", color: "#fff", letterSpacing: 0 },
-  toolDesc: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.38)", lineHeight: 14 },
-  toolCardFooter: { paddingTop: 4 },
+  toolNum: {
+    fontSize: 8, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 3, color: "rgba(255,255,255,0.15)", textTransform: "uppercase",
+  },
+  toolLabel: {
+    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2, textTransform: "uppercase", marginBottom: 4,
+  },
+  toolDesc: {
+    fontSize: 8, fontFamily: "JetBrainsMono_400Regular",
+    color: "rgba(255,255,255,0.18)", lineHeight: 13, letterSpacing: 0.3,
+  },
+  toolCardFooter: { paddingTop: 8 },
+
+  /* Glow corner (web etched-slab hover radial gradient) */
+  toolGlowCorner: {
+    position: "absolute", bottom: 0, right: 0,
+    width: 64, height: 64, pointerEvents: "none",
+  },
+  toolGlowCircle: {
+    width: 64, height: 64, borderRadius: 32,
+    transform: [{ translateX: 12 }, { translateY: 12 }],
+  },
   generatingPill: {
     alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 6, borderWidth: 1,
@@ -1015,9 +1052,11 @@ const styles = StyleSheet.create({
   genBadge: {
     flexDirection: "row" as const, alignItems: "center" as const, gap: 4,
     paddingHorizontal: 8, paddingVertical: 4,
-    borderRadius: 4, backgroundColor: PURPLE,
+    borderRadius: 4, borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
-  genBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_600SemiBold", color: "#fff", letterSpacing: 0.5 },
+  genBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", color: "rgba(255,255,255,0.4)", letterSpacing: 0.8 },
   viewBtn: {
     flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5,
