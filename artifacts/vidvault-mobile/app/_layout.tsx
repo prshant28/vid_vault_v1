@@ -23,7 +23,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -138,13 +138,20 @@ export default function RootLayout() {
     JetBrainsMono_600SemiBold,
   });
 
+  const [fontTimedOut, setFontTimedOut] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFontTimedOut(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError && !fontTimedOut) return null;
 
   return (
     <SafeAreaProvider>
