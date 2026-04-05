@@ -158,13 +158,21 @@ export default function RootLayout() {
           persistOptions={{ persister: asyncStoragePersister }}
         >
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <KeyboardProvider>
+            {Platform.OS === "web" ? (
               <ThemeProvider>
                 <AuthProvider>
                   <RootLayoutNav />
                 </AuthProvider>
               </ThemeProvider>
-            </KeyboardProvider>
+            ) : (
+              <KeyboardProvider>
+                <ThemeProvider>
+                  <AuthProvider>
+                    <RootLayoutNav />
+                  </AuthProvider>
+                </ThemeProvider>
+              </KeyboardProvider>
+            )}
           </GestureHandlerRootView>
         </PersistQueryClientProvider>
       </ErrorBoundary>
