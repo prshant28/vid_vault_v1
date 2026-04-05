@@ -6,15 +6,25 @@ const THEME_KEY = "vidvault_theme_preference";
 
 export type ThemePreference = "system" | "light" | "dark";
 
+function setColorSchemeSafe(scheme: "light" | "dark" | null) {
+  try {
+    if (typeof Appearance.setColorScheme === "function") {
+      Appearance.setColorScheme(scheme);
+    }
+  } catch {
+    // Appearance.setColorScheme not supported on this platform (e.g. React Native Web)
+  }
+}
+
 export function useThemeToggle() {
-  const [preference, setPreference] = useState<ThemePreference>("system");
+  const [preference, setPreference] = useState<ThemePreference>("dark");
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY).then((stored) => {
       if (stored === "light" || stored === "dark" || stored === "system") {
         setPreference(stored);
         if (stored !== "system") {
-          Appearance.setColorScheme(stored);
+          setColorSchemeSafe(stored);
         }
       }
     });
@@ -24,9 +34,9 @@ export function useThemeToggle() {
     await AsyncStorage.setItem(THEME_KEY, theme);
     setPreference(theme);
     if (theme === "system") {
-      Appearance.setColorScheme(null);
+      setColorSchemeSafe(null);
     } else {
-      Appearance.setColorScheme(theme);
+      setColorSchemeSafe(theme);
     }
   }, []);
 

@@ -110,14 +110,25 @@ function RootLayoutNav() {
   );
 }
 
+function setColorSchemeSafe(scheme: "light" | "dark" | null) {
+  try {
+    if (typeof Appearance.setColorScheme === "function") {
+      Appearance.setColorScheme(scheme);
+    }
+  } catch {
+    // Appearance.setColorScheme not supported on this platform (e.g. React Native Web)
+  }
+}
+
 function ThemeInitializer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY).then((stored) => {
       if (stored === "light" || stored === "dark") {
-        Appearance.setColorScheme(stored);
+        setColorSchemeSafe(stored);
       } else if (stored === "system") {
-        Appearance.setColorScheme(null);
+        setColorSchemeSafe(null);
       }
+      // No stored preference → useColors() defaults to dark, no action needed
     });
   }, []);
   return <>{children}</>;
@@ -138,13 +149,22 @@ export default function RootLayout() {
     JetBrainsMono_600SemiBold,
   });
 
+  const [fontTimeout, setFontTimeout] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFontTimeout(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
+  const fontsReady = fontsLoaded || fontError || fontTimeout;
+
+  if (!fontsReady) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
         <View style={{ width: 72, height: 72, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>

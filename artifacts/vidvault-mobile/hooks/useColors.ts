@@ -5,14 +5,15 @@ type Palette = typeof colors.light;
 
 export function useColors(): Palette & { radius: number } {
   const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  // Default to dark — app is dark-first. Only use light when explicitly set to "light".
+  const isDark = scheme !== "light";
   const palette: Palette = isDark ? colors.dark : colors.light;
   return { ...palette, radius: colors.radius };
 }
 
 export function useTheme() {
   const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const isDark = scheme !== "light";
   const palette: Palette = isDark ? colors.dark : colors.light;
   return { colors: { ...palette, radius: colors.radius }, isDark };
 }
