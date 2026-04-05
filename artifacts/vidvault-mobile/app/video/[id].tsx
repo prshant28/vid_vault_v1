@@ -9,7 +9,6 @@ import {
   Alert,
   Platform,
   Linking,
-  Dimensions,
   Image,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
@@ -18,11 +17,11 @@ import type { ComponentProps } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import WebView from "react-native-webview";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
 import { useColors } from "@/hooks/useColors";
 import { TopAppBar } from "@/components/TopAppBar";
+import { YouTubePlayer } from "@/components/YouTubeEmbed";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { GridBackground } from "@/components/GridBackground";
@@ -30,11 +29,7 @@ import type { Video, Note, Tag, AiOutput } from "@/types/api";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const PLAYER_HEIGHT = Math.round(SCREEN_WIDTH * (9 / 16));
 const CARD_GAP = 10;
-const CARD_H_PAD = 16;
-const CARD_WIDTH = (SCREEN_WIDTH - CARD_H_PAD * 2 - CARD_GAP) / 2;
 
 const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
@@ -69,42 +64,6 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
-/* ── YouTube WebView Player ── */
-function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal: () => void }) {
-  const [error, setError] = useState(false);
-  const embedUri = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
-
-  if (error) {
-    return (
-      <View style={[styles.player, { alignItems: "center", justifyContent: "center", backgroundColor: "#0d0d14" }]}>
-        <Feather name="youtube" size={28} color="#ef4444" />
-        <Text style={[styles.embedErrTitle, { marginTop: 10 }]}>Embedding Restricted</Text>
-        <Text style={styles.embedErrSub}>Watch on YouTube instead.</Text>
-        <TouchableOpacity onPress={onOpenExternal} style={styles.embedErrBtn} activeOpacity={0.85}>
-          <Feather name="external-link" size={14} color="#fff" />
-          <Text style={styles.embedErrBtnText}>OPEN IN YOUTUBE</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.player}>
-      <WebView
-        style={{ flex: 1, backgroundColor: "#000" }}
-        source={{ uri: embedUri }}
-        allowsFullscreenVideo allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction={false}
-        javaScriptEnabled domStorageEnabled scrollEnabled={false}
-        onHttpError={(e) => { if (e.nativeEvent.statusCode >= 400) setError(true); }}
-      />
-      <TouchableOpacity onPress={onOpenExternal} style={styles.ytExtBtn} activeOpacity={0.8}>
-        <Feather name="youtube" size={11} color="#ff0000" />
-        <Text style={styles.ytExtText}>Watch on YouTube</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 /* ── Thumbnail Player (web / fallback) ── */
 function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: string | null; ytId?: string | null; onOpenExternal: () => void }) {
@@ -169,7 +128,7 @@ function AiToolCard({
       }}
       from={{ opacity: 0 }}
       transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
-      style={[styles.toolCard, { width: CARD_WIDTH }]}
+      style={styles.toolCard}
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.78} style={styles.toolCardInner}>
         {/* Number badge + icon */}
@@ -434,7 +393,7 @@ export default function VideoDetailScreen() {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <GridBackground />
-        <View style={{ height: PLAYER_HEIGHT, backgroundColor: colors.card }} />
+        <View style={{ aspectRatio: 16 / 9, backgroundColor: colors.card }} />
         <View style={{ padding: 16, gap: 10 }}>
           <Skeleton height={22} width="80%" borderRadius={4} />
           <Skeleton height={14} width="45%" borderRadius={4} />
@@ -487,7 +446,7 @@ export default function VideoDetailScreen() {
 
         {/* Player */}
         {useWebView ? (
-          <YouTubePlayer ytId={ytId} onOpenExternal={handleOpenYouTube} />
+          <YouTubePlayer ytId={ytId!} onOpenExternal={handleOpenYouTube} />
         ) : (
           <ThumbnailPlayer thumbnail={video.thumbnail} ytId={ytId} onOpenExternal={handleOpenYouTube} />
         )}
@@ -577,19 +536,24 @@ export default function VideoDetailScreen() {
                 <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_GENERATE</Text>
                 <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose a Tool</Text>
                 <View style={styles.toolGrid}>
-                  {AI_TOOLS.map((tool, index) => (
-                    <AiToolCard
-                      key={tool.type}
-                      tool={tool}
-                      index={index}
-                      existingOutput={aiOutputMap[tool.type]}
-                      isGenerating={generatingType === tool.type}
-                      onGenerate={() => handleGenerate(tool.type)}
-                      onView={() => {
-                        const out = aiOutputMap[tool.type];
-                        if (out) setViewingOutput({ output: out, tool });
-                      }}
-                    />
+                  {[0, 2, 4].map((rowStart) => (
+                    <View key={rowStart} style={styles.toolRow}>
+                      {AI_TOOLS.slice(rowStart, rowStart + 2).map((tool, i) => (
+                        <View key={tool.type} style={{ flex: 1 }}>
+                          <AiToolCard
+                            tool={tool}
+                            index={rowStart + i}
+                            existingOutput={aiOutputMap[tool.type]}
+                            isGenerating={generatingType === tool.type}
+                            onGenerate={() => handleGenerate(tool.type)}
+                            onView={() => {
+                              const out = aiOutputMap[tool.type];
+                              if (out) setViewingOutput({ output: out, tool });
+                            }}
+                          />
+                        </View>
+                      ))}
+                    </View>
                   ))}
                 </View>
                 {generatingType && (
@@ -692,7 +656,7 @@ const styles = StyleSheet.create({
   },
 
   /* Player */
-  player: { width: "100%", height: PLAYER_HEIGHT, backgroundColor: "#000", position: "relative" },
+  player: { width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000", position: "relative" },
   ytExtBtn: {
     position: "absolute", bottom: 10, right: 10,
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -759,7 +723,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3, marginTop: -4, marginBottom: 4 },
 
   /* Tool grid */
-  toolGrid: { flexDirection: "row", flexWrap: "wrap", gap: CARD_GAP },
+  toolGrid: { flexDirection: "column", gap: CARD_GAP },
+  toolRow: { flexDirection: "row", gap: CARD_GAP },
   toolCard: {
     backgroundColor: "#13131a", borderRadius: 12, borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)", minHeight: 148,
