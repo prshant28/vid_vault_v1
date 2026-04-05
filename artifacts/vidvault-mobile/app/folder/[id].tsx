@@ -67,9 +67,7 @@ export default function FolderDetailScreen() {
         <FlatList
           data={videos}
           keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 24, paddingTop: 4 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 24, paddingTop: 4 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
           onRefresh={refetch}

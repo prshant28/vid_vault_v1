@@ -156,6 +156,13 @@ export const api = {
     });
     return handleRes(res);
   },
+  async deleteTag(tagId: string) {
+    const res = await fetch(`${BASE_URL}/tags/${tagId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
   async globalChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>) {
     const res = await fetch(`${BASE_URL}/ai/global-chat`, {
       method: "POST",

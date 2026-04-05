@@ -27,6 +27,11 @@ router.get("/stats", async (req, res) => {
     .from(tagsTable)
     .where(eq(tagsTable.userId, userId));
 
+  const [{ totalFavorites }] = await db
+    .select({ totalFavorites: sql<number>`count(*)::int` })
+    .from(videosTable)
+    .where(and(eq(videosTable.userId, userId), eq(videosTable.isFavorite, true)));
+
   const recentVideosRaw = await db
     .select()
     .from(videosTable)
@@ -59,7 +64,7 @@ router.get("/stats", async (req, res) => {
     enrichVideos(favoriteVideosRaw),
   ]);
 
-  res.json({ totalVideos, totalFolders, totalTags, recentVideos, favoriteVideos });
+  res.json({ totalVideos, totalFolders, totalTags, totalFavorites, recentVideos, favoriteVideos });
 });
 
 export default router;

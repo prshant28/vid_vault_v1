@@ -310,6 +310,9 @@ export default function VideoDetailScreen() {
   const [newNote, setNewNote] = useState("");
   const [noteTs, setNoteTs] = useState("");
   const [showFolderPicker, setShowFolderPicker] = useState(false);
+  const [showTagPicker, setShowTagPicker] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState("");
 
   const { data: video, isLoading, isError, refetch: refetchVideo } = useQuery<Video>({
     queryKey: ["video", id],
@@ -329,6 +332,12 @@ export default function VideoDetailScreen() {
     queryFn: () => api.listFolders(),
   });
   const folders: Array<{ id: string; name: string; color?: string | null }> = foldersData?.folders ?? [];
+
+  const { data: allTagsData } = useQuery({
+    queryKey: ["tags"],
+    queryFn: () => api.listTags(),
+  });
+  const allTags: Tag[] = allTagsData?.tags ?? [];
 
   const favMutation = useMutation({
     mutationFn: () => api.toggleFavorite(id!),
@@ -355,14 +364,25 @@ export default function VideoDetailScreen() {
   });
 
   const updateVideoMutation = useMutation({
-    mutationFn: (data: { folderId?: string | null }) => api.updateVideo(id!, data),
+    mutationFn: (data: { folderId?: string | null; title?: string }) => api.updateVideo(id!, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["video", id] });
       qc.invalidateQueries({ queryKey: ["videos"] });
       setShowFolderPicker(false);
+      setEditingTitle(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
-    onError: (err: any) => Alert.alert("Error", err.message || "Could not move video."),
+    onError: (err: any) => Alert.alert("Error", err.message || "Could not update video."),
+  });
+
+  const addTagMutation = useMutation({
+    mutationFn: (tagId: string) => api.addTagToVideo(id!, tagId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["video", id] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); },
+  });
+
+  const removeTagMutation = useMutation({
+    mutationFn: (tagId: string) => api.removeTagFromVideo(id!, tagId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["video", id] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); },
   });
 
   const deleteVideoMutation = useMutation({
@@ -388,6 +408,8 @@ export default function VideoDetailScreen() {
 
   const handleMoreOptions = () => {
     Alert.alert("Video Options", "", [
+      { text: "Edit Title", onPress: () => { setTitleValue(video?.title ?? ""); setEditingTitle(true); } },
+      { text: "Manage Tags", onPress: () => setShowTagPicker(true) },
       { text: "Move to Folder", onPress: () => setShowFolderPicker(true) },
       { text: "Delete Video", style: "destructive", onPress: handleDeleteVideo },
       { text: "Cancel", style: "cancel" },
@@ -526,7 +548,30 @@ export default function VideoDetailScreen() {
 
         {/* Info block */}
         <View style={[styles.infoBlock, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.videoTitle, { color: colors.foreground }]}>{video.title}</Text>
+          {/* Title — tap to edit */}
+          {editingTitle ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <TextInput
+                value={titleValue}
+                onChangeText={setTitleValue}
+                style={[styles.titleInput, { color: colors.foreground, borderColor: PURPLE + "60", backgroundColor: colors.card }]}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={() => { if (titleValue.trim()) updateVideoMutation.mutate({ title: titleValue.trim() }); else setEditingTitle(false); }}
+              />
+              <TouchableOpacity onPress={() => { if (titleValue.trim()) updateVideoMutation.mutate({ title: titleValue.trim() }); }} activeOpacity={0.8}>
+                <Feather name="check" size={18} color={PURPLE} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setEditingTitle(false)} activeOpacity={0.8}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => { setTitleValue(video.title); setEditingTitle(true); }} activeOpacity={0.8} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+              <Text style={[styles.videoTitle, { color: colors.foreground, flex: 1 }]}>{video.title}</Text>
+              <Feather name="edit-2" size={14} color={colors.mutedForeground + "80"} style={{ marginTop: 4 }} />
+            </TouchableOpacity>
+          )}
 
           <View style={styles.metaRow}>
             {video.channelName && (
@@ -563,16 +608,31 @@ export default function VideoDetailScreen() {
             )}
           </View>
 
-          {/* Tag pills */}
-          {video.tags && video.tags.length > 0 && (
-            <View style={styles.tagsRow}>
-              {video.tags.map((tag: Tag) => (
-                <View key={tag.id} style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "18", borderColor: (tag.color || PURPLE) + "35" }]}>
-                  <Text style={[styles.tagPillText, { color: tag.color || PURPLE }]}>{tag.name}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          {/* Tag pills + Add Tag chip */}
+          <View style={[styles.tagsRow, { flexWrap: "wrap" }]}>
+            {(video.tags ?? []).map((tag: Tag) => (
+              <TouchableOpacity
+                key={tag.id}
+                onPress={() => Alert.alert(`Remove tag "${tag.name}"?`, "", [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Remove", style: "destructive", onPress: () => removeTagMutation.mutate(tag.id) },
+                ])}
+                style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "18", borderColor: (tag.color || PURPLE) + "35" }]}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.tagPillText, { color: tag.color || PURPLE }]}>{tag.name}</Text>
+                <Feather name="x" size={9} color={tag.color || PURPLE} />
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              onPress={() => setShowTagPicker(true)}
+              style={[styles.tagPill, { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed" }]}
+              activeOpacity={0.75}
+            >
+              <Feather name="tag" size={9} color={colors.mutedForeground} />
+              <Text style={[styles.tagPillText, { color: colors.mutedForeground }]}>Add Tag</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Quick action pills — show shortcuts to already-generated outputs */}
           {quickPills.length > 0 && (
@@ -728,6 +788,53 @@ export default function VideoDetailScreen() {
         )}
       </ScrollView>
 
+      {/* ── Tag Picker Modal ── */}
+      <Modal visible={showTagPicker} transparent animationType="fade" onRequestClose={() => setShowTagPicker(false)}>
+        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowTagPicker(false)}>
+          <View style={[styles.folderPickerBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.folderPickerHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={[styles.folderPickerIcon, { backgroundColor: PURPLE + "15", borderColor: PURPLE + "30" }]}>
+                  <Feather name="tag" size={15} color={PURPLE} />
+                </View>
+                <Text style={[styles.folderPickerTitle, { color: colors.foreground }]}>Manage Tags</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowTagPicker(false)}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
+              {allTags.length === 0 ? (
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No tags yet. Create tags in the Profile tab.</Text>
+                </View>
+              ) : (
+                allTags.map((tag) => {
+                  const videoTagIds = (video?.tags ?? []).map((t: Tag) => t.id);
+                  const isAttached = videoTagIds.includes(tag.id);
+                  const dotColor = tag.color || PURPLE;
+                  return (
+                    <TouchableOpacity
+                      key={tag.id}
+                      onPress={() => isAttached ? removeTagMutation.mutate(tag.id) : addTagMutation.mutate(tag.id)}
+                      style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                      activeOpacity={0.75}
+                    >
+                      <View style={[styles.folderColorDot, { backgroundColor: dotColor }]} />
+                      <Text style={[styles.folderPickerItemText, { color: colors.foreground }]}>{tag.name}</Text>
+                      {isAttached
+                        ? <Feather name="check-circle" size={16} color={PURPLE} style={{ marginLeft: "auto" as any }} />
+                        : <Feather name="circle" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" as any }} />
+                      }
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* ── Move to Folder Modal ── */}
       <Modal visible={showFolderPicker} transparent animationType="fade" onRequestClose={() => setShowFolderPicker(false)}>
         <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowFolderPicker(false)}>
@@ -839,6 +946,12 @@ const styles = StyleSheet.create({
   /* Info */
   infoBlock: { padding: 16, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   videoTitle: { fontSize: 17, fontFamily: "AlegreyaSansSC_700Bold", lineHeight: 26, letterSpacing: -0.3 },
+  titleInput: {
+    flex: 1, fontSize: 16, fontFamily: "AlegreyaSansSC_700Bold",
+    lineHeight: 24, letterSpacing: -0.3,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderWidth: 1.5, borderRadius: 6,
+  },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metaChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -847,7 +960,7 @@ const styles = StyleSheet.create({
   },
   metaChipText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
   tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tagPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 5, borderWidth: 1 },
+  tagPill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 5, borderWidth: 1 },
   tagPillText: { fontSize: 10, fontFamily: "Poppins_500Medium", letterSpacing: 0.3 },
 
   /* Quick pills */

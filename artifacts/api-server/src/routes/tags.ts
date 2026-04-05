@@ -69,4 +69,22 @@ router.delete("/videos/:videoId/tags/:tagId", async (req, res) => {
   res.status(204).send();
 });
 
+router.delete("/tags/:tagId", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const { tagId } = req.params;
+
+  await db
+    .delete(videoTagsTable)
+    .where(eq(videoTagsTable.tagId, tagId));
+
+  await db
+    .delete(tagsTable)
+    .where(and(eq(tagsTable.id, tagId), eq(tagsTable.userId, req.user.id)));
+
+  res.status(204).send();
+});
+
 export default router;

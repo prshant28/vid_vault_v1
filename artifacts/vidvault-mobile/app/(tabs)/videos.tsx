@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   ScrollView,
+  Modal,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -32,6 +33,7 @@ interface Tag {
 }
 
 type ViewMode = "grid" | "list";
+type SortMode = "newest" | "oldest" | "az" | "za";
 
 function FilterChip({
   label, active, onPress, activeColor, colors, icon, dot,
@@ -68,6 +70,8 @@ export default function VideosScreen() {
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortBy, setSortBy] = useState<SortMode>("newest");
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["videos", search, showFavorites, selectedTagId],
@@ -94,8 +98,27 @@ export default function VideosScreen() {
   });
 
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
-  const videos = data?.videos ?? [];
+  const rawVideos = data?.videos ?? [];
   const tags: Tag[] = tagsData?.tags ?? [];
+
+  /* ── client-side sort ── */
+  const videos = useMemo(() => {
+    const arr = [...rawVideos];
+    switch (sortBy) {
+      case "oldest":  return arr.sort((a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime());
+      case "az":      return arr.sort((a, b) => a.title.localeCompare(b.title));
+      case "za":      return arr.sort((a, b) => b.title.localeCompare(a.title));
+      default:        return arr.sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+    }
+  }, [rawVideos, sortBy]);
+
+  const SORT_OPTIONS: Array<{ key: SortMode; label: string; icon: string }> = [
+    { key: "newest", label: "Newest First", icon: "arrow-down" },
+    { key: "oldest", label: "Oldest First", icon: "arrow-up" },
+    { key: "az",     label: "A → Z",        icon: "type" },
+    { key: "za",     label: "Z → A",        icon: "type" },
+  ];
+  const sortLabel = SORT_OPTIONS.find((s) => s.key === sortBy)?.label ?? "Newest";
 
   const toggleViewMode = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -139,7 +162,7 @@ export default function VideosScreen() {
         </ScrollView>
       </View>
 
-      {/* Count row — only shown when we have results */}
+      {/* Count row + sort button */}
       {!isLoading && videos.length > 0 && (
         <View style={styles.countRow}>
           <Text style={[styles.countText, { color: colors.mutedForeground }]}>
@@ -149,10 +172,19 @@ export default function VideosScreen() {
           <Text style={[styles.countText, { color: colors.mutedForeground }]}>
             {viewMode === "grid" ? "GRID" : "LIST"}
           </Text>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            onPress={() => setShowSortModal(true)}
+            style={[styles.sortBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+            activeOpacity={0.75}
+          >
+            <Feather name="sliders" size={10} color={colors.mutedForeground} />
+            <Text style={[styles.countText, { color: colors.mutedForeground }]}>{sortLabel.toUpperCase()}</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
-  ), [colors, search, showFavorites, selectedTagId, tags, isLoading, videos.length, viewMode]);
+  ), [colors, search, showFavorites, selectedTagId, tags, isLoading, videos.length, viewMode, sortBy, sortLabel]);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -251,6 +283,27 @@ export default function VideosScreen() {
       )}
 
       <SaveToVaultModal visible={showSaveModal} onClose={() => setShowSaveModal(false)} />
+
+      {/* ── Sort Modal ── */}
+      <Modal visible={showSortModal} transparent animationType="fade" onRequestClose={() => setShowSortModal(false)}>
+        <TouchableOpacity style={sortStyles.backdrop} activeOpacity={1} onPress={() => setShowSortModal(false)} />
+        <View style={[sortStyles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={sortStyles.sheetHandle} />
+          <Text style={[sortStyles.sheetTitle, { color: colors.foreground }]}>Sort By</Text>
+          {SORT_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.key}
+              onPress={() => { setSortBy(opt.key); setShowSortModal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+              style={[sortStyles.sortRow, { borderBottomColor: colors.border, backgroundColor: sortBy === opt.key ? colors.primary + "10" : "transparent" }]}
+              activeOpacity={0.75}
+            >
+              <Feather name={opt.icon as any} size={15} color={sortBy === opt.key ? colors.primary : colors.mutedForeground} />
+              <Text style={[sortStyles.sortLabel, { color: sortBy === opt.key ? colors.primary : colors.foreground }]}>{opt.label}</Text>
+              {sortBy === opt.key && <Feather name="check" size={15} color={colors.primary} style={{ marginLeft: "auto" as any }} />}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -273,6 +326,32 @@ const styles = StyleSheet.create({
   countRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 10, gap: 8 },
   countText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
   countDivider: { width: 1, height: 10 },
+  sortBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderRadius: 6 },
 
   columnWrapper: { gap: 12, marginBottom: 0 },
+});
+
+const sortStyles = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)" },
+  sheet: {
+    borderTopLeftRadius: 16, borderTopRightRadius: 16,
+    borderWidth: 1, borderBottomWidth: 0,
+    paddingTop: 12, paddingBottom: 32, gap: 0,
+  },
+  sheetHandle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignSelf: "center", marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 13, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2, paddingHorizontal: 20, paddingBottom: 12,
+    opacity: 0.6,
+  },
+  sortRow: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingHorizontal: 20, paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sortLabel: { fontSize: 15, fontFamily: "Poppins_500Medium" },
 });
