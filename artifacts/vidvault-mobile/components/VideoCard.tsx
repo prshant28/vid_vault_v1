@@ -34,7 +34,8 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
   const colors = useColors();
   const { width: screenWidth } = useWindowDimensions();
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
-  const computedCardWidth = (screenWidth - 48) / 2;
+  // Full-width card: screen minus 10px padding on each side
+  const computedCardWidth = screenWidth - 20;
   const w = cardWidth ?? computedCardWidth;
 
   const handleFavorite = () => {

@@ -1,14 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, Text, StyleSheet, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 export const PLAYER_HEIGHT = 220;
 
-/* ── helpers ── */
+/* ── open a URL in a new browser tab reliably from inside a sandboxed iframe ── */
 function openInNewTab(url: string) {
   try {
-    // Most reliable way to open a new tab from inside a sandboxed iframe:
-    // create a temporary anchor element and click it programmatically
     const a = document.createElement("a");
     a.href = url;
     a.target = "_blank";
@@ -17,11 +15,7 @@ function openInNewTab(url: string) {
     a.click();
     document.body.removeChild(a);
   } catch {
-    try {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch {
-      window.location.assign(url);
-    }
+    try { window.open(url, "_blank", "noopener,noreferrer"); } catch { /**/ }
   }
 }
 
@@ -29,12 +23,25 @@ function getThumbUrl(ytId: string) {
   return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
 }
 
+/*
+  YouTube IFrame API error codes that mean "embedding not allowed":
+  100 = video removed / private
+  101 = owner disabled embedding
+  150 = same as 101
+  153 = embedding not permitted (newer code, same family)
+  2   = invalid video ID
+*/
+const EMBED_BLOCK_CODES = new Set([2, 100, 101, 150, 153]);
+
 /* ══════════════════════════════════════════
-   Web YouTube Player
-   Strategy:
-   1. Show high-quality thumbnail + play button (no iframe initially)
-   2. On play click → inject the iframe with autoplay=1
-   3. If YouTube blocks it (sandboxed context) → graceful "Watch on YouTube" button
+   Web YouTube Player — lazy-load + API events
+   Flow:
+   1. Thumbnail + play button shown (no iframe)
+   2. User taps play → iframe injected with enablejsapi=1
+   3. Listen for YouTube postMessage events:
+      onReady → show the iframe (phase=playing)
+      onError with block code → show fallback (phase=blocked)
+   4. 8-second safety timeout → also shows fallback
 ══════════════════════════════════════════ */
 export function YouTubePlayer({
   ytId,
@@ -45,31 +52,60 @@ export function YouTubePlayer({
 }) {
   const [phase, setPhase] = useState<"thumb" | "loading" | "playing" | "blocked">("thumb");
   const [playerH, setPlayerH] = useState(PLAYER_HEIGHT);
-  const iframeContainerRef = useRef<HTMLDivElement | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const youtubeUrl = `https://www.youtube.com/watch?v=${ytId}`;
-  const embedUrl   = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`;
+  const embedUrl = [
+    `https://www.youtube-nocookie.com/embed/${ytId}`,
+    `?autoplay=1`,
+    `&enablejsapi=1`,
+    `&rel=0`,
+    `&modestbranding=1`,
+    `&playsinline=1`,
+    `&origin=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "")}`,
+  ].join("");
+
+  /* ── YouTube IFrame API postMessage listener ── */
+  useEffect(() => {
+    if (phase !== "loading" && phase !== "playing") return;
+
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        const data: any =
+          typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (!data || typeof data !== "object") return;
+
+        if (data.event === "onReady") {
+          clearTimeout(timerRef.current);
+          setPhase("playing");
+        } else if (data.event === "onError") {
+          const code: number = data.info ?? data.arg ?? 0;
+          clearTimeout(timerRef.current);
+          // All error codes → fallback (some block codes, some network issues)
+          setPhase("blocked");
+          console.warn(`[YouTubePlayer] error code ${code}`);
+        }
+      } catch {
+        // ignore non-JSON messages from other frames
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [phase]);
+
+  /* ── safety timeout cleanup on unmount ── */
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
   const handlePlay = () => {
     setPhase("loading");
-
-    // Try iframe — set a timeout to detect if it never loads (sandboxed context)
-    const timer = setTimeout(() => {
-      setPhase("blocked");
-    }, 6000);
-
-    // Store timer so we can cancel it if the iframe fires load
-    (window as any).__ytLoadTimer = timer;
+    // Safety timeout: if YouTube never responds, show fallback
+    timerRef.current = setTimeout(() => setPhase("blocked"), 8000);
   };
 
-  const handleIframeLoad = () => {
-    clearTimeout((window as any).__ytLoadTimer);
-    setPhase("playing");
-  };
-
-  const handleOpenYt = () => {
-    openInNewTab(youtubeUrl);
-  };
+  const handleOpenYt = () => openInNewTab(youtubeUrl);
 
   return (
     <View
@@ -79,41 +115,57 @@ export function YouTubePlayer({
         if (w > 0) setPlayerH(Math.round(w * (9 / 16)));
       }}
     >
-      {/* ── Thumbnail / play state ── */}
+      {/* ── Thumbnail / error state ── */}
       {(phase === "thumb" || phase === "blocked") && (
         <View style={StyleSheet.absoluteFill}>
           <Image
             source={{ uri: getThumbUrl(ytId) }}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { opacity: phase === "blocked" ? 0.25 : 1 }]}
             resizeMode="cover"
           />
-          {/* dark overlay */}
           <View style={styles.overlay} />
 
-          {/* play / blocked content */}
           <View style={styles.centerContent}>
             {phase === "blocked" ? (
+              /* ── Embedding blocked ── */
               <View style={styles.blockedBox}>
-                <Feather name="shield-off" size={20} color="rgba(255,255,255,0.5)" />
+                <View style={styles.blockedIconRing}>
+                  <Feather name="shield-off" size={22} color="rgba(255,255,255,0.7)" />
+                </View>
                 <Text style={styles.blockedTitle}>Embedding restricted</Text>
-                <Text style={styles.blockedSub}>Watch directly on YouTube</Text>
-                <TouchableOpacity onPress={handleOpenYt} style={styles.ytOpenBtn} activeOpacity={0.85}>
+                <Text style={styles.blockedSub}>
+                  This video can't be played here.{"\n"}Watch it directly on YouTube.
+                </Text>
+                <TouchableOpacity
+                  onPress={handleOpenYt}
+                  style={styles.ytOpenBtn}
+                  activeOpacity={0.85}
+                >
                   <Feather name="youtube" size={13} color="#fff" />
                   <Text style={styles.ytOpenBtnText}>OPEN ON YOUTUBE</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity onPress={handlePlay} activeOpacity={0.85} style={styles.playHitArea}>
+              /* ── Play button ── */
+              <TouchableOpacity
+                onPress={handlePlay}
+                activeOpacity={0.85}
+                style={styles.playHitArea}
+              >
                 <View style={styles.playCircle}>
-                  <Feather name="play" size={26} color="#fff" style={{ marginLeft: 3 }} />
+                  <Feather name="play" size={28} color="#fff" style={{ marginLeft: 3 }} />
                 </View>
                 <Text style={styles.tapToPlay}>Tap to play</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {/* bottom "Watch on YouTube" link */}
-          <TouchableOpacity onPress={handleOpenYt} style={styles.watchBadge} activeOpacity={0.8}>
+          {/* "Watch on YouTube" badge (always) */}
+          <TouchableOpacity
+            onPress={handleOpenYt}
+            style={styles.watchBadge}
+            activeOpacity={0.8}
+          >
             <Feather name="youtube" size={11} color="#ff0000" />
             <Text style={styles.watchBadgeText}>Watch on YouTube</Text>
             <Feather name="external-link" size={10} color="rgba(255,255,255,0.6)" />
@@ -126,10 +178,10 @@ export function YouTubePlayer({
         <View style={StyleSheet.absoluteFill}>
           <Image
             source={{ uri: getThumbUrl(ytId) }}
-            style={[StyleSheet.absoluteFill, { opacity: 0.35 }]}
+            style={[StyleSheet.absoluteFill, { opacity: 0.3 }]}
             resizeMode="cover"
           />
-          <View style={[styles.overlay, { backgroundColor: "rgba(0,0,0,0.65)" }]} />
+          <View style={[styles.overlay, { backgroundColor: "rgba(0,0,0,0.6)" }]} />
           <View style={styles.centerContent}>
             <View style={styles.loadingBox}>
               <View style={styles.spinnerRing} />
@@ -139,7 +191,7 @@ export function YouTubePlayer({
         </View>
       )}
 
-      {/* ── Iframe (only mounted after user clicks play) ── */}
+      {/* ── YouTube iframe (lazy — only mounted after play tap) ── */}
       {(phase === "loading" || phase === "playing") &&
         React.createElement("iframe", {
           key: "yt-iframe",
@@ -153,23 +205,25 @@ export function YouTubePlayer({
             border: "none",
             display: "block",
             opacity: phase === "playing" ? 1 : 0,
-            transition: "opacity 0.3s ease",
-            zIndex: phase === "playing" ? 1 : -1,
+            transition: "opacity 0.25s ease",
+            zIndex: phase === "playing" ? 2 : -1,
           },
           allow:
             "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
           allowFullScreen: true,
           referrerPolicy: "strict-origin-when-cross-origin",
-          onLoad: handleIframeLoad,
-          onError: () => setPhase("blocked"),
           sandbox:
             "allow-scripts allow-same-origin allow-presentation allow-popups allow-forms",
         })
       }
 
-      {/* ── External link button (always visible when playing) ── */}
+      {/* "Watch on YouTube" badge when playing */}
       {phase === "playing" && (
-        <TouchableOpacity onPress={handleOpenYt} style={[styles.watchBadge, { zIndex: 10 }]} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={handleOpenYt}
+          style={[styles.watchBadge, { zIndex: 10 }]}
+          activeOpacity={0.8}
+        >
           <Feather name="youtube" size={11} color="#ff0000" />
           <Text style={styles.watchBadgeText}>Watch on YouTube</Text>
           <Feather name="external-link" size={10} color="rgba(255,255,255,0.6)" />
@@ -185,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0d0d14",
     overflow: "hidden",
     position: "relative",
-  },
+  } as any,
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -196,20 +250,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   } as any,
 
-  /* Play button */
-  playHitArea: { alignItems: "center", gap: 10 },
+  /* Play */
+  playHitArea: { alignItems: "center", gap: 12 },
   playCircle: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: "rgba(129,140,248,0.88)",
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: "rgba(129,140,248,0.90)",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#818cf8",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.55,
+    shadowRadius: 18,
+    elevation: 10,
   },
   tapToPlay: {
     color: "rgba(255,255,255,0.75)",
@@ -232,51 +286,67 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
-  },
+  } as any,
   watchBadgeText: {
     color: "rgba(255,255,255,0.9)",
     fontSize: 10,
     fontFamily: "Poppins_600SemiBold",
   },
 
-  /* Blocked state */
-  blockedBox: { alignItems: "center", gap: 8, paddingHorizontal: 24 },
-  blockedTitle: { color: "#fff", fontSize: 14, fontFamily: "Poppins_600SemiBold", textAlign: "center" },
+  /* Blocked */
+  blockedBox: { alignItems: "center", gap: 10, paddingHorizontal: 28 },
+  blockedIconRing: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  blockedTitle: {
+    color: "#fff",
+    fontSize: 15,
+    fontFamily: "Poppins_600SemiBold",
+    textAlign: "center",
+  },
   blockedSub: {
     color: "rgba(255,255,255,0.5)",
     fontSize: 12,
     fontFamily: "Poppins_400Regular",
     textAlign: "center",
+    lineHeight: 18,
   },
   ytOpenBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginTop: 4,
-    paddingHorizontal: 18,
-    paddingVertical: 9,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: "#818cf8",
-    borderRadius: 6,
+    borderRadius: 8,
   },
   ytOpenBtnText: {
     color: "#fff",
     fontSize: 10,
     fontFamily: "JetBrainsMono_600SemiBold",
-    letterSpacing: 1.2,
+    letterSpacing: 1.3,
   },
 
   /* Loading */
-  loadingBox: { alignItems: "center", gap: 12 },
+  loadingBox: { alignItems: "center", gap: 14 },
   spinnerRing: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 2.5,
-    borderColor: "rgba(129,140,248,0.25)",
+    borderColor: "rgba(129,140,248,0.2)",
     borderTopColor: "#818cf8",
   },
   loadingText: {
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(255,255,255,0.45)",
     fontSize: 11,
     fontFamily: "Poppins_400Regular",
   },

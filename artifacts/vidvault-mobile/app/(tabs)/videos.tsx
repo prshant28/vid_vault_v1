@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Platform,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -184,16 +183,15 @@ export default function VideosScreen() {
           <FlatList
             key="skeleton-grid"
             data={[1, 2, 3, 4]} keyExtractor={(item) => String(item)}
-            numColumns={2} columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+            contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
             ListHeaderComponent={ListHeader}
-            renderItem={() => <View style={{ width: "48%" }}><VideoCardSkeleton /></View>}
+            renderItem={() => <VideoCardSkeleton />}
           />
         ) : (
           <FlatList
             key="skeleton-list"
             data={[1, 2, 3, 4, 5]} keyExtractor={(item) => String(item)}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+            contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
             ListHeaderComponent={ListHeader}
             renderItem={() => <VideoCardSkeleton listMode />}
           />
@@ -221,8 +219,7 @@ export default function VideosScreen() {
         <FlatList
           key="videos-grid"
           data={videos} keyExtractor={(item: { id: string }) => item.id}
-          numColumns={2} columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching} onRefresh={refetch}
           ListHeaderComponent={ListHeader}
@@ -239,7 +236,7 @@ export default function VideosScreen() {
         <FlatList
           key="videos-list"
           data={videos} keyExtractor={(item: { id: string }) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching} onRefresh={refetch}
           ListHeaderComponent={ListHeader}
