@@ -535,6 +535,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     marginBottom: 20,
+    borderRadius: 6,
   },
   badgeText: {
     fontFamily: "JetBrainsMono_600SemiBold",
@@ -587,8 +588,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    height: 50,
+    height: 52,
     paddingHorizontal: 14,
+    borderRadius: 14,
   },
   inputIcon: {
     marginRight: 10,
@@ -598,7 +600,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     fontSize: 14,
     padding: 0,
-    height: 50,
+    height: 52,
   },
   inputRight: {
     paddingLeft: 8,
@@ -614,6 +616,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(239,68,68,0.15)",
     padding: 12,
     marginTop: -4,
+    borderRadius: 10,
   },
   errorIcon: {
     color: ERROR_COLOR,
