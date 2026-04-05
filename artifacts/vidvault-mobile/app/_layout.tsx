@@ -31,7 +31,7 @@ import Svg, { Line } from "react-native-svg";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { setApiToken } from "@/services/api";
+import { setApiToken, setOnUnauthorized } from "@/services/api";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,7 +52,7 @@ const asyncStoragePersister = createAsyncStoragePersister({
 });
 
 function RootLayoutNav() {
-  const { user, isLoading, token } = useAuth();
+  const { user, isLoading, token, logout } = useAuth();
 
   useEffect(() => {
     setApiToken(token);
@@ -60,6 +60,13 @@ function RootLayoutNav() {
     // stale data from a previous session.
     queryClient.clear();
   }, [token]);
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      logout().catch(console.warn);
+    });
+    return () => setOnUnauthorized(null);
+  }, [logout]);
 
   useEffect(() => {
     if (isLoading) return;

@@ -1,9 +1,16 @@
 const BASE_URL = `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
 
 let _token: string | null = null;
+let _onUnauthorized: (() => void) | null = null;
+let _handlingUnauthorized = false;
 
 export function setApiToken(token: string | null) {
   _token = token;
+  _handlingUnauthorized = false;
+}
+
+export function setOnUnauthorized(fn: (() => void) | null) {
+  _onUnauthorized = fn;
 }
 
 function authHeaders(): HeadersInit {
@@ -13,6 +20,13 @@ function authHeaders(): HeadersInit {
 }
 
 async function handleRes(res: Response) {
+  if (res.status === 401 && _token) {
+    if (!_handlingUnauthorized) {
+      _handlingUnauthorized = true;
+      _onUnauthorized?.();
+    }
+    throw new Error("Session expired. Please sign in again.");
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `HTTP ${res.status}`);
