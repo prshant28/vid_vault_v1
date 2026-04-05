@@ -138,20 +138,23 @@ export default function RootLayout() {
     JetBrainsMono_600SemiBold,
   });
 
-  const [fontTimedOut, setFontTimedOut] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setFontTimedOut(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError && !fontTimedOut) return null;
+  if (!fontsLoaded && !fontError) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
+        <View style={{ width: 72, height: 72, borderRadius: 4, borderWidth: 1, borderColor: "rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.07)", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+          <Image source={require("@/assets/images/logo.png")} style={{ width: 48, height: 48 }} resizeMode="contain" />
+        </View>
+        <Text style={{ fontSize: 24, color: "#ffffff", fontWeight: "900", letterSpacing: -0.5 }}>VidVault</Text>
+        <Text style={{ fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaProvider>

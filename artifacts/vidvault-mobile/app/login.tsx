@@ -256,7 +256,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login, register } = useAuth();
 
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">("register");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
