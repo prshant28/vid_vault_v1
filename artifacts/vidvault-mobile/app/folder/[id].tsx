@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
+import { GridBackground } from "@/components/GridBackground";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoCardSkeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
@@ -42,8 +43,9 @@ export default function FolderDetailScreen() {
   const videos = data?.videos ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={[styles.navBar, { paddingTop: topInset + 8, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+      <GridBackground />
+      <View style={[styles.navBar, { paddingTop: topInset + 8, backgroundColor: "transparent", borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
           <Feather name="arrow-left" size={22} color={colors.foreground} />
         </TouchableOpacity>

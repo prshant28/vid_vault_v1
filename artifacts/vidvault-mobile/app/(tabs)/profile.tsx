@@ -14,6 +14,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
+import { GridBackground } from "@/components/GridBackground";
 import { useThemeToggle } from "@/hooks/useThemeToggle";
 
 function SettingRow({
@@ -80,11 +81,12 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
+      style={{ flex: 1, backgroundColor: "#0a0a0f" }}
       contentContainerStyle={{ paddingBottom: botInset + 100 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
+      <GridBackground />
+      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
         <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>USER_SETTINGS</Text>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Profile</Text>
       </View>

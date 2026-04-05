@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
+import { GridBackground } from "@/components/GridBackground";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 
@@ -101,8 +102,9 @@ export default function FoldersScreen() {
   const folders = data?.folders ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
+    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+      <GridBackground />
+      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
         <View>
           <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>ORGANIZE</Text>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Folders</Text>

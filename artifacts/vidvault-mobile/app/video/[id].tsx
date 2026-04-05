@@ -23,6 +23,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
+import { GridBackground } from "@/components/GridBackground";
 import type { Video, Note, Tag, AiOutput } from "@/types/api";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
@@ -470,6 +471,7 @@ export default function VideoDetailScreen() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+        <GridBackground />
         <View style={{ height: PLAYER_HEIGHT, backgroundColor: "#13131a" }} />
         <View style={{ padding: 16, gap: 10 }}>
           <Skeleton height={22} width="80%" borderRadius={6} />
@@ -484,6 +486,7 @@ export default function VideoDetailScreen() {
   if (!video) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
+        <GridBackground />
         <Text style={{ color: "rgba(255,255,255,0.4)", fontFamily: "JetBrainsMono_400Regular" }}>VIDEO_NOT_FOUND</Text>
       </View>
     );
@@ -494,6 +497,7 @@ export default function VideoDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+      <GridBackground />
       {/* Nav */}
       <View style={[styles.nav, { paddingTop: topInset + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -684,7 +688,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 8,
     paddingBottom: 10,
-    backgroundColor: "#0a0a0f",
+    backgroundColor: "transparent",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(255,255,255,0.06)",
   },

@@ -9,7 +9,6 @@ import {
   Platform,
   Dimensions,
 } from "react-native";
-import Svg, { Line } from "react-native-svg";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
@@ -17,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
+import { GridBackground } from "@/components/GridBackground";
 import { api } from "@/services/api";
 import type { Video, Stats } from "@/types/api";
 import { Skeleton } from "@/components/SkeletonLoader";
@@ -24,24 +24,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { VideoCard } from "@/components/VideoCard";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
 
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-const GRID_CELL = 56;
+const { width: SCREEN_W } = Dimensions.get("window");
 const RECENT_CARD_W = SCREEN_W * 0.72;
-
-function GridBackground({ color }: { color: string }) {
-  const cols = Math.ceil(SCREEN_W / GRID_CELL) + 1;
-  const rows = Math.ceil(SCREEN_H / GRID_CELL) + 1;
-  return (
-    <Svg width={SCREEN_W} height={SCREEN_H} style={StyleSheet.absoluteFillObject} pointerEvents="none">
-      {Array.from({ length: cols }).map((_, i) => (
-        <Line key={`v${i}`} x1={i * GRID_CELL} y1={0} x2={i * GRID_CELL} y2={SCREEN_H} stroke={color} strokeWidth={1} />
-      ))}
-      {Array.from({ length: rows }).map((_, i) => (
-        <Line key={`h${i}`} x1={0} y1={i * GRID_CELL} x2={SCREEN_W} y2={i * GRID_CELL} stroke={color} strokeWidth={1} />
-      ))}
-    </Svg>
-  );
-}
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -112,15 +96,11 @@ export default function HomeScreen() {
   const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
-  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
-  const gridColor = isDark ? "rgba(139,92,246,0.055)" : "rgba(139,92,246,0.06)";
-
   const recentVideos = stats?.recentVideos ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <GridBackground color={gridColor} />
-
+    <View style={{ flex: 1, backgroundColor: "#0a0a0f" }}>
+      <GridBackground />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: botInset + 100 }}

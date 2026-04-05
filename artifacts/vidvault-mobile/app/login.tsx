@@ -15,6 +15,7 @@ import {
 import Svg, { Path, Polygon, Rect, Circle, Line, G } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
+import { GridBackground } from "@/components/GridBackground";
 
 const BG = "#0a0a0b";
 const CARD = "#0f0f12";
@@ -312,6 +313,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={0}
     >
+      <GridBackground />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={[

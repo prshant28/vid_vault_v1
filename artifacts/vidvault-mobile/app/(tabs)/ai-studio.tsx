@@ -20,6 +20,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
+import { GridBackground } from "@/components/GridBackground";
 
 interface Message {
   id: string;
@@ -206,11 +207,12 @@ export default function AIStudioScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: "#0a0a0f" }]}
       behavior="padding"
       keyboardVerticalOffset={0}
     >
-      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: colors.background }]}>
+      <GridBackground />
+      <View style={[styles.header, { paddingTop: topInset + 16, backgroundColor: "transparent" }]}>
         <View style={[styles.headerIcon, { backgroundColor: "rgba(139,92,246,0.12)" }]}>
           <Feather name="cpu" size={18} color={colors.primary} />
         </View>
