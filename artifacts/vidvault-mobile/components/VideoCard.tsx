@@ -5,14 +5,11 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
 interface Video {
   id: string;
@@ -35,8 +32,10 @@ interface VideoCardProps {
 
 export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }: VideoCardProps) {
   const colors = useColors();
+  const { width: screenWidth } = useWindowDimensions();
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
-  const w = cardWidth ?? CARD_WIDTH;
+  const computedCardWidth = (screenWidth - 48) / 2;
+  const w = cardWidth ?? computedCardWidth;
 
   const handleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -52,8 +51,7 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
         {
           width: w,
           backgroundColor: colors.card,
-          borderRadius: colors.radius,
-          borderColor: isDark ? "rgba(139,92,246,0.12)" : colors.border,
+          borderColor: isDark ? "rgba(129,140,248,0.14)" : colors.border,
         },
       ]}
     >
@@ -62,20 +60,17 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
         {video.thumbnail ? (
           <Image
             source={{ uri: video.thumbnail }}
-            style={[styles.thumbnail, { borderRadius: colors.radius - 2 }]}
+            style={styles.thumbnail}
             resizeMode="cover"
           />
         ) : (
-          <View
-            style={[
-              styles.thumbnailPlaceholder,
-              {
-                borderRadius: colors.radius - 2,
-                backgroundColor: isDark ? "#1a1a22" : colors.secondary,
-              },
-            ]}
-          >
-            <Feather name="film" size={28} color={isDark ? "rgba(139,92,246,0.4)" : colors.mutedForeground} />
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: isDark ? "#141420" : colors.secondary }]}>
+            <View style={[styles.placeholderInner, {
+              backgroundColor: isDark ? "rgba(129,140,248,0.08)" : "rgba(129,140,248,0.06)",
+              borderColor: "rgba(129,140,248,0.18)",
+            }]}>
+              <Feather name="film" size={20} color="rgba(129,140,248,0.55)" />
+            </View>
           </View>
         )}
 
@@ -96,18 +91,10 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
         {/* Favorite button */}
         <TouchableOpacity
           onPress={handleFavorite}
-          style={[
-            styles.favoriteBtn,
-            { backgroundColor: video.isFavorite ? "rgba(239,68,68,0.8)" : "rgba(0,0,0,0.5)" },
-          ]}
+          style={[styles.favoriteBtn, { backgroundColor: video.isFavorite ? "rgba(239,68,68,0.85)" : "rgba(0,0,0,0.55)" }]}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Feather
-            name="heart"
-            size={14}
-            color="#fff"
-            style={{ opacity: video.isFavorite ? 1 : 0.85 }}
-          />
+          <Feather name="heart" size={12} color="#fff" style={{ opacity: video.isFavorite ? 1 : 0.8 }} />
         </TouchableOpacity>
       </View>
 
@@ -121,6 +108,21 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
             {video.channelName}
           </Text>
         )}
+        {video.tags && video.tags.length > 0 && (
+          <View style={styles.tagsRow}>
+            {video.tags.slice(0, 2).map((tag) => (
+              <View
+                key={tag.id}
+                style={[styles.tagPill, {
+                  backgroundColor: (tag.color || "#818cf8") + "18",
+                  borderColor: (tag.color || "#818cf8") + "28",
+                }]}
+              >
+                <Text style={[styles.tagText, { color: tag.color || "#818cf8" }]}>{tag.name}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -129,71 +131,42 @@ export function VideoCard({ video, onPress, onToggleFavorite, isNew, cardWidth }
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
+    borderRadius: 8,
     overflow: "hidden",
     marginBottom: 12,
   },
-  thumbnailContainer: {
-    position: "relative",
-  },
-  thumbnail: {
-    width: "100%",
-    aspectRatio: 16 / 9,
-  },
+  thumbnailContainer: { position: "relative" },
+  thumbnail: { width: "100%", aspectRatio: 16 / 9 },
   thumbnailPlaceholder: {
     width: "100%",
     aspectRatio: 16 / 9,
     alignItems: "center",
     justifyContent: "center",
   },
+  placeholderInner: {
+    width: 40, height: 40, borderRadius: 8, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
   duration: {
-    position: "absolute",
-    bottom: 5,
-    right: 5,
-    backgroundColor: "rgba(0,0,0,0.75)",
-    borderRadius: 3,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    position: "absolute", bottom: 5, right: 5,
+    backgroundColor: "rgba(0,0,0,0.78)",
+    borderRadius: 3, paddingHorizontal: 5, paddingVertical: 2,
   },
-  durationText: {
-    color: "#fff",
-    fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
-  },
+  durationText: { color: "#fff", fontSize: 9, fontFamily: "JetBrainsMono_400Regular" },
   newBadge: {
-    position: "absolute",
-    top: 5,
-    left: 5,
+    position: "absolute", top: 5, left: 5,
     backgroundColor: "#818cf8",
-    borderRadius: 3,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    borderRadius: 3, paddingHorizontal: 5, paddingVertical: 2,
   },
-  newBadgeText: {
-    color: "#fff",
-    fontSize: 8,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 1,
-  },
+  newBadgeText: { color: "#fff", fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1 },
   favoriteBtn: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    borderRadius: 14,
-    padding: 5,
+    position: "absolute", top: 5, right: 5,
+    borderRadius: 12, padding: 5,
   },
-  info: {
-    padding: 10,
-    gap: 3,
-  },
-  title: {
-    fontSize: 14,
-    fontFamily: "Poppins_600SemiBold",
-    lineHeight: 20,
-    marginBottom: 3,
-  },
-  channel: {
-    fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 0.4,
-  },
+  info: { padding: 10, gap: 4 },
+  title: { fontSize: 13, fontFamily: "Poppins_600SemiBold", lineHeight: 19 },
+  channel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3 },
+  tagsRow: { flexDirection: "row", gap: 4, marginTop: 2, flexWrap: "wrap" },
+  tagPill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1 },
+  tagText: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
 });

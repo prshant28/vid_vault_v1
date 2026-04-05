@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Platform,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -25,9 +25,6 @@ import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { VideoCard } from "@/components/VideoCard";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
-
-const { width: SCREEN_W } = Dimensions.get("window");
-const RECENT_CARD_W = SCREEN_W * 0.72;
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -63,6 +60,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { width: screenWidth } = useWindowDimensions();
+  const RECENT_CARD_W = screenWidth * 0.72;
   const [showSaveModal, setShowSaveModal] = useState(false);
 
   const { data: stats, isLoading, refetch, isRefetching } = useQuery<Stats>({
