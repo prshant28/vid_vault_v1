@@ -12,6 +12,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 
+const PURPLE = "#8b5cf6";
+
 interface TopAppBarProps {
   title?: string;
   showBack?: boolean;
@@ -31,9 +33,9 @@ export function TopAppBar({
 }: TopAppBarProps) {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const PURPLE = colors.primary;
 
-  const topPad = Platform.OS === "web" ? 12 : insets.top + 4;
+  /* Exactly match safe-area top — Dynamic Island aware on iOS */
+  const topPad = Platform.OS === "web" ? 12 : insets.top;
 
   return (
     <View
@@ -49,8 +51,12 @@ export function TopAppBar({
       {/* Left */}
       <View style={styles.side}>
         {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn} activeOpacity={0.75}>
-            <Feather name="arrow-left" size={20} color={colors.foreground} />
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+            activeOpacity={0.75}
+          >
+            <Feather name="arrow-left" size={16} color={colors.foreground} />
           </TouchableOpacity>
         ) : (
           <View style={styles.logoRow}>
@@ -61,22 +67,17 @@ export function TopAppBar({
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.brandText, { color: colors.foreground }]}>
-              VidVault
-            </Text>
-            <View style={[styles.aiBadge, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "35" }]}>
+            <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
+            <View style={[styles.aiBadge, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "45" }]}>
               <Text style={[styles.aiBadgeText, { color: PURPLE }]}>AI</Text>
             </View>
           </View>
         )}
       </View>
 
-      {/* Center title (only when showBack) */}
+      {/* Center title */}
       {showBack && title ? (
-        <Text
-          style={[styles.centerTitle, { color: colors.foreground }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.centerTitle, { color: colors.foreground }]} numberOfLines={1}>
           {title}
         </Text>
       ) : (
@@ -87,17 +88,27 @@ export function TopAppBar({
       <View style={[styles.side, { alignItems: "flex-end" }]}>
         {rightAction ?? (
           onRightPress && rightIcon ? (
-            <TouchableOpacity onPress={onRightPress} style={styles.iconBtn} activeOpacity={0.75}>
-              <Feather name={rightIcon as any} size={20} color={colors.foreground} />
+            <TouchableOpacity
+              onPress={onRightPress}
+              style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+              activeOpacity={0.75}
+            >
+              <Feather name={rightIcon as any} size={16} color={colors.foreground} />
             </TouchableOpacity>
           ) : (
             <View style={styles.rightDefault}>
-              <TouchableOpacity style={[styles.iconBtn, { marginRight: 2 }]} activeOpacity={0.75}>
-                <Feather name="search" size={20} color={colors.mutedForeground} />
+              <TouchableOpacity
+                style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card, marginRight: 8 }]}
+                activeOpacity={0.75}
+              >
+                <Feather name="search" size={16} color={colors.mutedForeground} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconBtn} activeOpacity={0.75}>
+              <TouchableOpacity
+                style={[styles.badgeBtn, { borderColor: PURPLE + "45", backgroundColor: PURPLE + "12" }]}
+                activeOpacity={0.75}
+              >
                 <View style={[styles.notifDot, { backgroundColor: PURPLE }]} />
-                <Feather name="bell" size={20} color={colors.mutedForeground} />
+                <Feather name="bell" size={16} color={PURPLE} />
               </TouchableOpacity>
             </View>
           )
@@ -112,12 +123,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     zIndex: 10,
   },
   side: {
-    width: 120,
+    width: 130,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -129,7 +140,7 @@ const styles = StyleSheet.create({
   logoBox: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -144,7 +155,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   aiBadge: {
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
@@ -161,11 +172,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: -0.2,
   },
-  iconBtn: {
-    width: 40,
-    height: 40,
+  /* Badge-style button — matches login "SIGN_IN" badge */
+  badgeBtn: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
     position: "relative",
   },
   rightDefault: {
@@ -174,10 +189,10 @@ const styles = StyleSheet.create({
   },
   notifDot: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    width: 6,
-    height: 6,
+    top: 5,
+    right: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
     zIndex: 1,
   },

@@ -22,6 +22,7 @@ import WebView from "react-native-webview";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
 import { useColors } from "@/hooks/useColors";
+import { TopAppBar } from "@/components/TopAppBar";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { GridBackground } from "@/components/GridBackground";
@@ -71,15 +72,7 @@ function extractYouTubeId(url: string): string | null {
 /* ── YouTube WebView Player ── */
 function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal: () => void }) {
   const [error, setError] = useState(false);
-  const html = `<!DOCTYPE html><html><head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden}.wrap{position:absolute;inset:0}iframe{width:100%;height:100%;border:none}</style>
-</head><body><div class="wrap">
-<iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1"
-  allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen
-  referrerpolicy="no-referrer-when-downgrade"
-  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe>
-</div></body></html>`;
+  const embedUri = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
 
   if (error) {
     return (
@@ -99,7 +92,7 @@ function YouTubePlayer({ ytId, onOpenExternal }: { ytId: string; onOpenExternal:
     <View style={styles.player}>
       <WebView
         style={{ flex: 1, backgroundColor: "#000" }}
-        source={{ html }}
+        source={{ uri: embedUri }}
         allowsFullscreenVideo allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
         javaScriptEnabled domStorageEnabled scrollEnabled={false}
@@ -427,7 +420,6 @@ export default function VideoDetailScreen() {
 
   const handleOpenYouTube = () => { if (video?.url) Linking.openURL(video.url); };
 
-  const topInset = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   const aiOutputMap: Record<string, AiOutput> = Object.fromEntries(
@@ -463,22 +455,33 @@ export default function VideoDetailScreen() {
   }
 
   const ytId = extractYouTubeId(video.url || "");
-  const useWebView = !!ytId && Platform.OS !== "web";
+  const useWebView = !!ytId;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
       {/* Top nav */}
-      <View style={[styles.nav, { paddingTop: topInset + 8, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Feather name="arrow-left" size={20} color={colors.foreground} />
-        </TouchableOpacity>
-        <Text style={[styles.navTitle, { color: colors.foreground }]} numberOfLines={1}>Video Detail</Text>
-        <TouchableOpacity onPress={() => favMutation.mutate()} style={styles.navBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Feather name="heart" size={20} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
-        </TouchableOpacity>
-      </View>
+      <TopAppBar
+        showBack
+        title={video.title}
+        rightAction={
+          <TouchableOpacity
+            onPress={() => favMutation.mutate()}
+            style={[{
+              borderWidth: 1,
+              borderRadius: 6,
+              borderColor: video.isFavorite ? "#ef444455" : colors.border,
+              backgroundColor: video.isFavorite ? "#ef444415" : colors.card,
+              paddingHorizontal: 10,
+              paddingVertical: 7,
+            }]}
+            activeOpacity={0.75}
+          >
+            <Feather name="heart" size={16} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: botInset + 28 }}>
 
