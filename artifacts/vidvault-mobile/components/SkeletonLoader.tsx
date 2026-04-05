@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, View, ViewStyle } from "react-native";
 import { MotiView } from "moti";
 import { Skeleton as MotiSkeleton } from "moti/skeleton";
-import { useColorScheme } from "react-native";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface SkeletonProps {
   width?: number | `${number}%`;
@@ -12,7 +12,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style }: SkeletonProps) {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useThemeContext();
   const colorMode = colorScheme === "dark" ? "dark" : "light";
   return (
     <MotiSkeleton
@@ -27,7 +27,7 @@ export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style 
 }
 
 export function VideoCardSkeleton({ listMode }: { listMode?: boolean }) {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useThemeContext();
   const colorMode = colorScheme === "dark" ? "dark" : "light";
 
   if (listMode) {
@@ -68,7 +68,7 @@ export function VideoCardSkeleton({ listMode }: { listMode?: boolean }) {
 }
 
 export function StatCardSkeleton() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useThemeContext();
   const colorMode = colorScheme === "dark" ? "dark" : "light";
   return (
     <View style={{ flex: 1, marginRight: 12 }}>

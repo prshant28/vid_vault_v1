@@ -1,12 +1,13 @@
 import React from "react";
-import { View, Dimensions, StyleSheet, useColorScheme } from "react-native";
+import { View, Dimensions, StyleSheet } from "react-native";
 import Svg, { Line, Defs, RadialGradient, Stop, Rect } from "react-native-svg";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 const CELL = 56;
 
 export function GridBackground() {
-  const scheme = useColorScheme();
-  const isDark = scheme !== "light";
+  const { colorScheme } = useThemeContext();
+  const isDark = colorScheme === "dark";
   const { width: W, height: H } = Dimensions.get("window");
   const cols = Math.ceil(W / CELL) + 1;
   const rows = Math.ceil(H / CELL) + 1;

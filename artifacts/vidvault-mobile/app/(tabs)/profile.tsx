@@ -8,7 +8,6 @@ import {
   ScrollView,
   Platform,
   Alert,
-  useColorScheme,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -58,10 +57,9 @@ export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-  const colorScheme = useColorScheme();
   const { preference, setTheme } = useThemeToggle();
 
-  const isDark = preference === "dark" || (preference === "system" && colorScheme === "dark");
+  const isDark = preference === "dark" || preference === "system";
 
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email?.split("@")[0] || "User";
   const initials = displayName.slice(0, 2).toUpperCase();

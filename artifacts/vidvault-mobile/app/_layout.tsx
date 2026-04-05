@@ -27,11 +27,12 @@ import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance, Platform, View, Image, Text, Dimensions, StyleSheet, useColorScheme } from "react-native";
+import { Platform, View, Image, Text, Dimensions, StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setApiToken } from "@/services/api";
 
 SplashScreen.preventAutoHideAsync();
@@ -51,8 +52,6 @@ const asyncStoragePersister = createAsyncStoragePersister({
   key: "vidvault_query_cache",
   throttleTime: 1000,
 });
-
-const THEME_KEY = "vidvault_theme_preference";
 
 function RootLayoutNav() {
   const { user, isLoading, token } = useAuth();
@@ -110,30 +109,6 @@ function RootLayoutNav() {
   );
 }
 
-function setColorSchemeSafe(scheme: "light" | "dark" | null) {
-  try {
-    if (typeof Appearance.setColorScheme === "function") {
-      Appearance.setColorScheme(scheme);
-    }
-  } catch {
-    // Appearance.setColorScheme not supported on this platform (e.g. React Native Web)
-  }
-}
-
-function ThemeInitializer({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    AsyncStorage.getItem(THEME_KEY).then((stored) => {
-      if (stored === "light" || stored === "dark") {
-        setColorSchemeSafe(stored);
-      } else if (stored === "system") {
-        setColorSchemeSafe(null);
-      }
-      // No stored preference → useColors() defaults to dark, no action needed
-    });
-  }, []);
-  return <>{children}</>;
-}
-
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Poppins_400Regular,
@@ -185,11 +160,11 @@ export default function RootLayout() {
         >
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <AuthProvider>
-                <ThemeInitializer>
+              <ThemeProvider>
+                <AuthProvider>
                   <RootLayoutNav />
-                </ThemeInitializer>
-              </AuthProvider>
+                </AuthProvider>
+              </ThemeProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </PersistQueryClientProvider>
