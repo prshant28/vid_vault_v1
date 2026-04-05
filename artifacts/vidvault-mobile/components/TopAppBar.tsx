@@ -68,53 +68,10 @@ export function TopAppBar({
               />
             </View>
             <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
-            <View style={[styles.aiBadge, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "45" }]}>
-              <Text style={[styles.aiBadgeText, { color: PURPLE }]}>AI</Text>
-            </View>
           </View>
         )}
       </View>
-
-      {/* Center title */}
-      {showBack && title ? (
-        <Text style={[styles.centerTitle, { color: colors.foreground }]} numberOfLines={1}>
-          {title}
-        </Text>
-      ) : (
-        <View style={{ flex: 1 }} />
-      )}
-
-      {/* Right */}
-      <View style={[styles.side, { alignItems: "flex-end" }]}>
-        {rightAction ?? (
-          onRightPress && rightIcon ? (
-            <TouchableOpacity
-              onPress={onRightPress}
-              style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
-              activeOpacity={0.75}
-            >
-              <Feather name={rightIcon as any} size={16} color={colors.foreground} />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.rightDefault}>
-              <TouchableOpacity
-                style={[styles.badgeBtn, { borderColor: colors.border, backgroundColor: colors.card, marginRight: 8 }]}
-                activeOpacity={0.75}
-              >
-                <Feather name="search" size={16} color={colors.mutedForeground} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.badgeBtn, { borderColor: PURPLE + "45", backgroundColor: PURPLE + "12" }]}
-                activeOpacity={0.75}
-              >
-                <View style={[styles.notifDot, { backgroundColor: PURPLE }]} />
-                <Feather name="bell" size={16} color={PURPLE} />
-              </TouchableOpacity>
-            </View>
-          )
-        )}
-      </View>
-    </View>
+     </View>
   );
 }
 

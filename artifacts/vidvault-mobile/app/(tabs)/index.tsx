@@ -111,27 +111,46 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Stats */}
+        {/* Quick actions */}
+        <View style={styles.quickActions}>
+          {[
+            { icon: "cpu" as FeatherIconName, label: "AI Studio", accent: "#8b5cf6", onPress: () => router.push("/(tabs)/ai-studio") },
+            { icon: "folder" as FeatherIconName, label: "Folders", accent: "#06b6d4", onPress: () => router.push("/(tabs)/folders") },
+            { icon: "heart" as FeatherIconName, label: "Favorites", accent: "#ec4899", onPress: () => router.push("/(tabs)/videos") },
+          ].map((a) => (
+            <TouchableOpacity key={a.label} onPress={a.onPress} activeOpacity={0.75}
+              style={[styles.quickBtn, { backgroundColor: a.accent + "12", borderColor: a.accent + "30" }]}
+            >
+              <View style={[styles.quickBtnIcon, { backgroundColor: a.accent + "18" }]}>
+                <Feather name={a.icon} size={15} color={a.accent} />
+              </View>
+              <Text style={[styles.quickBtnLabel, { color: a.accent }]}>{a.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Stats — 3-col row */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>OVERVIEW</Text>
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>VAULT OVERVIEW</Text>
             <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
           </View>
           {isLoading ? (
-            <View style={{ gap: 10 }}>
-              {[1, 2, 3].map((i) => <Skeleton key={i} height={110} borderRadius={4} />)}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {[1, 2, 3].map((i) => <Skeleton key={i} height={100} style={{ flex: 1 }} borderRadius={4} />)}
             </View>
           ) : (
-            <View style={{ gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
               {STAT_CONFIG.map((cfg) => (
-                <EtchedStatCard
-                  key={cfg.code}
-                  code={cfg.code}
-                  label={cfg.label}
-                  icon={cfg.icon}
-                  accent={cfg.accent}
-                  value={(stats as any)?.[cfg.key] ?? 0}
-                />
+                <View key={cfg.code} style={{ flex: 1 }}>
+                  <EtchedStatCard
+                    code={cfg.code}
+                    label={cfg.label}
+                    icon={cfg.icon}
+                    accent={cfg.accent}
+                    value={(stats as any)?.[cfg.key] ?? 0}
+                  />
+                </View>
               ))}
             </View>
           )}
@@ -232,7 +251,18 @@ const styles = StyleSheet.create({
   },
   saveBtnLabel: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
 
-  greeting: { paddingHorizontal: 20, paddingBottom: 24, paddingTop: 8 },
+  quickActions: {
+    flexDirection: "row", gap: 10,
+    paddingHorizontal: 20, paddingBottom: 20,
+  },
+  quickBtn: {
+    flex: 1, alignItems: "center", gap: 8,
+    paddingVertical: 14, borderRadius: 10, borderWidth: 1,
+  },
+  quickBtnIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  quickBtnLabel: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.2 },
+
+  greeting: { paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 },
   greetingLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 6 },
   greetingName: { fontSize: 26, fontFamily: "Poppins_700Bold", letterSpacing: -0.5, lineHeight: 34, marginBottom: 2 },
   greetingSub: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
@@ -249,14 +279,14 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3 },
   viewAll: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingBottom: 3 },
 
-  etchedCard: { padding: 16, borderWidth: 1, borderRadius: 4, overflow: "hidden", minHeight: 100 },
-  etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 },
-  etchedIconBox: { width: 28, height: 28, borderRadius: 6, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  etchedCode: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginTop: 2 },
-  etchedLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 4 },
-  etchedValue: { fontSize: 44, fontFamily: "Poppins_700Bold", lineHeight: 50, letterSpacing: -2 },
+  etchedCard: { padding: 12, borderWidth: 1, borderRadius: 8, overflow: "hidden", minHeight: 90 },
+  etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 },
+  etchedIconBox: { width: 26, height: 26, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  etchedCode: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, marginTop: 2 },
+  etchedLabel: { fontSize: 9, fontFamily: "Poppins_500Medium", marginBottom: 2, lineHeight: 13 },
+  etchedValue: { fontSize: 32, fontFamily: "Poppins_900Black", lineHeight: 38, letterSpacing: -1.5 },
   etchedGlow: {
-    position: "absolute", bottom: -24, right: -24,
-    width: 80, height: 80, borderRadius: 40, opacity: 0.06,
+    position: "absolute", bottom: -20, right: -20,
+    width: 60, height: 60, borderRadius: 30, opacity: 0.08,
   },
 });
