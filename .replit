@@ -26,6 +26,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start frontend"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -37,6 +41,18 @@ outputType = "console"
 task = "shell.exec"
 args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "Start frontend"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/vidvault-ai run dev"
+waitForPort = 3000
 
 [agent]
 stack = "PNPM_WORKSPACE"
