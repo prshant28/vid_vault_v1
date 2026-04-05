@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 15,
-    fontFamily: "Raleway_900Black",
+    fontFamily: "AlegreyaSansSC_900Black",
     letterSpacing: 1.5,
   },
   headerSub: {
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   previewThumbTitle: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
     lineHeight: 19,
   },
   previewDomain: {
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
   },
   titleInput: {
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   },
   titleDisplay: {
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Poppins_500Medium",
     lineHeight: 20,
   },
   folderSection: {
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     textAlign: "center",
   },
   modalFooter: {

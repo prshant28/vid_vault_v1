@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   label: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
   },
 });

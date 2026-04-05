@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     lineHeight: 18,
   },
   channel: {

@@ -30,10 +30,10 @@ interface AppButtonProps {
 }
 
 const SIZES: Record<AppButtonSize, { h: number; cut: number; px: number; iconSize: number; fontSize: number }> = {
-  lg: { h: 52, cut: 12, px: 24, iconSize: 16, fontSize: 11 },
-  md: { h: 44, cut: 10, px: 20, iconSize: 15, fontSize: 11 },
-  sm: { h: 34, cut: 7,  px: 14, iconSize: 14, fontSize: 10 },
-  xs: { h: 34, cut: 7,  px: 0,  iconSize: 15, fontSize: 10 },
+  lg: { h: 58, cut: 13, px: 28, iconSize: 18, fontSize: 13 },
+  md: { h: 50, cut: 11, px: 24, iconSize: 16, fontSize: 12 },
+  sm: { h: 40, cut: 8,  px: 16, iconSize: 14, fontSize: 11 },
+  xs: { h: 38, cut: 8,  px: 0,  iconSize: 15, fontSize: 11 },
 };
 
 export function AppButton({

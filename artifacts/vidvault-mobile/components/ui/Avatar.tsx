@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   initials: {
-    fontFamily: "Inter_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
   },
 });

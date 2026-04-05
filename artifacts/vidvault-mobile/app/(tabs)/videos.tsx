@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
   saveBtnText: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
 
   subHeader: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
-  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 5 },
-  subTitle: { fontSize: 30, fontFamily: "Poppins_700Bold", letterSpacing: -0.8, lineHeight: 36 },
+  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   controls: { paddingHorizontal: 16, gap: 10, marginBottom: 6 },
   chipsScroll: { flexGrow: 0 },

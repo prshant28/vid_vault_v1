@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     textAlign: "center",
   },
 });

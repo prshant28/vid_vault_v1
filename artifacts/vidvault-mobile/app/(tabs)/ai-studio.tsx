@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   headerLeft: { gap: 2 },
-  headerEyebrow: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
-  headerTitle: { fontSize: 22, fontFamily: "Poppins_700Bold", letterSpacing: -0.4 },
+  headerEyebrow: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 4 },
+  headerTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   statusPill: {
     flexDirection: "row", alignItems: "center", gap: 5,

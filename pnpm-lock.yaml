@@ -605,6 +605,9 @@ importers:
 
   artifacts/vidvault-mobile:
     dependencies:
+      '@expo-google-fonts/alegreya-sans-sc':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo-google-fonts/jetbrains-mono':
         specifier: ^0.4.1
         version: 0.4.1
@@ -1374,6 +1377,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [linux]
+
+  '@expo-google-fonts/alegreya-sans-sc@0.4.1':
+    resolution: {integrity: sha512-4tTRNjMM1WAga5ex06A+17bFxmrVluGYsmgKyxBvOuJKs4qiPdtOPpk7sVYmHDVGH+Vu80L0DWJcMD6/cRMVyg==}
 
   '@expo-google-fonts/inter@0.4.2':
     resolution: {integrity: sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==}
@@ -6805,6 +6811,8 @@ snapshots:
 
   '@esbuild/linux-x64@0.27.3':
     optional: true
+
+  '@expo-google-fonts/alegreya-sans-sc@0.4.1': {}
 
   '@expo-google-fonts/inter@0.4.2': {}
 

@@ -140,8 +140,8 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
-  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
-  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   profileSection: {
     alignItems: "center",
@@ -158,11 +158,11 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 28,
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
   },
   displayName: {
     fontSize: 22,
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
     marginBottom: 4,
   },
   email: {

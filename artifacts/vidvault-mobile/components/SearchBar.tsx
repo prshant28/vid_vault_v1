@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Poppins_400Regular",
     padding: 0,
     margin: 0,
   },

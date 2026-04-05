@@ -3,15 +3,13 @@ import {
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
-  Poppins_700Bold,
-  Poppins_900Black,
 } from "@expo-google-fonts/poppins";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+  AlegreyaSansSC_400Regular,
+  AlegreyaSansSC_700Bold,
+  AlegreyaSansSC_800ExtraBold,
+  AlegreyaSansSC_900Black,
+} from "@expo-google-fonts/alegreya-sans-sc";
 import {
   JetBrainsMono_400Regular,
   JetBrainsMono_600SemiBold,
@@ -91,7 +89,7 @@ function RootLayoutNav() {
         <View style={{ width: 88, height: 88, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
           <Image source={require("@/assets/images/logo.png")} style={{ width: 60, height: 60 }} resizeMode="contain" />
         </View>
-        <Text style={{ fontFamily: "Poppins_900Black", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
+        <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
         <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
@@ -114,12 +112,10 @@ export default function RootLayout() {
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
-    Poppins_700Bold,
-    Poppins_900Black,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    AlegreyaSansSC_400Regular,
+    AlegreyaSansSC_700Bold,
+    AlegreyaSansSC_800ExtraBold,
+    AlegreyaSansSC_900Black,
     JetBrainsMono_400Regular,
     JetBrainsMono_600SemiBold,
   });

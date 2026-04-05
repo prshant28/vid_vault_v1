@@ -214,8 +214,8 @@ export default function FoldersScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
-  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
-  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
   addBtn: {
     width: 40,
     height: 40,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 20,
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
   },
   nameInput: {
     paddingHorizontal: 14,

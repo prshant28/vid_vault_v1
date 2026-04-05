@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
 
   /* Info */
   infoBlock: { padding: 16, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  videoTitle: { fontSize: 17, fontFamily: "Poppins_700Bold", lineHeight: 26, letterSpacing: -0.3 },
+  videoTitle: { fontSize: 17, fontFamily: "AlegreyaSansSC_700Bold", lineHeight: 26, letterSpacing: -0.3 },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metaChip: {
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
   /* Section */
   section: { padding: 16, gap: 12 },
   sectionEyebrow: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5 },
-  sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3, marginTop: -4, marginBottom: 4 },
+  sectionTitle: { fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3, marginTop: -4, marginBottom: 4 },
 
   /* Tool grid */
   toolGrid: { flexDirection: "column", gap: CARD_GAP },
@@ -874,13 +874,13 @@ const styles = StyleSheet.create({
     borderRadius: 4, borderWidth: 1, borderColor: PURPLE + "40",
     backgroundColor: PURPLE + "12",
   },
-  viewBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_500Medium", letterSpacing: 0.5 },
+  viewBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 0.5 },
   genBadge: {
     flexDirection: "row" as const, alignItems: "center" as const, gap: 4,
     paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 4, backgroundColor: PURPLE,
   },
-  genBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_500Medium", color: "#fff", letterSpacing: 0.5 },
+  genBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_600SemiBold", color: "#fff", letterSpacing: 0.5 },
   viewBtn: {
     flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5,

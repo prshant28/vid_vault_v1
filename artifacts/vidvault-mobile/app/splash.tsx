@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   appName: {
-    fontFamily: "Poppins_900Black",
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 42,
     color: WHITE,
     letterSpacing: -1,

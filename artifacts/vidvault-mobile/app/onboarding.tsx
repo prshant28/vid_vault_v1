@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     height: 22,
   },
   logoName: {
-    fontFamily: "Poppins_900Black",
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 17,
     color: WHITE,
     letterSpacing: -0.3,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   title: {
-    fontFamily: "Poppins_900Black",
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 34,
     color: WHITE,
     letterSpacing: -0.8,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   polyLabel: {
-    fontFamily: "Poppins_900Black",
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 13,
     color: BG,
     letterSpacing: 2,

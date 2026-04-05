@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Poppins_500Medium",
   },
 });

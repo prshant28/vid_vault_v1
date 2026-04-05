@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     height: 20,
   },
   brandText: {
-    fontFamily: "Poppins_700Bold",
-    fontSize: 16,
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
+    fontSize: 20,
     letterSpacing: -0.3,
   },
   iconBtn: {
@@ -134,8 +134,8 @@ const styles = StyleSheet.create({
   },
   centerTitle: {
     flex: 1,
-    fontFamily: "Poppins_600SemiBold",
-    fontSize: 14,
+    fontFamily: "AlegreyaSansSC_700Bold",
+    fontSize: 16,
     textAlign: "center",
     letterSpacing: -0.2,
     paddingHorizontal: 8,

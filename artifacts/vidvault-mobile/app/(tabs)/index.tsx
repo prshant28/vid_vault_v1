@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
   quickBtnLabel: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.2 },
 
   greeting: { paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 },
-  greetingLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 8 },
-  greetingName: { fontSize: 30, fontFamily: "Poppins_700Bold", letterSpacing: -0.8, lineHeight: 38, marginBottom: 4 },
+  greetingLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 10 },
+  greetingName: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48, marginBottom: 6 },
   greetingSub: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
 
   section: { paddingHorizontal: 20, marginBottom: 28 },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   sectionLine: { flex: 1, height: 1, marginBottom: 4 },
   sectionLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
   sectionMicro: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
-  sectionTitle: { fontSize: 20, fontFamily: "Poppins_700Bold", letterSpacing: -0.4 },
+  sectionTitle: { fontSize: 20, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.4 },
   viewAll: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingBottom: 3 },
 
   etchedCard: { padding: 14, borderWidth: 1, borderRadius: 8, overflow: "hidden", minHeight: 100 },
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   etchedIconBox: { width: 26, height: 26, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   etchedCode: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, marginTop: 2 },
   etchedLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 2, lineHeight: 14 },
-  etchedValue: { fontSize: 36, fontFamily: "Poppins_900Black", lineHeight: 42, letterSpacing: -2 },
+  etchedValue: { fontSize: 36, fontFamily: "AlegreyaSansSC_800ExtraBold", lineHeight: 42, letterSpacing: -2 },
   etchedGlow: {
     position: "absolute", bottom: -20, right: -20,
     width: 60, height: 60, borderRadius: 30, opacity: 0.08,

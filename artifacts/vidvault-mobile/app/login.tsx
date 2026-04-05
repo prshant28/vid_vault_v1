@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     height: 28,
   },
   logoName: {
-    fontFamily: "Poppins_900Black",
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 22,
     color: WHITE,
     letterSpacing: -0.5,
@@ -552,10 +552,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heading: {
-    fontFamily: "Poppins_900Black",
-    fontSize: 34,
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
+    fontSize: 44,
     color: WHITE,
-    lineHeight: 40,
+    lineHeight: 52,
     letterSpacing: -0.5,
   },
   subheading: {
@@ -641,13 +641,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   polygonText: {
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
     fontSize: 13,
     color: BG,
     letterSpacing: 2,
   },
   ghostText: {
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "AlegreyaSansSC_700Bold",
     fontSize: 11,
     color: "rgba(255,255,255,0.55)",
     letterSpacing: 2,
