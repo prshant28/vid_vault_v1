@@ -998,44 +998,44 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
   },
 
-  /* Tool grid — etched-slab, matches web */
+  /* Tool grid — matches screenshot exactly */
   toolGrid: { flexDirection: "column", gap: CARD_GAP },
   toolRow: { flexDirection: "row", gap: CARD_GAP },
   toolCard: {
-    backgroundColor: "#0f0f13",
-    borderRadius: 4,
+    backgroundColor: "#161620",
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.04)",
-    minHeight: 140,
+    borderColor: "rgba(255,255,255,0.07)",
+    minHeight: 142,
     overflow: "hidden",
   },
   toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
   toolCardTop: {
     flexDirection: "row", alignItems: "flex-start",
-    justifyContent: "space-between", marginBottom: 12,
+    justifyContent: "space-between", marginBottom: 10,
   },
   toolNum: {
-    fontSize: 8, fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 3, color: "rgba(255,255,255,0.15)", textTransform: "uppercase",
+    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 1.5, color: "rgba(255,255,255,0.2)",
   },
   toolLabel: {
-    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2, textTransform: "uppercase", marginBottom: 4,
+    fontSize: 11, fontFamily: "JetBrainsMono_600SemiBold",
+    letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 5,
   },
   toolDesc: {
-    fontSize: 8, fontFamily: "JetBrainsMono_400Regular",
-    color: "rgba(255,255,255,0.18)", lineHeight: 13, letterSpacing: 0.3,
+    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
+    color: "rgba(255,255,255,0.25)", lineHeight: 14, letterSpacing: 0.2,
   },
   toolCardFooter: { paddingTop: 8 },
 
-  /* Glow corner (web etched-slab hover radial gradient) */
+  /* Glow corner (web etched-slab radial gradient effect) */
   toolGlowCorner: {
     position: "absolute", bottom: 0, right: 0,
-    width: 64, height: 64, pointerEvents: "none",
+    width: 72, height: 72,
   },
   toolGlowCircle: {
-    width: 64, height: 64, borderRadius: 32,
-    transform: [{ translateX: 12 }, { translateY: 12 }],
+    width: 72, height: 72, borderRadius: 36,
+    transform: [{ translateX: 16 }, { translateY: 16 }],
   },
   generatingPill: {
     alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4,
