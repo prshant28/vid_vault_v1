@@ -8,6 +8,21 @@ const router = Router();
 
 /* ── AI provider: Gemini first, OpenAI fallback ── */
 async function generateAiText(prompt: string): Promise<string> {
+  /* 1️⃣  Replit AI Integration (OpenAI-compatible proxy — no extra key needed) */
+  const integrationBase = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const integrationKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (integrationBase && integrationKey) {
+    const openai = new OpenAI({ apiKey: integrationKey, baseURL: integrationBase });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_completion_tokens: 2048,
+    });
+    const text = completion.choices[0]?.message?.content;
+    if (text) return text;
+  }
+
+  /* 2️⃣  Google Gemini */
   const googleKey = process.env.GOOGLE_API_KEY;
   if (googleKey) {
     const resp = await fetch(
@@ -30,17 +45,19 @@ async function generateAiText(prompt: string): Promise<string> {
     }
   }
 
-  const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("No AI API key configured. Set GOOGLE_API_KEY or OPENAI_API_KEY.");
+  /* 3️⃣  User's own OpenAI key */
+  const ownKey = process.env.OPENAI_API_KEY;
+  if (ownKey) {
+    const openai = new OpenAI({ apiKey: ownKey });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 2000,
+    });
+    return completion.choices[0]?.message?.content || "";
+  }
 
-  const openai = new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) });
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 2000,
-  });
-  return completion.choices[0]?.message?.content || "";
+  throw new Error("No AI provider available. Please contact support.");
 }
 
 const AI_PROMPTS: Record<string, (title: string, desc: string, channel: string) => string> = {
