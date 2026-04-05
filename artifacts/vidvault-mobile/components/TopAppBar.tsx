@@ -4,13 +4,13 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
+import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 interface TopAppBarProps {
   title?: string;
@@ -53,13 +53,7 @@ export function TopAppBar({
           </TouchableOpacity>
         ) : (
           <View style={styles.logoRow}>
-            <View style={[styles.logoBox, { borderColor: colors.border, backgroundColor: colors.card }]}>
-              <Image
-                source={require("@/assets/images/logo.png")}
-                style={styles.logoImg}
-                resizeMode="contain"
-              />
-            </View>
+            <VidVaultLogo size={32} />
             <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
           </View>
         )}
@@ -106,18 +100,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-  },
-  logoBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoImg: {
-    width: 20,
-    height: 20,
   },
   brandText: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",

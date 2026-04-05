@@ -25,13 +25,14 @@ import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Platform, View, Image, Text, Dimensions, StyleSheet } from "react-native";
+import { Platform, View, Text, Dimensions, StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setApiToken, setOnUnauthorized } from "@/services/api";
+import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -96,8 +97,8 @@ function RootLayoutNav() {
             <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke="rgba(255,255,255,0.035)" strokeWidth={1} />
           ))}
         </Svg>
-        <View style={{ width: 88, height: 88, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-          <Image source={require("@/assets/images/logo.png")} style={{ width: 60, height: 60 }} resizeMode="contain" />
+        <View style={{ marginBottom: 20 }}>
+          <VidVaultLogo size={88} />
         </View>
         <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
         <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
@@ -148,8 +149,8 @@ export default function RootLayout() {
   if (!fontsReady) {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
-        <View style={{ width: 72, height: 72, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-          <Image source={require("@/assets/images/logo.png")} style={{ width: 48, height: 48 }} resizeMode="contain" />
+        <View style={{ marginBottom: 16 }}>
+          <VidVaultLogo size={72} />
         </View>
         <Text style={{ fontSize: 24, color: "#ffffff", fontWeight: "900", letterSpacing: -0.5 }}>VidVault</Text>
         <Text style={{ fontSize: 9, color: "#555566", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>

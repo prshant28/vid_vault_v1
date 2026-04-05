@@ -8,13 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
 } from "react-native";
 import Svg, { Path, Rect, Circle } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
 import { AppButton } from "@/components/ui/AppButton";
+import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 const BG = "#0a0a0b";
 const CARD = "#0f0f12";
@@ -238,13 +238,7 @@ export default function LoginScreen() {
       >
         {/* Logo */}
         <View style={styles.logoBlock}>
-          <View style={styles.logoRing}>
-            <Image
-              source={require("@/assets/images/logo.png")}
-              style={styles.logoImg}
-              resizeMode="contain"
-            />
-          </View>
+          <VidVaultLogo size={44} />
           <Text style={styles.logoName}>VidVault</Text>
         </View>
 
@@ -425,20 +419,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     marginBottom: 32,
-  },
-  logoRing: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoImg: {
-    width: 28,
-    height: 28,
   },
   logoName: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",

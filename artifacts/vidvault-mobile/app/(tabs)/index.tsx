@@ -221,7 +221,7 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const { width: screenWidth } = useWindowDimensions();
-  const CARD_W = screenWidth - 20;
+  const CARD_W = screenWidth - 40;
   const [showSaveModal, setShowSaveModal] = useState(false);
 
   const { data: stats, isLoading, refetch, isRefetching } = useQuery<Stats>({
