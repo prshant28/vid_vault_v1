@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "VidVault AI",
-    "slug": "vidvault-mobile",
+    "name": "Vid Vault",
+    "slug": "vidvault",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "vidvault-mobile",
+    "scheme": "vidvault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.vidvault.mobile"
+      "bundleIdentifier": "com.vidvault.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#0a0a0f"
       },
-      "package": "com.vidvault.mobile"
+      "package": "com.vidvault.app"
     },
     "web": {
       "favicon": "./assets/images/icon.png"

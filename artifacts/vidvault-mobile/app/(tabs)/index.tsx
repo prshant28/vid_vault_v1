@@ -31,7 +31,7 @@ import { SaveToVaultModal } from "@/components/SaveToVaultModal";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const PINK   = "#ec4899";
@@ -56,18 +56,18 @@ function AnimatedNumber({ value, color }: { value: number; color: string }) {
   );
 }
 
-/* ── Stat card with animated glow ring ── */
+/* ── Stat card — etched-slab style matching web design system ── */
 function EtchedStatCard({
   label, code, value, icon, accent, delay,
 }: { label: string; code: string; value: number; icon: FeatherIconName; accent: string; delay: number }) {
   const colors = useColors();
-  const pulse = useRef(new Animated.Value(0.06)).current;
+  const pulse = useRef(new Animated.Value(0.08)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 0.14, duration: 1800, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0.06, duration: 1800, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0.2, duration: 2000, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0.08, duration: 2000, useNativeDriver: false }),
       ])
     ).start();
   }, []);
@@ -77,15 +77,20 @@ function EtchedStatCard({
       from={{ opacity: 0, translateY: 16 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 400, delay }}
-      style={[styles.etchedCard, { backgroundColor: colors.card, borderColor: accent + "25" }]}
+      style={[styles.etchedCard, { backgroundColor: "#111115", borderColor: "#ffffff12" }]}
     >
+      {/* Etch highlight overlay */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.3)"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
       <View style={styles.etchedTop}>
-        <Text style={[styles.etchedCode, { color: colors.mutedForeground }]}>{code}</Text>
-        <View style={[styles.etchedIconBox, { backgroundColor: accent + "15", borderColor: accent + "30" }]}>
-          <Feather name={icon} size={13} color={accent} />
-        </View>
+        <Text style={styles.etchedCode}>{code}</Text>
+        <Feather name={icon} size={14} color={accent} style={{ opacity: 0.6 }} />
       </View>
-      <Text style={[styles.etchedLabel, { color: colors.mutedForeground }]}>{label}</Text>
+      <Text style={[styles.etchedLabel, { color: accent + "99" }]}>{label.toUpperCase()}</Text>
       <Text style={[styles.etchedValue, { color: colors.foreground }]}>
         {value.toString().padStart(2, "0")}
       </Text>
@@ -529,18 +534,26 @@ const styles = StyleSheet.create({
   viewAll: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingBottom: 3 },
 
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  etchedCard: { padding: 14, borderWidth: 1, borderRadius: 8, overflow: "hidden", minHeight: 100 },
-  etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 },
-  etchedIconBox: { width: 26, height: 26, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  etchedCode: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, marginTop: 2 },
-  etchedLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 2, lineHeight: 14 },
-  etchedValue: { fontSize: 34, fontFamily: "AlegreyaSansSC_800ExtraBold", lineHeight: 40, letterSpacing: -2 },
+  etchedCard: {
+    padding: 14, borderWidth: 1, borderRadius: 14, overflow: "hidden", minHeight: 110,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+  },
+  etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 },
+  etchedCode: {
+    fontSize: 8, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 1.5, color: "rgba(255,255,255,0.2)",
+  },
+  etchedLabel: {
+    fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
+    letterSpacing: 2, marginBottom: 4, textTransform: "uppercase",
+  },
+  etchedValue: { fontSize: 36, fontFamily: "AlegreyaSansSC_800ExtraBold", lineHeight: 42, letterSpacing: -2 },
   etchedGlow: {
-    position: "absolute", bottom: -20, right: -20,
-    width: 60, height: 60, borderRadius: 30,
+    position: "absolute", bottom: -24, right: -24,
+    width: 72, height: 72, borderRadius: 36,
   },
 
-  intelBar: { borderRadius: 10, padding: 14, borderWidth: 1, overflow: "hidden" },
+  intelBar: { borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#ffffff12", backgroundColor: "#111115", overflow: "hidden" },
   intelTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   intelDot: { width: 7, height: 7, borderRadius: 3.5 },
   intelLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.8 },

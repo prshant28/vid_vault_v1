@@ -7,14 +7,14 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
-const RED    = "#ef4444";
 
 interface Tag { id: string; name: string; color?: string | null }
 
@@ -47,7 +47,6 @@ interface VideoCardProps {
 export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew, isSelected, cardWidth }: VideoCardProps) {
   const colors = useColors();
   const { width: screenWidth } = useWindowDimensions();
-  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
   const w = cardWidth ?? (screenWidth / 2) - 15;
 
   const noteCount = video.notesCount ?? video.notes?.length ?? 0;
@@ -63,73 +62,83 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={380}
-      activeOpacity={0.82}
+      activeOpacity={0.85}
       style={[
         styles.card,
         {
           width: w,
           backgroundColor: colors.card,
-          borderColor: isSelected
-            ? PURPLE + "88"
-            : isDark ? "rgba(129,140,248,0.14)" : colors.border,
+          borderColor: isSelected ? PURPLE + "70" : colors.border,
+          shadowColor: "#000",
         },
-        isSelected && { backgroundColor: PURPLE + "16" },
+        isSelected && { borderColor: PURPLE + "80", backgroundColor: PURPLE + "12" },
       ]}
     >
+      {/* Etch overlay on card */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "transparent"]}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
+        style={[StyleSheet.absoluteFillObject, { borderRadius: 14 }]}
+        pointerEvents="none"
+      />
+
       {/* Thumbnail */}
       <View style={styles.thumbWrap}>
         {video.thumbnail ? (
           <Image source={{ uri: video.thumbnail }} style={styles.thumb} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbPlaceholder, { backgroundColor: isDark ? "#141420" : colors.secondary }]}>
-            <View style={[styles.placeholderInner, {
-              backgroundColor: isDark ? "rgba(129,140,248,0.08)" : "rgba(129,140,248,0.06)",
-              borderColor: "rgba(129,140,248,0.18)",
-            }]}>
-              <Feather name="film" size={18} color="rgba(129,140,248,0.55)" />
+          <View style={[styles.thumbPlaceholder, { backgroundColor: "#0f0f18" }]}>
+            <View style={styles.placeholderInner}>
+              <Feather name="film" size={20} color="rgba(139,92,246,0.4)" />
             </View>
           </View>
         )}
 
+        {/* Bottom gradient over thumbnail */}
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.6)"]}
+          style={styles.thumbGradient}
+          pointerEvents="none"
+        />
+
         {/* Top overlay bar */}
         <View style={styles.topBar}>
-          {/* NEW badge */}
           {isNew && !isSelected && (
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>
           )}
-          {/* Selected checkmark */}
           {isSelected && (
             <View style={styles.checkCircle}>
               <Feather name="check" size={9} color="#fff" />
             </View>
           )}
           <View style={{ flex: 1 }} />
-          {/* Favorite button */}
           {!isSelected && (
             <TouchableOpacity
               onPress={handleFavorite}
-              style={[styles.favBtn, { backgroundColor: video.isFavorite ? "rgba(239,68,68,0.88)" : "rgba(0,0,0,0.52)" }]}
+              style={[styles.favBtn, {
+                backgroundColor: video.isFavorite ? "rgba(239,68,68,0.85)" : "rgba(0,0,0,0.55)",
+                borderColor: video.isFavorite ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)",
+              }]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Feather name="heart" size={11} color="#fff" style={{ opacity: video.isFavorite ? 1 : 0.75 }} />
+              <Feather name="heart" size={11} color="#fff" style={{ opacity: video.isFavorite ? 1 : 0.8 }} />
             </TouchableOpacity>
           )}
         </View>
 
         {/* Bottom overlay: duration + badges */}
         <View style={styles.bottomBar}>
-          {/* Notes / AI count badges */}
           <View style={styles.metaBadges}>
             {noteCount > 0 && (
-              <View style={styles.metaBadge}>
+              <View style={[styles.metaBadge, { borderColor: GREEN + "30" }]}>
                 <Feather name="edit-3" size={8} color={GREEN} />
                 <Text style={[styles.metaBadgeText, { color: GREEN }]}>{noteCount}</Text>
               </View>
             )}
             {aiCount > 0 && (
-              <View style={styles.metaBadge}>
+              <View style={[styles.metaBadge, { borderColor: CYAN + "30" }]}>
                 <Feather name="cpu" size={8} color={CYAN} />
                 <Text style={[styles.metaBadgeText, { color: CYAN }]}>{aiCount}</Text>
               </View>
@@ -149,7 +158,7 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
           {video.title}
         </Text>
         {video.channelName && (
-          <Text style={[styles.channel, { color: colors.mutedForeground }]} numberOfLines={1}>
+          <Text style={[styles.channel, { color: "#505060" }]} numberOfLines={1}>
             {video.channelName}
           </Text>
         )}
@@ -159,8 +168,8 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
               <View
                 key={tag.id}
                 style={[styles.tagPill, {
-                  backgroundColor: (tag.color || PURPLE) + "18",
-                  borderColor: (tag.color || PURPLE) + "30",
+                  backgroundColor: (tag.color || PURPLE) + "15",
+                  borderColor: (tag.color || PURPLE) + "28",
                 }]}
               >
                 <View style={[styles.tagDot, { backgroundColor: tag.color || PURPLE }]} />
@@ -168,7 +177,7 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
               </View>
             ))}
             {video.tags.length > 2 && (
-              <View style={[styles.tagPill, { backgroundColor: "rgba(129,140,248,0.08)", borderColor: "rgba(129,140,248,0.18)" }]}>
+              <View style={[styles.tagPill, { backgroundColor: PURPLE + "0f", borderColor: PURPLE + "20" }]}>
                 <Text style={[styles.tagText, { color: PURPLE }]}>+{video.tags.length - 2}</Text>
               </View>
             )}
@@ -182,9 +191,13 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 14,
     overflow: "hidden",
     marginBottom: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
   thumbWrap: { position: "relative" },
   thumb: { width: "100%", aspectRatio: 16 / 9 },
@@ -193,14 +206,19 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   placeholderInner: {
-    width: 36, height: 36, borderRadius: 8, borderWidth: 1,
+    width: 40, height: 40, borderRadius: 10,
+    backgroundColor: "rgba(139,92,246,0.08)",
+    borderWidth: 1, borderColor: "rgba(139,92,246,0.18)",
     alignItems: "center", justifyContent: "center",
+  },
+  thumbGradient: {
+    position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
   },
 
   topBar: {
     position: "absolute", top: 0, left: 0, right: 0,
     flexDirection: "row", alignItems: "flex-start",
-    padding: 5,
+    padding: 6,
   },
   newBadge: {
     backgroundColor: PURPLE, borderRadius: 3,
@@ -211,30 +229,36 @@ const styles = StyleSheet.create({
     width: 18, height: 18, borderRadius: 9,
     backgroundColor: PURPLE, alignItems: "center", justifyContent: "center",
   },
-  favBtn: { borderRadius: 12, padding: 4 },
+  favBtn: {
+    borderRadius: 12, padding: 5,
+    borderWidth: 1,
+  },
 
   bottomBar: {
     position: "absolute", bottom: 0, left: 0, right: 0,
     flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between",
-    padding: 5,
+    padding: 6,
   },
   metaBadges: { flexDirection: "row", gap: 4 },
   metaBadge: {
     flexDirection: "row", alignItems: "center", gap: 3,
-    backgroundColor: "rgba(0,0,0,0.72)", borderRadius: 3,
+    backgroundColor: "rgba(0,0,0,0.65)",
+    borderWidth: 1,
+    borderRadius: 4,
     paddingHorizontal: 4, paddingVertical: 2,
   },
   metaBadgeText: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular" },
   durationBadge: {
-    backgroundColor: "rgba(0,0,0,0.72)", borderRadius: 3,
-    paddingHorizontal: 4, paddingVertical: 2,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    borderRadius: 4,
+    paddingHorizontal: 5, paddingVertical: 2,
   },
   durationText: { color: "#fff", fontSize: 9, fontFamily: "JetBrainsMono_400Regular" },
 
-  info: { padding: 9, gap: 3 },
+  info: { padding: 10, gap: 3 },
   title: { fontSize: 12, fontFamily: "Poppins_600SemiBold", lineHeight: 17 },
   channel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3 },
-  tagsRow: { flexDirection: "row", gap: 4, marginTop: 3, flexWrap: "wrap" },
+  tagsRow: { flexDirection: "row", gap: 4, marginTop: 4, flexWrap: "wrap" },
   tagPill: {
     flexDirection: "row", alignItems: "center", gap: 3,
     paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1,

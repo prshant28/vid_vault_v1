@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -29,6 +30,7 @@ export function TopAppBar({
   const colors = useColors();
 
   const topPad = Platform.OS === "web" ? 12 : insets.top;
+  const isDark = colors.background === "#09090c";
 
   return (
     <View
@@ -41,6 +43,17 @@ export function TopAppBar({
         },
       ]}
     >
+      {/* Subtle bottom-border gradient separator */}
+      {!transparent && (
+        <LinearGradient
+          colors={["transparent", isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.bottomLine}
+          pointerEvents="none"
+        />
+      )}
+
       {/* Left: back button or brand logo */}
       <View style={styles.left}>
         {showBack ? (
@@ -49,12 +62,21 @@ export function TopAppBar({
             style={[styles.iconBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
             activeOpacity={0.75}
           >
+            {/* Etch highlight inside button */}
+            <LinearGradient
+              colors={["rgba(255,255,255,0.07)", "transparent"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
             <Feather name="arrow-left" size={16} color={colors.foreground} />
           </TouchableOpacity>
         ) : (
           <View style={styles.logoRow}>
-            <VidVaultLogo size={32} />
-            <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
+            <VidVaultLogo size={30} />
+            <View>
+              <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
+              <Text style={[styles.brandSub, { color: colors.primary }]}>AI</Text>
+            </View>
           </View>
         )}
       </View>
@@ -81,14 +103,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingBottom: 12,
     zIndex: 10,
+    overflow: "hidden",
+  },
+  bottomLine: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 1,
   },
   left: {
     flexDirection: "row",
     alignItems: "center",
-    minWidth: 110,
+    minWidth: 120,
   },
   right: {
     flexDirection: "row",
@@ -99,20 +128,35 @@ const styles = StyleSheet.create({
   logoRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 9,
   },
   brandText: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 20,
     letterSpacing: -0.3,
+    lineHeight: 20,
+  },
+  brandSub: {
+    fontFamily: "JetBrainsMono_600SemiBold",
+    fontSize: 8,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    lineHeight: 11,
+    marginTop: -2,
   },
   iconBtn: {
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderRadius: 6,
-    width: 34,
-    height: 34,
+    borderRadius: 10,
+    width: 36,
+    height: 36,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   centerTitle: {
     flex: 1,
