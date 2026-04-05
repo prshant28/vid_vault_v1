@@ -1,79 +1,85 @@
 const colors = {
   light: {
-    text: "#0f172a",
-    tint: "#818cf8",
+    text: "#0d0c14",
+    tint: "#8b5cf6",
 
-    background: "#f8fafc",
-    foreground: "#0f172a",
+    background: "#f2f0ff",
+    foreground: "#0d0c14",
 
     card: "#ffffff",
-    cardForeground: "#0f172a",
+    cardForeground: "#0d0c14",
 
-    primary: "#818cf8",
+    primary: "#8b5cf6",
     primaryForeground: "#ffffff",
 
-    secondary: "#f1f5f9",
-    secondaryForeground: "#334155",
+    secondary: "#f5f3ff",
+    secondaryForeground: "#3d3660",
 
-    muted: "#f1f5f9",
-    mutedForeground: "#64748b",
+    muted: "#ede9ff",
+    mutedForeground: "#55556a",
 
-    accent: "#eef2ff",
-    accentForeground: "#4338ca",
+    accent: "#ede9ff",
+    accentForeground: "#4c1d95",
 
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
-    border: "#e2e8f0",
-    input: "#e2e8f0",
+    border: "#00000014",
+    input: "#00000014",
 
     success: "#10b981",
     warning: "#f59e0b",
 
     tabBar: "#ffffff",
-    header: "#ffffff",
+    header: "#f2f0ff",
 
-    skeleton: "#e2e8f0",
-    skeletonHighlight: "#f8fafc",
+    skeleton: "#ddd9f5",
+    skeletonHighlight: "#f2f0ff",
+
+    surface: "#ffffff",
+    desc: "#555568",
   },
   dark: {
-    text: "#e8eaf0",
-    tint: "#818cf8",
+    text: "#e0e0e0",
+    tint: "#8b5cf6",
 
-    background: "#08080f",
-    foreground: "#e8eaf0",
+    background: "#09090c",
+    foreground: "#e0e0e0",
 
-    card: "#0e0e18",
-    cardForeground: "#e8eaf0",
+    card: "#111115",
+    cardForeground: "#e0e0e0",
 
-    primary: "#818cf8",
+    primary: "#8b5cf6",
     primaryForeground: "#ffffff",
 
-    secondary: "#14141f",
-    secondaryForeground: "#94a3b8",
+    secondary: "#0d0d11",
+    secondaryForeground: "#e0e0e0",
 
-    muted: "#14141f",
-    mutedForeground: "#4a4a6a",
+    muted: "#0d0d11",
+    mutedForeground: "rgba(255,255,255,0.45)",
 
-    accent: "#181828",
-    accentForeground: "#a5b4fc",
+    accent: "#161620",
+    accentForeground: "#c4b5fd",
 
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
-    border: "rgba(255,255,255,0.07)",
-    input: "rgba(255,255,255,0.06)",
+    border: "#ffffff12",
+    input: "#ffffff0d",
 
     success: "#10b981",
     warning: "#f59e0b",
 
-    tabBar: "#0e0e18",
-    header: "#08080f",
+    tabBar: "#0a0a0e",
+    header: "#09090c",
 
-    skeleton: "#14141f",
-    skeletonHighlight: "#1a1a2a",
+    skeleton: "#161620",
+    skeletonHighlight: "#1e1e2a",
+
+    surface: "#0d0d11",
+    desc: "#505060",
   },
-  radius: 6,
+  radius: 14,
 };
 
 export default colors;

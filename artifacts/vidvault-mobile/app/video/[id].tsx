@@ -33,7 +33,7 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const CARD_GAP = 10;
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const ORANGE = "#f59e0b";
@@ -134,7 +134,16 @@ function AiToolCard({
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
 
-        {/* Bottom-right glow — visible when done or generating (web etched-slab hover effect) */}
+        {/* Etch overlay — simulates web's inset rgba(255,255,255,0.07) top-left + rgba(0,0,0,0.5) bottom-right */}
+        <LinearGradient
+          colors={["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.35)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+        />
+
+        {/* Bottom-right accent glow — visible when done or generating */}
         {(done || isGenerating) && (
           <View style={styles.toolGlowCorner} pointerEvents="none">
             <View style={[styles.toolGlowCircle, { backgroundColor: tool.color + "28" }]} />
@@ -998,16 +1007,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
   },
 
-  /* Tool grid — matches screenshot exactly */
+  /* Tool grid — exact etched-slab from web CSS */
   toolGrid: { flexDirection: "column", gap: CARD_GAP },
   toolRow: { flexDirection: "row", gap: CARD_GAP },
   toolCard: {
-    backgroundColor: "#161620",
-    borderRadius: 12,
+    backgroundColor: "#111115",
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.07)",
+    borderColor: "#ffffff12",
     minHeight: 142,
     overflow: "hidden",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
   },
   toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
   toolCardTop: {
@@ -1024,7 +1038,7 @@ const styles = StyleSheet.create({
   },
   toolDesc: {
     fontSize: 9, fontFamily: "JetBrainsMono_400Regular",
-    color: "rgba(255,255,255,0.25)", lineHeight: 14, letterSpacing: 0.2,
+    color: "#505060", lineHeight: 14, letterSpacing: 0.2,
   },
   toolCardFooter: { paddingTop: 8 },
 
