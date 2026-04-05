@@ -26,9 +26,28 @@ export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style 
   );
 }
 
-export function VideoCardSkeleton() {
+export function VideoCardSkeleton({ listMode }: { listMode?: boolean }) {
   const colorScheme = useColorScheme();
   const colorMode = colorScheme === "dark" ? "dark" : "light";
+
+  if (listMode) {
+    return (
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10, padding: 10, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.03)" }}>
+        <MotiSkeleton colorMode={colorMode} width={96} height={54} radius={6}>
+          <View style={{ width: 96, height: 54, borderRadius: 6 }} />
+        </MotiSkeleton>
+        <View style={{ flex: 1, gap: 8 }}>
+          <MotiSkeleton colorMode={colorMode} width="90%" height={13} radius={5}>
+            <View style={{ height: 13, borderRadius: 5 }} />
+          </MotiSkeleton>
+          <MotiSkeleton colorMode={colorMode} width="55%" height={11} radius={5}>
+            <View style={{ height: 11, borderRadius: 5 }} />
+          </MotiSkeleton>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={{ marginBottom: 16 }}>
       <MotiSkeleton colorMode={colorMode} height={180} radius={12}>
