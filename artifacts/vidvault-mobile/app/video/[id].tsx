@@ -22,6 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
 import { useColors } from "@/hooks/useColors";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 import { YouTubePlayer } from "@/components/YouTubeEmbed";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
@@ -32,7 +33,7 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const CARD_GAP = 10;
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#818cf8";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const ORANGE = "#f59e0b";
@@ -169,14 +170,14 @@ function AiToolCard({
               <Text style={[styles.generatingPillText, { color: tool.color }]}>Generating…</Text>
             </MotiView>
           ) : done ? (
-            <View style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View</Text>
+            <View style={styles.viewBadge}>
               <Feather name="arrow-right" size={10} color={PURPLE} />
+              <Text style={[styles.viewBadgeText, { color: PURPLE }]}>VIEW</Text>
             </View>
           ) : (
-            <View style={styles.genBtn}>
-              <Feather name="zap" size={9} color="#fff" />
-              <Text style={styles.genBtnText}>Generate</Text>
+            <View style={styles.genBadge}>
+              <Feather name="zap" size={10} color="#fff" />
+              <Text style={styles.genBadgeText}>GENERATE</Text>
             </View>
           )}
         </View>
@@ -474,23 +475,18 @@ export default function VideoDetailScreen() {
         title={video.title}
         rightAction={
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <TouchableOpacity
+            <AppButton
+              icon="heart"
+              size="xs"
+              variant={video.isFavorite ? "danger" : "ghost"}
               onPress={() => favMutation.mutate()}
-              style={[styles.iconActionBtn, {
-                borderColor: video.isFavorite ? "#ef444455" : colors.border,
-                backgroundColor: video.isFavorite ? "#ef444415" : colors.card,
-              }]}
-              activeOpacity={0.75}
-            >
-              <Feather name="heart" size={15} color={video.isFavorite ? "#ef4444" : colors.mutedForeground} />
-            </TouchableOpacity>
-            <TouchableOpacity
+            />
+            <AppButton
+              icon="more-horizontal"
+              size="xs"
+              variant="ghost"
               onPress={handleMoreOptions}
-              style={[styles.iconActionBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
-              activeOpacity={0.75}
-            >
-              <Feather name="more-horizontal" size={15} color={colors.mutedForeground} />
-            </TouchableOpacity>
+            />
           </View>
         }
       />
@@ -669,14 +665,13 @@ export default function VideoDetailScreen() {
                   style={[styles.tsInput, { backgroundColor: colors.secondary, borderColor: colors.border, color: colors.foreground }]}
                   keyboardType="numbers-and-punctuation"
                 />
-                <TouchableOpacity
+                <AppButton
+                  icon="plus"
+                  size="xs"
+                  variant={newNote.trim() ? "primary" : "ghost"}
                   onPress={handleAddNote}
                   disabled={!newNote.trim()}
-                  style={[styles.noteAddBtn, { backgroundColor: newNote.trim() ? PURPLE : colors.secondary }]}
-                  activeOpacity={0.85}
-                >
-                  <Feather name="plus" size={18} color={newNote.trim() ? "#fff" : colors.mutedForeground} />
-                </TouchableOpacity>
+                />
               </View>
             </View>
 
@@ -873,6 +868,19 @@ const styles = StyleSheet.create({
     borderRadius: 6, borderWidth: 1,
   },
   generatingPillText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  viewBadge: {
+    flexDirection: "row" as const, alignItems: "center" as const, gap: 4,
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderRadius: 4, borderWidth: 1, borderColor: PURPLE + "40",
+    backgroundColor: PURPLE + "12",
+  },
+  viewBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_500Medium", letterSpacing: 0.5 },
+  genBadge: {
+    flexDirection: "row" as const, alignItems: "center" as const, gap: 4,
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderRadius: 4, backgroundColor: PURPLE,
+  },
+  genBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_500Medium", color: "#fff", letterSpacing: 0.5 },
   viewBtn: {
     flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5,

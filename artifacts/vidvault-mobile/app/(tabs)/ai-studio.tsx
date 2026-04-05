@@ -23,8 +23,9 @@ import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#818cf8";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 
@@ -402,23 +403,14 @@ export default function AIStudioScreen() {
               onSubmitEditing={() => send()}
               blurOnSubmit={false}
             />
-            <TouchableOpacity
-              onPress={() => send()}
+            <AppButton
+              icon="arrow-up"
+              size="xs"
+              variant={input.trim() && !isSending ? "primary" : "ghost"}
+              loading={isSending}
               disabled={!input.trim() || isSending}
-              activeOpacity={0.8}
-              style={[
-                styles.sendBtn,
-                {
-                  backgroundColor: input.trim() && !isSending ? PURPLE : colors.secondary,
-                },
-              ]}
-            >
-              {isSending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Feather name="arrow-up" size={16} color={input.trim() ? "#fff" : colors.mutedForeground} />
-              )}
-            </TouchableOpacity>
+              onPress={() => send()}
+            />
           </View>
           <Text style={[styles.inputHint, { color: colors.mutedForeground }]}>
             {input.length > 0 ? `${input.length} chars` : "Powered by VidVault AI"}

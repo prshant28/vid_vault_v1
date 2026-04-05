@@ -18,6 +18,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 import { api } from "@/services/api";
 import type { Video, Stats } from "@/types/api";
 import { Skeleton } from "@/components/SkeletonLoader";
@@ -83,14 +84,13 @@ export default function HomeScreen() {
       <GridBackground />
       <TopAppBar
         rightAction={
-          <TouchableOpacity
+          <AppButton
+            label="SAVE"
+            icon="plus"
+            size="sm"
+            variant="primary"
             onPress={() => setShowSaveModal(true)}
-            style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={16} color="#fff" />
-            <Text style={styles.saveBtnLabel}>SAVE</Text>
-          </TouchableOpacity>
+          />
         }
       />
 

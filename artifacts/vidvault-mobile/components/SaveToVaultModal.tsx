@@ -17,6 +17,7 @@ import { Feather } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { AppButton } from "@/components/ui/AppButton";
 import { api } from "@/services/api";
 
 const SCREEN_W = Dimensions.get("window").width;
@@ -340,29 +341,21 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
 
             {/* Footer Actions */}
             <View style={[styles.modalFooter, { borderTopColor: borderCol }]}>
-              <TouchableOpacity onPress={handleClose} style={styles.cancelBtn}>
-                <Text style={[styles.cancelBtnText, { color: colors.mutedForeground }]}>CANCEL</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSave}
+              <AppButton
+                label="CANCEL"
+                size="sm"
+                variant="ghost"
+                onPress={handleClose}
+              />
+              <AppButton
+                label="SAVE TO VAULT"
+                icon="arrow-up-right"
+                size="sm"
+                variant="primary"
+                loading={saving}
                 disabled={saving || !url.trim()}
-                style={[
-                  styles.saveBtn,
-                  {
-                    backgroundColor: saving || !url.trim() ? "rgba(139,92,246,0.4)" : "#8b5cf6",
-                    opacity: saving || !url.trim() ? 0.7 : 1,
-                  },
-                ]}
-              >
-                {saving ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <Feather name="arrow-up-right" size={14} color="#fff" />
-                    <Text style={styles.saveBtnText}>SAVE TO VAULT</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+                onPress={handleSave}
+              />
             </View>
           </View>
         </KeyboardAvoidingView>

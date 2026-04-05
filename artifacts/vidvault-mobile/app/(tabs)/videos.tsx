@@ -18,6 +18,7 @@ import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoListCard } from "@/components/VideoListCard";
 import { VideoCardSkeleton } from "@/components/SkeletonLoader";
@@ -111,21 +112,19 @@ export default function VideosScreen() {
       <TopAppBar
         rightAction={
           <View style={styles.headerRight}>
-            <TouchableOpacity
+            <AppButton
+              icon={viewMode === "grid" ? "list" : "grid"}
+              size="xs"
+              variant="ghost"
               onPress={toggleViewMode}
-              style={[styles.viewToggleBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
-              activeOpacity={0.75}
-            >
-              <Feather name={viewMode === "grid" ? "list" : "grid"} size={16} color={colors.mutedForeground} />
-            </TouchableOpacity>
-            <TouchableOpacity
+            />
+            <AppButton
+              label="SAVE"
+              icon="plus"
+              size="sm"
+              variant="primary"
               onPress={() => setShowSaveModal(true)}
-              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-              activeOpacity={0.85}
-            >
-              <Feather name="plus" size={15} color="#fff" />
-              <Text style={styles.saveBtnText}>SAVE</Text>
-            </TouchableOpacity>
+            />
           </View>
         }
       />

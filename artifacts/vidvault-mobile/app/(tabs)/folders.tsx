@@ -20,6 +20,7 @@ import { useColors } from "@/hooks/useColors";
 import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 
@@ -106,13 +107,12 @@ export default function FoldersScreen() {
       <GridBackground />
       <TopAppBar
         rightAction={
-          <TouchableOpacity
+          <AppButton
+            icon="plus"
+            size="xs"
+            variant="primary"
             onPress={() => setShowModal(true)}
-            style={[styles.addBtn, { backgroundColor: colors.primary }]}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={20} color="#fff" />
-          </TouchableOpacity>
+          />
         }
       />
       <View style={styles.subHeader}>
@@ -190,21 +190,21 @@ export default function FoldersScreen() {
             ))}
           </View>
           {createError ? <Text style={[styles.createError, { color: colors.destructive }]}>{createError}</Text> : null}
-          <TouchableOpacity
-            onPress={() => {
-              if (!folderName.trim()) { setCreateError("Folder name is required"); return; }
-              createMutation.mutate();
-            }}
-            disabled={createMutation.isPending}
-            style={[styles.createBtn, { backgroundColor: createMutation.isPending ? colors.primary + "80" : colors.primary, borderRadius: colors.radius }]}
-            activeOpacity={0.85}
-          >
-            {createMutation.isPending ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.createBtnText}>Create Folder</Text>
-            )}
-          </TouchableOpacity>
+          <View style={{ alignItems: "center" }}>
+            <AppButton
+              label="CREATE FOLDER"
+              icon="folder-plus"
+              size="md"
+              variant="primary"
+              fullWidth
+              loading={createMutation.isPending}
+              disabled={createMutation.isPending}
+              onPress={() => {
+                if (!folderName.trim()) { setCreateError("Folder name is required"); return; }
+                createMutation.mutate();
+              }}
+            />
+          </View>
         </View>
       </Modal>
     </View>
