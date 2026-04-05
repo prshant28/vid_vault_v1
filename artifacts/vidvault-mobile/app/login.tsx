@@ -18,7 +18,7 @@ import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 const BG = "#0a0a0b";
 const CARD = "#0f0f12";
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const PURPLE_DIM = "rgba(129,140,248,0.12)";
 const WHITE = "#ffffff";
 const MUTED = "#555566";

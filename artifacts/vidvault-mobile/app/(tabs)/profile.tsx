@@ -23,9 +23,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api";
 import * as Haptics from "expo-haptics";
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 
-const TAG_COLORS = ["#8b5cf6","#f472b6","#34d399","#fb923c","#60a5fa","#a78bfa","#f87171","#4ade80","#facc15","#38bdf8"];
+const TAG_COLORS = ["#6366f1","#f472b6","#34d399","#fb923c","#60a5fa","#a78bfa","#f87171","#4ade80","#facc15","#38bdf8"];
 
 type Tag = { id: string; name: string; color?: string | null; userId: string; videoCount?: number };
 

@@ -7,12 +7,15 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  ActivityIndicator,
   Platform,
   Alert,
+  ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { MotiView } from "moti";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -24,36 +27,54 @@ import { AppButton } from "@/components/ui/AppButton";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 
-const FOLDER_COLORS = ["#7c3aed", "#2563eb", "#059669", "#d97706", "#dc2626", "#db2777", "#0891b2"];
+const FOLDER_COLORS = ["#6366f1", "#2563eb", "#059669", "#d97706", "#dc2626", "#db2777", "#0891b2"];
 
-function FolderCard({ folder, onPress, onDelete }: {
+function FolderCard({ folder, onPress, onDelete, delay }: {
   folder: { id: string; name: string; color?: string | null; videoCount: number };
   onPress: () => void;
   onDelete: () => void;
+  delay: number;
 }) {
   const colors = useColors();
   const color = folder.color || colors.primary;
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.85}
-      style={[styles.folderCard, { backgroundColor: colors.card, borderRadius: colors.radius, borderColor: colors.border }]}
+    <MotiView
+      from={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", delay, damping: 16, stiffness: 160 }}
+      style={{ flex: 1 }}
     >
-      <View style={[styles.folderIcon, { backgroundColor: color + "20" }]}>
-        <Feather name="folder" size={28} color={color} />
-      </View>
-      <Text style={[styles.folderName, { color: colors.foreground }]} numberOfLines={2}>{folder.name}</Text>
-      <Text style={[styles.folderCount, { color: colors.mutedForeground }]}>
-        {folder.videoCount} {folder.videoCount === 1 ? "video" : "videos"}
-      </Text>
       <TouchableOpacity
-        onPress={onDelete}
-        style={styles.deleteBtn}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        onPress={onPress}
+        activeOpacity={0.85}
+        style={[styles.folderCard, { backgroundColor: colors.card, borderColor: color + "28" }]}
       >
-        <Feather name="trash-2" size={14} color={colors.mutedForeground} />
+        <LinearGradient
+          colors={["rgba(255,255,255,0.05)", "transparent"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+        />
+        <View style={[styles.folderIcon, { backgroundColor: color + "1a", borderWidth: 1, borderColor: color + "30" }]}>
+          <Feather name="folder" size={26} color={color} />
+        </View>
+        <Text style={[styles.folderName, { color: colors.foreground }]} numberOfLines={2}>{folder.name}</Text>
+        <View style={styles.folderMeta}>
+          <Feather name="film" size={10} color={colors.mutedForeground} />
+          <Text style={[styles.folderCount, { color: colors.mutedForeground }]}>
+            {folder.videoCount} {folder.videoCount === 1 ? "video" : "videos"}
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={onDelete}
+          style={styles.deleteBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Feather name="trash-2" size={13} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+        </TouchableOpacity>
+        <View style={[styles.folderAccentBar, { backgroundColor: color }]} />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </MotiView>
   );
 }
 
@@ -61,11 +82,12 @@ export default function FoldersScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
+  const { width } = useWindowDimensions();
 
-  const [showModal, setShowModal] = useState(false);
-  const [folderName, setFolderName] = useState("");
+  const [showModal, setShowModal]         = useState(false);
+  const [folderName, setFolderName]       = useState("");
   const [selectedColor, setSelectedColor] = useState(FOLDER_COLORS[0]);
-  const [createError, setCreateError] = useState("");
+  const [createError, setCreateError]     = useState("");
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["folders"],
@@ -79,6 +101,7 @@ export default function FoldersScreen() {
       qc.invalidateQueries({ queryKey: ["stats"] });
       setShowModal(false);
       setFolderName("");
+      setSelectedColor(FOLDER_COLORS[0]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (e: Error) => setCreateError(e.message || "Failed to create folder"),
@@ -89,14 +112,26 @@ export default function FoldersScreen() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["folders"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     },
   });
 
   const handleDelete = (folder: { id: string; name: string }) => {
-    Alert.alert("Delete Folder", `Delete "${folder.name}"? Videos inside will not be deleted.`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(folder.id) },
-    ]);
+    Alert.alert(
+      "Delete Folder",
+      `Delete "${folder.name}"? Videos inside will not be deleted.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(folder.id) },
+      ],
+    );
+  };
+
+  const openModal = () => {
+    setFolderName("");
+    setSelectedColor(FOLDER_COLORS[0]);
+    setCreateError("");
+    setShowModal(true);
   };
 
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
@@ -108,22 +143,24 @@ export default function FoldersScreen() {
       <TopAppBar
         rightAction={
           <AppButton
-            icon="plus"
-            size="xs"
+            label="NEW"
+            icon="folder-plus"
+            size="sm"
             variant="primary"
-            onPress={() => setShowModal(true)}
+            onPress={openModal}
           />
         }
       />
+
       <View style={styles.subHeader}>
         <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//ORGANIZE</Text>
         <Text style={[styles.subTitle, { color: colors.foreground }]}>Folders</Text>
       </View>
 
       {isLoading ? (
-        <View style={styles.grid}>
+        <View style={styles.skeletonGrid}>
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} height={140} width="47%" borderRadius={colors.radius} />
+            <Skeleton key={i} height={160} style={{ width: (width - 32) / 2 }} borderRadius={colors.radius} />
           ))}
         </View>
       ) : folders.length === 0 ? (
@@ -132,7 +169,8 @@ export default function FoldersScreen() {
           title="No folders yet"
           subtitle="Create folders to organize your video library"
           actionLabel="Create Folder"
-          onAction={() => setShowModal(true)}
+          onAction={openModal}
+          code="00"
         />
       ) : (
         <FlatList
@@ -140,13 +178,14 @@ export default function FoldersScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
           onRefresh={refetch}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <FolderCard
               folder={item}
+              delay={index * 60}
               onPress={() => router.push(`/folder/${item.id}?name=${encodeURIComponent(item.name)}`)}
               onDelete={() => handleDelete(item)}
             />
@@ -154,43 +193,115 @@ export default function FoldersScreen() {
         />
       )}
 
+      {/* FAB */}
       <TouchableOpacity
-        onPress={() => setShowModal(true)}
+        onPress={openModal}
         style={[styles.fab, { backgroundColor: colors.primary, bottom: botInset + 90 }]}
         activeOpacity={0.85}
       >
+        <LinearGradient
+          colors={[colors.primary + "dd", colors.primary]}
+          style={StyleSheet.absoluteFillObject}
+        />
         <Feather name="folder-plus" size={22} color="#fff" />
       </TouchableOpacity>
 
-      <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => setShowModal(false)}>
-        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowModal(false)} />
-        <View style={[styles.sheet, { backgroundColor: colors.card, borderRadius: colors.radius, paddingBottom: botInset + 24 }]}>
-          <View style={styles.sheetHandle} />
-          <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, { color: colors.foreground }]}>New Folder</Text>
-            <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Feather name="x" size={22} color={colors.mutedForeground} />
-            </TouchableOpacity>
-          </View>
-          <TextInput
-            value={folderName}
-            onChangeText={(t) => { setFolderName(t); setCreateError(""); }}
-            placeholder="Folder name"
-            placeholderTextColor={colors.mutedForeground}
-            style={[styles.nameInput, { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border, borderRadius: colors.radius - 4 }]}
-            autoFocus
+      {/* ── CENTERED Create Folder Modal ── */}
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+        statusBarTranslucent
+      >
+        <View style={styles.modalBackdrop}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={() => setShowModal(false)}
           />
-          <View style={styles.colorRow}>
-            {FOLDER_COLORS.map((c) => (
-              <TouchableOpacity
-                key={c}
-                onPress={() => setSelectedColor(c)}
-                style={[styles.colorDot, { backgroundColor: c, borderWidth: selectedColor === c ? 3 : 0, borderColor: colors.foreground }]}
-              />
-            ))}
-          </View>
-          {createError ? <Text style={[styles.createError, { color: colors.destructive }]}>{createError}</Text> : null}
-          <View style={{ alignItems: "center" }}>
+          <MotiView
+            from={{ opacity: 0, scale: 0.92, translateY: 12 }}
+            animate={{ opacity: 1, scale: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 200 }}
+            style={[styles.dialog, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            {/* Etch highlight */}
+            <LinearGradient
+              colors={["rgba(255,255,255,0.06)", "transparent"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={[StyleSheet.absoluteFillObject, { borderRadius: colors.radius }]}
+              pointerEvents="none"
+            />
+
+            {/* Header */}
+            <View style={styles.dialogHeader}>
+              <View style={[styles.dialogIconWrap, { backgroundColor: colors.primary + "20", borderColor: colors.primary + "35" }]}>
+                <Feather name="folder-plus" size={16} color={colors.primary} />
+              </View>
+              <Text style={[styles.dialogTitle, { color: colors.foreground }]}>New Folder</Text>
+              <TouchableOpacity onPress={() => setShowModal(false)} style={styles.dialogClose}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Divider */}
+            <View style={[styles.dialogDivider, { backgroundColor: colors.border }]} />
+
+            {/* Name input */}
+            <TextInput
+              value={folderName}
+              onChangeText={(t) => { setFolderName(t); setCreateError(""); }}
+              placeholder="Folder name"
+              placeholderTextColor={colors.mutedForeground}
+              style={[
+                styles.nameInput,
+                {
+                  backgroundColor: colors.background,
+                  color: colors.foreground,
+                  borderColor: createError ? "#ef444450" : colors.border,
+                },
+              ]}
+              autoFocus
+            />
+            {createError ? (
+              <Text style={[styles.errorText, { color: "#ef4444" }]}>{createError}</Text>
+            ) : null}
+
+            {/* Color picker */}
+            <Text style={[styles.colorLabel, { color: colors.mutedForeground }]}>FOLDER COLOR</Text>
+            <View style={styles.colorRow}>
+              {FOLDER_COLORS.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  onPress={() => { setSelectedColor(c); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  style={[
+                    styles.colorDot,
+                    { backgroundColor: c },
+                    selectedColor === c && styles.colorDotSelected,
+                    selectedColor === c && { borderColor: colors.foreground },
+                  ]}
+                >
+                  {selectedColor === c && (
+                    <Feather name="check" size={12} color="#fff" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Preview */}
+            {folderName.trim().length > 0 && (
+              <View style={[styles.previewRow, { backgroundColor: selectedColor + "12", borderColor: selectedColor + "25" }]}>
+                <View style={[styles.previewIcon, { backgroundColor: selectedColor + "20" }]}>
+                  <Feather name="folder" size={16} color={selectedColor} />
+                </View>
+                <Text style={[styles.previewName, { color: selectedColor }]} numberOfLines={1}>
+                  {folderName.trim()}
+                </Text>
+              </View>
+            )}
+
+            {/* Create button */}
             <AppButton
               label="CREATE FOLDER"
               icon="folder-plus"
@@ -198,13 +309,13 @@ export default function FoldersScreen() {
               variant="primary"
               fullWidth
               loading={createMutation.isPending}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || !folderName.trim()}
               onPress={() => {
                 if (!folderName.trim()) { setCreateError("Folder name is required"); return; }
                 createMutation.mutate();
               }}
             />
-          </View>
+          </MotiView>
         </View>
       </Modal>
     </View>
@@ -213,127 +324,106 @@ export default function FoldersScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
+
+  subHeader: { paddingHorizontal: 10, paddingTop: 4, paddingBottom: 14 },
   subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
   subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
+
+  skeletonGrid: {
+    flexDirection: "row", flexWrap: "wrap",
+    paddingHorizontal: 10, gap: 12,
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  columnWrapper: {
-    gap: 12,
-    marginBottom: 12,
-  },
+  columnWrapper: { gap: 10, marginBottom: 10 },
+
   folderCard: {
-    flex: 1,
-    padding: 16,
-    borderWidth: 1,
-    alignItems: "center",
-    gap: 8,
-    position: "relative",
+    flex: 1, borderRadius: 14, borderWidth: 1,
+    padding: 16, alignItems: "center", gap: 8,
+    position: "relative", overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+    minHeight: 160,
+  },
+  folderAccentBar: {
+    position: "absolute", bottom: 0, left: 0, right: 0,
+    height: 3, borderBottomLeftRadius: 14, borderBottomRightRadius: 14,
   },
   folderIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 56, height: 56, borderRadius: 16,
+    alignItems: "center", justifyContent: "center",
   },
-  folderName: {
-    fontSize: 14,
-    fontFamily: "Poppins_600SemiBold",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  folderCount: {
-    fontSize: 12,
-    fontFamily: "Poppins_400Regular",
-  },
-  deleteBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    padding: 4,
-  },
+  folderMeta: { flexDirection: "row", alignItems: "center", gap: 5 },
+  folderName: { fontSize: 13, fontFamily: "Poppins_600SemiBold", textAlign: "center", lineHeight: 19 },
+  folderCount: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  deleteBtn: { position: "absolute", top: 8, right: 8, padding: 4 },
+
   fab: {
-    position: "absolute",
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    position: "absolute", right: 20,
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: "center", justifyContent: "center",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10,
+  },
+
+  /* Centered modal */
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.65)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    paddingHorizontal: 20,
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  sheet: {
-    padding: 20,
-    paddingTop: 12,
-    gap: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#ccc",
-    alignSelf: "center",
-    marginBottom: 8,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sheetTitle: {
-    fontSize: 20,
-    fontFamily: "AlegreyaSansSC_700Bold",
-  },
-  nameInput: {
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 15,
-    fontFamily: "Poppins_400Regular",
+  dialog: {
+    width: "100%",
+    borderRadius: 20,
     borderWidth: 1,
+    padding: 24,
+    gap: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.6,
+    shadowRadius: 40,
+    elevation: 24,
   },
-  colorRow: {
-    flexDirection: "row",
-    gap: 12,
-    flexWrap: "wrap",
+  dialogHeader: {
+    flexDirection: "row", alignItems: "center", gap: 12,
   },
+  dialogIconWrap: {
+    width: 36, height: 36, borderRadius: 10, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  dialogTitle: {
+    flex: 1, fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3,
+  },
+  dialogClose: {
+    width: 32, height: 32, borderRadius: 8,
+    alignItems: "center", justifyContent: "center",
+  },
+  dialogDivider: { height: StyleSheet.hairlineWidth, marginHorizontal: -24 },
+
+  nameInput: {
+    paddingHorizontal: 14, paddingVertical: 13,
+    fontSize: 15, fontFamily: "Poppins_400Regular",
+    borderWidth: 1, borderRadius: 12,
+  },
+  errorText: { fontSize: 12, fontFamily: "Poppins_400Regular", marginTop: -8 },
+
+  colorLabel: {
+    fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2,
+    marginBottom: -4,
+  },
+  colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
   colorDot: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: "center", justifyContent: "center",
   },
-  createError: {
-    fontSize: 13,
-    fontFamily: "Poppins_400Regular",
+  colorDotSelected: { borderWidth: 3, transform: [{ scale: 1.1 }] },
+
+  previewRow: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1,
   },
-  createBtn: {
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  createBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Poppins_600SemiBold",
-  },
+  previewIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  previewName: { flex: 1, fontSize: 13, fontFamily: "Poppins_600SemiBold" },
 });

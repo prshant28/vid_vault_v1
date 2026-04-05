@@ -33,7 +33,7 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
 const CARD_GAP = 10;
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const ORANGE = "#f59e0b";

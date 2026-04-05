@@ -53,7 +53,7 @@ function isPlaylistUrl(url: string) {
 function TypeBadge({ type }: { type: VideoType }) {
   const configs: Record<VideoType, { label: string; color: string; bg: string }> = {
     video:    { label: "VIDEO",    color: "#ef4444", bg: "rgba(239,68,68,0.15)" },
-    playlist: { label: "PLAYLIST", color: "#8b5cf6", bg: "rgba(129,140,248,0.15)" },
+    playlist: { label: "PLAYLIST", color: "#6366f1", bg: "rgba(129,140,248,0.15)" },
     web:      { label: "WEB URL",  color: "#06b6d4", bg: "rgba(6,182,212,0.15)" },
   };
   const c = configs[type];
@@ -199,7 +199,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
             <View style={[styles.modalHeader, { borderBottomColor: borderCol }]}>
               <View style={styles.headerLeft}>
                 <View style={styles.headerIcon}>
-                  <Feather name="link-2" size={16} color="#8b5cf6" />
+                  <Feather name="link-2" size={16} color="#6366f1" />
                 </View>
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.foreground }]}>SAVE TO VAULT</Text>
@@ -229,7 +229,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                   style={[styles.urlInput, { color: colors.foreground }]}
                   autoFocus
                 />
-                {phase === "loading" && <ActivityIndicator size="small" color="#8b5cf6" />}
+                {phase === "loading" && <ActivityIndicator size="small" color="#6366f1" />}
                 {phase === "preview" && <Feather name="check-circle" size={16} color="#10b981" />}
               </View>
 
@@ -300,7 +300,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                             },
                           ]}
                         >
-                          <Text style={[styles.folderChipText, { color: selectedFolderId === null ? "#8b5cf6" : colors.mutedForeground }]}>
+                          <Text style={[styles.folderChipText, { color: selectedFolderId === null ? "#6366f1" : colors.mutedForeground }]}>
                             No folder
                           </Text>
                         </TouchableOpacity>
@@ -311,13 +311,13 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                             style={[
                               styles.folderChip,
                               {
-                                backgroundColor: selectedFolderId === f.id ? (f.color || "#8b5cf6") + "20" : isDark ? "#1a1a1f" : "#f0f0f8",
-                                borderColor: selectedFolderId === f.id ? (f.color || "#8b5cf6") + "80" : borderCol,
+                                backgroundColor: selectedFolderId === f.id ? (f.color || "#6366f1") + "20" : isDark ? "#1a1a1f" : "#f0f0f8",
+                                borderColor: selectedFolderId === f.id ? (f.color || "#6366f1") + "80" : borderCol,
                               },
                             ]}
                           >
-                            <View style={[styles.folderDot, { backgroundColor: f.color || "#8b5cf6" }]} />
-                            <Text style={[styles.folderChipText, { color: selectedFolderId === f.id ? (f.color || "#8b5cf6") : colors.mutedForeground }]}>
+                            <View style={[styles.folderDot, { backgroundColor: f.color || "#6366f1" }]} />
+                            <Text style={[styles.folderChipText, { color: selectedFolderId === f.id ? (f.color || "#6366f1") : colors.mutedForeground }]}>
                               {f.name}
                             </Text>
                           </TouchableOpacity>
@@ -328,7 +328,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
 
                   {/* AI hint */}
                   <View style={[styles.aiHint, { borderTopColor: borderCol, backgroundColor: "rgba(129,140,248,0.06)" }]}>
-                    <Feather name="cpu" size={11} color="#8b5cf6" />
+                    <Feather name="cpu" size={11} color="#6366f1" />
                     <Text style={styles.aiHintText}>AI WILL AUTO-TAG THIS VIDEO AFTER SAVING</Text>
                   </View>
                 </View>
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 2,
-    color: "#8b5cf6",
+    color: "#6366f1",
   },
   titleInput: {
     fontSize: 14,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 1.5,
-    color: "#8b5cf6",
+    color: "#6366f1",
   },
   errorText: {
     fontSize: 12,

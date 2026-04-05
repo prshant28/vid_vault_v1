@@ -12,7 +12,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 
@@ -87,9 +87,9 @@ export function VideoCard({ video, onPress, onToggleFavorite, onLongPress, isNew
         {video.thumbnail ? (
           <Image source={{ uri: video.thumbnail }} style={styles.thumb} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbPlaceholder, { backgroundColor: "#0f0f18" }]}>
-            <View style={styles.placeholderInner}>
-              <Feather name="film" size={20} color="rgba(139,92,246,0.4)" />
+          <View style={[styles.thumbPlaceholder, { backgroundColor: colors.muted }]}>
+            <View style={[styles.placeholderInner, { backgroundColor: colors.primary + "14", borderColor: colors.primary + "2e" }]}>
+              <Feather name="film" size={20} color={colors.primary + "88"} />
             </View>
           </View>
         )}

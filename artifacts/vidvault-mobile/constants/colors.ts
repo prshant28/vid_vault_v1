@@ -1,47 +1,49 @@
+const INDIGO = "#6366f1";
+
 const colors = {
   light: {
     text: "#0d0c14",
-    tint: "#8b5cf6",
+    tint: INDIGO,
 
-    background: "#f2f0ff",
+    background: "#f5f5ff",
     foreground: "#0d0c14",
 
     card: "#ffffff",
     cardForeground: "#0d0c14",
 
-    primary: "#8b5cf6",
+    primary: INDIGO,
     primaryForeground: "#ffffff",
 
-    secondary: "#f5f3ff",
-    secondaryForeground: "#3d3660",
+    secondary: "#eef2ff",
+    secondaryForeground: "#312e81",
 
-    muted: "#ede9ff",
+    muted: "#eef2ff",
     mutedForeground: "#55556a",
 
-    accent: "#ede9ff",
-    accentForeground: "#4c1d95",
+    accent: "#eef2ff",
+    accentForeground: "#312e81",
 
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
     border: "#00000014",
-    input: "#00000014",
+    input: "#00000012",
 
     success: "#10b981",
     warning: "#f59e0b",
 
     tabBar: "#ffffff",
-    header: "#f2f0ff",
+    header: "#f5f5ff",
 
-    skeleton: "#ddd9f5",
-    skeletonHighlight: "#f2f0ff",
+    skeleton: "#dde1ff",
+    skeletonHighlight: "#eef2ff",
 
     surface: "#ffffff",
     desc: "#555568",
   },
   dark: {
     text: "#e0e0e0",
-    tint: "#8b5cf6",
+    tint: INDIGO,
 
     background: "#09090c",
     foreground: "#e0e0e0",
@@ -49,7 +51,7 @@ const colors = {
     card: "#111115",
     cardForeground: "#e0e0e0",
 
-    primary: "#8b5cf6",
+    primary: INDIGO,
     primaryForeground: "#ffffff",
 
     secondary: "#0d0d11",
@@ -59,7 +61,7 @@ const colors = {
     mutedForeground: "rgba(255,255,255,0.45)",
 
     accent: "#161620",
-    accentForeground: "#c4b5fd",
+    accentForeground: "#a5b4fc",
 
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",

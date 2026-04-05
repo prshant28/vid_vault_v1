@@ -4,9 +4,9 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/hooks/useColors";
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const RED    = "#ef4444";
@@ -37,8 +37,7 @@ interface VideoListCardProps {
 }
 
 export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, isSelected }: VideoListCardProps) {
-  const colors = useColors();
-  const isDark = colors.background === "#09090c" || colors.background.startsWith("#0");
+  const { colors, isDark } = useTheme();
   const noteCount = video.notesCount ?? video.notes?.length ?? 0;
   const aiCount   = video.aiOutputsCount ?? video.aiOutputs?.length ?? 0;
 
@@ -62,8 +61,8 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
         {video.thumbnail ? (
           <Image source={{ uri: video.thumbnail }} style={styles.thumb} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbPlaceholder, { backgroundColor: isDark ? "#0f0f18" : colors.secondary }]}>
-            <Feather name="film" size={18} color={isDark ? "rgba(139,92,246,0.4)" : colors.mutedForeground} />
+          <View style={[styles.thumbPlaceholder, { backgroundColor: colors.muted }]}>
+            <Feather name="film" size={18} color={colors.primary + "88"} />
           </View>
         )}
         {video.duration && (

@@ -10,7 +10,7 @@ const ONBOARDING_KEY = "vidvault_onboarding_done";
 const { width } = Dimensions.get("window");
 
 const BG = "#0a0a0b";
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const MUTED = "#3a3a4a";
 const WHITE = "#ffffff";
 

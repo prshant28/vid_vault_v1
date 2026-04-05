@@ -24,7 +24,7 @@ import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const TAB_BAR_H_WEB = 84;

@@ -31,7 +31,7 @@ import { SaveToVaultModal } from "@/components/SaveToVaultModal";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const PINK   = "#ec4899";
@@ -77,7 +77,7 @@ function EtchedStatCard({
       from={{ opacity: 0, translateY: 16 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 400, delay }}
-      style={[styles.etchedCard, { backgroundColor: "#111115", borderColor: "#ffffff12" }]}
+      style={[styles.etchedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
     >
       {/* Etch highlight overlay */}
       <LinearGradient

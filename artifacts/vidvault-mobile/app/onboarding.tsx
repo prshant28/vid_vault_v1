@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width: W, height: H } = Dimensions.get("window");
 
 const BG = "#09090c";
-const PURPLE = "#8b5cf6";
+const PURPLE = "#6366f1";
 const CYAN = "#06b6d4";
 const GREEN = "#10b981";
 const WHITE = "#ffffff";
