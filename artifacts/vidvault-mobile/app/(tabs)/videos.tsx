@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -25,8 +25,6 @@ import { VideoCardSkeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { SearchBar } from "@/components/SearchBar";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
-
-const { width: SCREEN_W } = Dimensions.get("window");
 
 interface Tag {
   id: string;
@@ -105,31 +103,9 @@ export default function VideosScreen() {
     setViewMode((v) => (v === "grid" ? "list" : "grid"));
   }, []);
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <GridBackground />
-
-      <TopAppBar
-        rightAction={
-          <View style={styles.headerRight}>
-            <AppButton
-              icon={viewMode === "grid" ? "list" : "grid"}
-              size="xs"
-              variant="ghost"
-              onPress={toggleViewMode}
-            />
-            <AppButton
-              label="SAVE"
-              icon="plus"
-              size="sm"
-              variant="primary"
-              onPress={() => setShowSaveModal(true)}
-            />
-          </View>
-        }
-      />
-
-      {/* Subtitle */}
+  const ListHeader = useMemo(() => (
+    <View>
+      {/* Section header — matches Home tab style */}
       <View style={styles.subHeader}>
         <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//VIDEO_VAULT</Text>
         <Text style={[styles.subTitle, { color: colors.foreground }]}>Library</Text>
@@ -164,6 +140,7 @@ export default function VideosScreen() {
         </ScrollView>
       </View>
 
+      {/* Count row — only shown when we have results */}
       {!isLoading && videos.length > 0 && (
         <View style={styles.countRow}>
           <Text style={[styles.countText, { color: colors.mutedForeground }]}>
@@ -175,6 +152,32 @@ export default function VideosScreen() {
           </Text>
         </View>
       )}
+    </View>
+  ), [colors, search, showFavorites, selectedTagId, tags, isLoading, videos.length, viewMode]);
+
+  return (
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <GridBackground />
+
+      <TopAppBar
+        rightAction={
+          <View style={styles.headerRight}>
+            <AppButton
+              icon={viewMode === "grid" ? "list" : "grid"}
+              size="xs"
+              variant="ghost"
+              onPress={toggleViewMode}
+            />
+            <AppButton
+              label="SAVE"
+              icon="plus"
+              size="sm"
+              variant="primary"
+              onPress={() => setShowSaveModal(true)}
+            />
+          </View>
+        }
+      />
 
       {isLoading ? (
         viewMode === "grid" ? (
@@ -183,6 +186,7 @@ export default function VideosScreen() {
             data={[1, 2, 3, 4]} keyExtractor={(item) => String(item)}
             numColumns={2} columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+            ListHeaderComponent={ListHeader}
             renderItem={() => <View style={{ width: "48%" }}><VideoCardSkeleton /></View>}
           />
         ) : (
@@ -190,17 +194,28 @@ export default function VideosScreen() {
             key="skeleton-list"
             data={[1, 2, 3, 4, 5]} keyExtractor={(item) => String(item)}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
+            ListHeaderComponent={ListHeader}
             renderItem={() => <VideoCardSkeleton listMode />}
           />
         )
       ) : videos.length === 0 ? (
-        <EmptyState
-          icon="film"
-          title={search ? "No results" : "Vault is empty"}
-          subtitle={search ? "Try a different search term" : "Save your first video"}
-          actionLabel={search ? undefined : "Save Video"}
-          onAction={search ? undefined : () => setShowSaveModal(true)}
-          code={search ? "Ø" : "00"}
+        <FlatList
+          key="empty"
+          data={[] as any[]}
+          keyExtractor={(_item, index) => String(index)}
+          renderItem={() => null}
+          ListHeaderComponent={ListHeader}
+          ListEmptyComponent={
+            <EmptyState
+              icon="film"
+              title={search ? "No results" : "Vault is empty"}
+              subtitle={search ? "Try a different search term" : "Save your first video"}
+              actionLabel={search ? undefined : "Save Video"}
+              onAction={search ? undefined : () => setShowSaveModal(true)}
+              code={search ? "Ø" : "00"}
+            />
+          }
+          contentContainerStyle={{ flexGrow: 1 }}
         />
       ) : viewMode === "grid" ? (
         <FlatList
@@ -210,6 +225,7 @@ export default function VideosScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching} onRefresh={refetch}
+          ListHeaderComponent={ListHeader}
           renderItem={({ item, index }: { item: any; index: number }) => (
             <VideoCard
               video={item}
@@ -226,6 +242,7 @@ export default function VideosScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching} onRefresh={refetch}
+          ListHeaderComponent={ListHeader}
           renderItem={({ item }: { item: any }) => (
             <VideoListCard
               video={item}
@@ -236,16 +253,6 @@ export default function VideosScreen() {
         />
       )}
 
-      <View style={[styles.fab, { bottom: botInset + 90 }]}>
-        <AppButton
-          icon="plus"
-          label="SAVE"
-          size="md"
-          variant="primary"
-          onPress={() => setShowSaveModal(true)}
-        />
-      </View>
-
       <SaveToVaultModal visible={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </View>
   );
@@ -254,9 +261,6 @@ export default function VideosScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 8 },
-  viewToggleBtn: { width: 36, height: 36, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  saveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4 },
-  saveBtnText: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
 
   subHeader: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
   subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
@@ -274,10 +278,4 @@ const styles = StyleSheet.create({
   countDivider: { width: 1, height: 10 },
 
   columnWrapper: { gap: 12, marginBottom: 0 },
-
-  fab: {
-    position: "absolute", right: 20,
-    shadowColor: "#818cf8", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35, shadowRadius: 14, elevation: 8,
-  },
 });

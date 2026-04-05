@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+    alignSelf: "center",
+    lineHeight: 16,
   },
   input: {
     flex: 1,
@@ -60,5 +62,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     padding: 0,
     margin: 0,
+    includeFontPadding: false,
   },
 });

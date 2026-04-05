@@ -311,10 +311,11 @@ export default function VideoDetailScreen() {
   const [noteTs, setNoteTs] = useState("");
   const [showFolderPicker, setShowFolderPicker] = useState(false);
 
-  const { data: video, isLoading } = useQuery<Video>({
+  const { data: video, isLoading, isError, refetch: refetchVideo } = useQuery<Video>({
     queryKey: ["video", id],
     queryFn: () => api.getVideo(id!),
     enabled: !!id,
+    retry: 1,
   });
 
   const { data: aiOutputsData, refetch: refetchOutputs } = useQuery({
@@ -455,9 +456,32 @@ export default function VideoDetailScreen() {
 
   if (!video) {
     return (
-      <View style={[styles.root, { backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
         <GridBackground />
-        <Text style={{ color: colors.mutedForeground, fontFamily: "JetBrainsMono_400Regular" }}>VIDEO_NOT_FOUND</Text>
+        <TopAppBar showBack />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 16 }}>
+          <View style={{
+            width: 64, height: 64, borderRadius: 4, borderWidth: 1,
+            borderColor: colors.border, backgroundColor: colors.card,
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Feather name="film" size={28} color={colors.mutedForeground} />
+          </View>
+          <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, textAlign: "center" }}>
+            {isError ? "Failed to load" : "Video not found"}
+          </Text>
+          <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground, textAlign: "center", lineHeight: 20 }}>
+            {isError
+              ? "Could not fetch this video. Check your connection and try again."
+              : "This video may have been deleted or belongs to a different account."}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
+            {isError && (
+              <AppButton label="RETRY" icon="refresh-cw" size="sm" variant="primary" onPress={() => refetchVideo()} />
+            )}
+            <AppButton label="BACK" icon="arrow-left" size="sm" variant="ghost" onPress={() => router.back()} />
+          </View>
+        </View>
       </View>
     );
   }

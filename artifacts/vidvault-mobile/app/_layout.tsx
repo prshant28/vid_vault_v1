@@ -56,6 +56,9 @@ function RootLayoutNav() {
 
   useEffect(() => {
     setApiToken(token);
+    // Clear cached queries when the session changes so a new user never sees
+    // stale data from a previous session.
+    queryClient.clear();
   }, [token]);
 
   useEffect(() => {
