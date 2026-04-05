@@ -19,7 +19,7 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, subtitle, actionLabel, onAction, code = "00" }: EmptyStateProps) {
   const colors = useColors();
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
-  const accentColor = "#818cf8";
+  const accentColor = "#8b5cf6";
 
   return (
     <View style={styles.container}>

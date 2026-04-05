@@ -21,11 +21,11 @@ export function VidVaultLogo({ size = 40, showBackground = true }: VidVaultLogoP
     <Svg width={size} height={size} viewBox="0 0 56 56">
       <Defs>
         <LinearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#818cf8" stopOpacity="1" />
+          <Stop offset="0" stopColor="#8b5cf6" stopOpacity="1" />
           <Stop offset="1" stopColor="#06b6d4" stopOpacity="1" />
         </LinearGradient>
         <LinearGradient id={gradId2} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#818cf8" stopOpacity="0.22" />
+          <Stop offset="0" stopColor="#8b5cf6" stopOpacity="0.22" />
           <Stop offset="1" stopColor="#06b6d4" stopOpacity="0.22" />
         </LinearGradient>
       </Defs>

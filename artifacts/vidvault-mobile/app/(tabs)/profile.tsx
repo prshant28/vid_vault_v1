@@ -23,9 +23,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api";
 import * as Haptics from "expo-haptics";
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 
-const TAG_COLORS = ["#818cf8","#f472b6","#34d399","#fb923c","#60a5fa","#a78bfa","#f87171","#4ade80","#facc15","#38bdf8"];
+const TAG_COLORS = ["#8b5cf6","#f472b6","#34d399","#fb923c","#60a5fa","#a78bfa","#f87171","#4ade80","#facc15","#38bdf8"];
 
 type Tag = { id: string; name: string; color?: string | null; userId: string; videoCount?: number };
 
@@ -316,14 +316,15 @@ const styles = StyleSheet.create({
   statsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 16, gap: 10, marginBottom: 20 },
   statCard: {
     flex: 1, minWidth: "40%",
-    borderRadius: 12, borderWidth: 1,
+    borderRadius: 14, borderWidth: 1,
     padding: 14, alignItems: "center", gap: 6,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
   },
-  statIconWrap: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  statValue: { fontSize: 24, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1 },
-  statLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
+  statIconWrap: { width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  statValue: { fontSize: 26, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1 },
+  statLabel: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
 
-  section: { marginHorizontal: 16, marginBottom: 16, borderRadius: 12, borderWidth: 1, overflow: "hidden" },
+  section: { marginHorizontal: 16, marginBottom: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   sectionLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 },
   row: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   rowIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginRight: 12 },

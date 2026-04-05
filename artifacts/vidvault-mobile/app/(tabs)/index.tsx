@@ -510,7 +510,8 @@ const styles = StyleSheet.create({
   },
   quickBtn: {
     flex: 1, alignItems: "center", gap: 5,
-    paddingVertical: 14, borderRadius: 10, borderWidth: 1,
+    paddingVertical: 14, borderRadius: 14, borderWidth: 1,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   quickBtnIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   quickBtnLabel: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.2 },
@@ -569,7 +570,8 @@ const styles = StyleSheet.create({
   activityCard: {
     flex: 1, marginLeft: 10, marginBottom: 10,
     flexDirection: "row", alignItems: "center",
-    borderRadius: 8, borderWidth: 1, padding: 10,
+    borderRadius: 12, borderWidth: 1, padding: 10,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 3,
   },
   activityTitle: { fontSize: 12, fontFamily: "Poppins_600SemiBold", lineHeight: 17 },
   activityChannel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3, marginTop: 1 },

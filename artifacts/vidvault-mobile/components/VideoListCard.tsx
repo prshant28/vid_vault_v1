@@ -6,7 +6,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const RED    = "#ef4444";
@@ -38,7 +38,7 @@ interface VideoListCardProps {
 
 export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, isSelected }: VideoListCardProps) {
   const colors = useColors();
-  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
+  const isDark = colors.background === "#09090c" || colors.background.startsWith("#0");
   const noteCount = video.notesCount ?? video.notes?.length ?? 0;
   const aiCount   = video.aiOutputsCount ?? video.aiOutputs?.length ?? 0;
 
@@ -52,10 +52,8 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
         styles.card,
         {
           backgroundColor: isSelected ? PURPLE + "16" : colors.card,
-          borderRadius: 8,
-          borderColor: isSelected
-            ? PURPLE + "66"
-            : isDark ? "rgba(129,140,248,0.13)" : colors.border,
+          borderRadius: 12,
+          borderColor: isSelected ? PURPLE + "60" : colors.border,
         },
       ]}
     >
@@ -64,8 +62,8 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
         {video.thumbnail ? (
           <Image source={{ uri: video.thumbnail }} style={styles.thumb} resizeMode="cover" />
         ) : (
-          <View style={[styles.thumbPlaceholder, { backgroundColor: isDark ? "#1a1a22" : colors.secondary }]}>
-            <Feather name="film" size={18} color={isDark ? "rgba(129,140,248,0.45)" : colors.mutedForeground} />
+          <View style={[styles.thumbPlaceholder, { backgroundColor: isDark ? "#0f0f18" : colors.secondary }]}>
+            <Feather name="film" size={18} color={isDark ? "rgba(139,92,246,0.4)" : colors.mutedForeground} />
           </View>
         )}
         {video.duration && (
@@ -180,8 +178,8 @@ const styles = StyleSheet.create({
   durationText: { color: "#fff", fontSize: 9, fontFamily: "JetBrainsMono_400Regular" },
   selectedOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(129,140,248,0.18)",
-    borderRadius: 5,
+    backgroundColor: "rgba(139,92,246,0.18)",
+    borderRadius: 7,
     alignItems: "center", justifyContent: "center",
   },
   checkCircle: {

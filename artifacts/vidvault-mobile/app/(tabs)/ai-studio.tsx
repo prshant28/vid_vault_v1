@@ -24,7 +24,7 @@ import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
 
-const PURPLE = "#818cf8";
+const PURPLE = "#8b5cf6";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const TAB_BAR_H_WEB = 84;
@@ -734,7 +734,9 @@ const styles = StyleSheet.create({
   /* Video cards */
   videoCard: {
     flexDirection: "row", alignItems: "center",
-    padding: 10, gap: 10, borderWidth: 1, borderRadius: 10,
+    padding: 10, gap: 10, borderWidth: 1, borderRadius: 12,
+    backgroundColor: "#111115", borderColor: "#ffffff12",
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   videoThumb: { width: 72, height: 44, borderRadius: 6 },
   videoInfo: { flex: 1, gap: 3 },
