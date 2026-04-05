@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TextInput, TouchableOpacity } from "react-native";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 
@@ -13,29 +13,52 @@ export function SearchBar({ value, onChangeText, placeholder = "Search..." }: Se
   const colors = useColors();
   return (
     <View
-      className="flex-row items-center px-3.5 py-2.5 border"
-      style={{
-        backgroundColor: colors.secondary,
-        borderRadius: colors.radius,
-        borderColor: colors.border,
-      }}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.secondary,
+          borderColor: value ? colors.primary + "55" : colors.border,
+        },
+      ]}
     >
-      <Feather name="search" size={18} color={colors.mutedForeground} style={{ marginRight: 10 }} />
+      <Feather name="search" size={16} color={colors.mutedForeground} style={styles.icon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.mutedForeground}
-        className="flex-1 text-base p-0"
-        style={{ color: colors.foreground, fontFamily: "Inter_400Regular" }}
+        style={[styles.input, { color: colors.foreground }]}
         returnKeyType="search"
         autoCorrect={false}
+        autoCapitalize="none"
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={() => onChangeText("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Feather name="x" size={16} color={colors.mutedForeground} />
+          <Feather name="x" size={15} color={colors.mutedForeground} />
         </TouchableOpacity>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderRadius: 8,
+    height: 46,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    padding: 0,
+    margin: 0,
+  },
+});

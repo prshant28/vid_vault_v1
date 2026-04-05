@@ -232,13 +232,15 @@ export default function VideosScreen() {
         />
       )}
 
-      <TouchableOpacity
-        onPress={() => setShowSaveModal(true)}
-        style={[styles.fab, { backgroundColor: colors.primary, bottom: botInset + 90 }]}
-        activeOpacity={0.85}
-      >
-        <Feather name="plus" size={24} color="#fff" />
-      </TouchableOpacity>
+      <View style={[styles.fab, { bottom: botInset + 90 }]}>
+        <AppButton
+          icon="plus"
+          label="SAVE"
+          size="md"
+          variant="primary"
+          onPress={() => setShowSaveModal(true)}
+        />
+      </View>
 
       <SaveToVaultModal visible={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </View>
@@ -252,15 +254,15 @@ const styles = StyleSheet.create({
   saveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4 },
   saveBtnText: { color: "#fff", fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
 
-  subHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 14 },
-  subLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
-  subTitle: { fontSize: 24, fontFamily: "Poppins_700Bold", letterSpacing: -0.5 },
+  subHeader: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
+  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 5 },
+  subTitle: { fontSize: 30, fontFamily: "Poppins_700Bold", letterSpacing: -0.8, lineHeight: 36 },
 
   controls: { paddingHorizontal: 16, gap: 10, marginBottom: 6 },
   chipsScroll: { flexGrow: 0 },
   chipsContent: { gap: 6, paddingRight: 4 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderRadius: 6 },
-  chipText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderRadius: 6 },
+  chipText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
   tagDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   countRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 10, gap: 8 },
@@ -270,9 +272,8 @@ const styles = StyleSheet.create({
   columnWrapper: { gap: 12, marginBottom: 0 },
 
   fab: {
-    position: "absolute", right: 20, width: 52, height: 52, borderRadius: 4,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#8b5cf6", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+    position: "absolute", right: 20,
+    shadowColor: "#818cf8", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35, shadowRadius: 14, elevation: 8,
   },
 });

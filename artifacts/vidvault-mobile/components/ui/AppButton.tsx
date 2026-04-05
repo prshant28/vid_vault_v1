@@ -84,11 +84,12 @@ export function AppButton({
       ? "rgba(255,255,255,0.08)"
       : "transparent";
 
+  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
   const strokeColor =
     variant === "ghost"
       ? disabled
-        ? "rgba(255,255,255,0.08)"
-        : "rgba(255,255,255,0.18)"
+        ? isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"
+        : isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.18)"
       : "transparent";
 
   const textColor =
@@ -97,7 +98,7 @@ export function AppButton({
       : variant === "ghost"
       ? disabled
         ? colors.mutedForeground
-        : colors.foreground
+        : isDark ? colors.foreground : colors.foreground
       : "#ffffff";
 
   const points = isXs

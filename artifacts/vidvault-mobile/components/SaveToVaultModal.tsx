@@ -53,7 +53,7 @@ function isPlaylistUrl(url: string) {
 function TypeBadge({ type }: { type: VideoType }) {
   const configs: Record<VideoType, { label: string; color: string; bg: string }> = {
     video:    { label: "VIDEO",    color: "#ef4444", bg: "rgba(239,68,68,0.15)" },
-    playlist: { label: "PLAYLIST", color: "#8b5cf6", bg: "rgba(139,92,246,0.15)" },
+    playlist: { label: "PLAYLIST", color: "#818cf8", bg: "rgba(129,140,248,0.15)" },
     web:      { label: "WEB URL",  color: "#06b6d4", bg: "rgba(6,182,212,0.15)" },
   };
   const c = configs[type];
@@ -199,7 +199,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
             <View style={[styles.modalHeader, { borderBottomColor: borderCol }]}>
               <View style={styles.headerLeft}>
                 <View style={styles.headerIcon}>
-                  <Feather name="link-2" size={16} color="#8b5cf6" />
+                  <Feather name="link-2" size={16} color="#818cf8" />
                 </View>
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.foreground }]}>SAVE TO VAULT</Text>
@@ -217,7 +217,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
               contentContainerStyle={styles.modalBody}
             >
               {/* URL Input */}
-              <View style={[styles.urlInputRow, { backgroundColor: inputBg, borderColor: url ? "rgba(139,92,246,0.4)" : borderCol }]}>
+              <View style={[styles.urlInputRow, { backgroundColor: inputBg, borderColor: url ? "rgba(129,140,248,0.5)" : borderCol }]}>
                 <Feather name="youtube" size={14} color={phase === "preview" ? "#10b981" : colors.mutedForeground} style={{ marginRight: 8 }} />
                 <TextInput
                   value={url}
@@ -229,7 +229,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                   style={[styles.urlInput, { color: colors.foreground }]}
                   autoFocus
                 />
-                {phase === "loading" && <ActivityIndicator size="small" color="#8b5cf6" />}
+                {phase === "loading" && <ActivityIndicator size="small" color="#818cf8" />}
                 {phase === "preview" && <Feather name="check-circle" size={16} color="#10b981" />}
               </View>
 
@@ -271,7 +271,7 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                       <TextInput
                         value={editTitle}
                         onChangeText={setEditTitle}
-                        style={[styles.titleInput, { color: colors.foreground, borderColor: "rgba(139,92,246,0.4)" }]}
+                        style={[styles.titleInput, { color: colors.foreground, borderColor: "rgba(129,140,248,0.45)" }]}
                         multiline
                         autoFocus
                       />
@@ -295,12 +295,12 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                           style={[
                             styles.folderChip,
                             {
-                              backgroundColor: selectedFolderId === null ? "rgba(139,92,246,0.15)" : isDark ? "#1a1a1f" : "#f0f0f8",
-                              borderColor: selectedFolderId === null ? "rgba(139,92,246,0.5)" : borderCol,
+                              backgroundColor: selectedFolderId === null ? "rgba(129,140,248,0.15)" : isDark ? "#1a1a1f" : "#f0f0f8",
+                              borderColor: selectedFolderId === null ? "rgba(129,140,248,0.5)" : borderCol,
                             },
                           ]}
                         >
-                          <Text style={[styles.folderChipText, { color: selectedFolderId === null ? "#8b5cf6" : colors.mutedForeground }]}>
+                          <Text style={[styles.folderChipText, { color: selectedFolderId === null ? "#818cf8" : colors.mutedForeground }]}>
                             No folder
                           </Text>
                         </TouchableOpacity>
@@ -311,13 +311,13 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                             style={[
                               styles.folderChip,
                               {
-                                backgroundColor: selectedFolderId === f.id ? (f.color || "#8b5cf6") + "20" : isDark ? "#1a1a1f" : "#f0f0f8",
-                                borderColor: selectedFolderId === f.id ? (f.color || "#8b5cf6") + "80" : borderCol,
+                                backgroundColor: selectedFolderId === f.id ? (f.color || "#818cf8") + "20" : isDark ? "#1a1a1f" : "#f0f0f8",
+                                borderColor: selectedFolderId === f.id ? (f.color || "#818cf8") + "80" : borderCol,
                               },
                             ]}
                           >
-                            <View style={[styles.folderDot, { backgroundColor: f.color || "#8b5cf6" }]} />
-                            <Text style={[styles.folderChipText, { color: selectedFolderId === f.id ? (f.color || "#8b5cf6") : colors.mutedForeground }]}>
+                            <View style={[styles.folderDot, { backgroundColor: f.color || "#818cf8" }]} />
+                            <Text style={[styles.folderChipText, { color: selectedFolderId === f.id ? (f.color || "#818cf8") : colors.mutedForeground }]}>
                               {f.name}
                             </Text>
                           </TouchableOpacity>
@@ -327,8 +327,8 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                   )}
 
                   {/* AI hint */}
-                  <View style={[styles.aiHint, { borderTopColor: borderCol, backgroundColor: "rgba(139,92,246,0.05)" }]}>
-                    <Feather name="cpu" size={11} color="#8b5cf6" />
+                  <View style={[styles.aiHint, { borderTopColor: borderCol, backgroundColor: "rgba(129,140,248,0.06)" }]}>
+                    <Feather name="cpu" size={11} color="#818cf8" />
                     <Text style={styles.aiHintText}>AI WILL AUTO-TAG THIS VIDEO AFTER SAVING</Text>
                   </View>
                 </View>
@@ -396,25 +396,25 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerIcon: {
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
     borderRadius: 8,
-    backgroundColor: "rgba(139,92,246,0.12)",
+    backgroundColor: "rgba(129,140,248,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(139,92,246,0.25)",
+    borderColor: "rgba(129,140,248,0.28)",
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "Raleway_900Black",
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   headerSub: {
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 2,
-    marginTop: 1,
+    marginTop: 2,
   },
   modalBody: {
     padding: 16,
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 2,
-    color: "#8b5cf6",
+    color: "#818cf8",
   },
   titleInput: {
     fontSize: 14,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 1.5,
-    color: "#8b5cf6",
+    color: "#818cf8",
   },
   errorText: {
     fontSize: 12,
@@ -589,8 +589,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderTopWidth: 1,
   },
   cancelBtn: {

@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
 import { useColors } from "@/hooks/useColors";
+import { AppButton } from "@/components/ui/AppButton";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -17,19 +18,22 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, subtitle, actionLabel, onAction, code = "00" }: EmptyStateProps) {
   const colors = useColors();
-
   const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
+  const accentColor = "#818cf8";
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.bigCode, { color: isDark ? "rgba(139,92,246,0.05)" : "rgba(124,58,237,0.06)" }]}>
+      <Text style={[styles.bigCode, { color: isDark ? "rgba(129,140,248,0.06)" : "rgba(129,140,248,0.08)" }]}>
         {code}
       </Text>
 
-      <View style={[styles.iconBox, { borderColor: isDark ? "rgba(139,92,246,0.25)" : "rgba(124,58,237,0.2)", backgroundColor: isDark ? "rgba(139,92,246,0.07)" : "rgba(124,58,237,0.06)" }]}>
-        <Text style={[styles.bracket, { color: isDark ? "rgba(139,92,246,0.4)" : "rgba(124,58,237,0.35)" }]}>{"["}</Text>
-        <Feather name={icon} size={28} color={isDark ? "#8b5cf6" : "#7c3aed"} />
-        <Text style={[styles.bracket, { color: isDark ? "rgba(139,92,246,0.4)" : "rgba(124,58,237,0.35)" }]}>{"]"}</Text>
+      <View style={[styles.iconBox, {
+        borderColor: isDark ? "rgba(129,140,248,0.28)" : "rgba(129,140,248,0.22)",
+        backgroundColor: isDark ? "rgba(129,140,248,0.08)" : "rgba(129,140,248,0.07)",
+      }]}>
+        <Text style={[styles.bracket, { color: isDark ? "rgba(129,140,248,0.45)" : "rgba(129,140,248,0.4)" }]}>{"["}</Text>
+        <Feather name={icon} size={32} color={accentColor} />
+        <Text style={[styles.bracket, { color: isDark ? "rgba(129,140,248,0.45)" : "rgba(129,140,248,0.4)" }]}>{"]"}</Text>
       </View>
 
       <Text style={[styles.codeLabel, { color: colors.mutedForeground }]}>// VAULT_EMPTY</Text>
@@ -41,14 +45,13 @@ export function EmptyState({ icon, title, subtitle, actionLabel, onAction, code 
       ) : null}
 
       {actionLabel && onAction ? (
-        <TouchableOpacity
+        <AppButton
+          label={actionLabel.toUpperCase()}
+          icon="plus"
+          size="md"
+          variant="primary"
           onPress={onAction}
-          activeOpacity={0.85}
-          style={[styles.actionBtn, { backgroundColor: isDark ? "#8b5cf6" : "#7c3aed" }]}
-        >
-          <Feather name="plus" size={14} color="#fff" />
-          <Text style={styles.actionBtnText}>{actionLabel}</Text>
-        </TouchableOpacity>
+        />
       ) : null}
     </View>
   );
@@ -57,64 +60,51 @@ export function EmptyState({ icon, title, subtitle, actionLabel, onAction, code 
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 56,
     paddingHorizontal: 32,
   },
   bigCode: {
     position: "absolute",
     top: 8,
-    fontSize: 120,
+    fontSize: 130,
     fontFamily: "Raleway_900Black",
     letterSpacing: -6,
-    lineHeight: 120,
+    lineHeight: 130,
   },
   iconBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
     borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderRadius: 4,
-    marginBottom: 16,
-    marginTop: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderRadius: 6,
+    marginBottom: 18,
+    marginTop: 16,
   },
   bracket: {
-    fontSize: 22,
+    fontSize: 26,
     fontFamily: "JetBrainsMono_400Regular",
-    lineHeight: 28,
+    lineHeight: 32,
   },
   codeLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontFamily: "JetBrainsMono_400Regular",
     letterSpacing: 2,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: "Raleway_900Black",
     textAlign: "center",
-    letterSpacing: -0.3,
-    marginBottom: 8,
+    letterSpacing: -0.5,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-    borderRadius: 4,
-  },
-  actionBtnText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    lineHeight: 22,
+    marginBottom: 28,
   },
 });

@@ -263,9 +263,9 @@ const styles = StyleSheet.create({
   quickBtnLabel: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.2 },
 
   greeting: { paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 },
-  greetingLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 6 },
-  greetingName: { fontSize: 26, fontFamily: "Poppins_700Bold", letterSpacing: -0.5, lineHeight: 34, marginBottom: 2 },
-  greetingSub: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  greetingLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 8 },
+  greetingName: { fontSize: 30, fontFamily: "Poppins_700Bold", letterSpacing: -0.8, lineHeight: 38, marginBottom: 4 },
+  greetingSub: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
 
   section: { paddingHorizontal: 20, marginBottom: 28 },
   sectionNoHPad: { marginBottom: 28 },
@@ -276,15 +276,15 @@ const styles = StyleSheet.create({
   sectionLine: { flex: 1, height: 1, marginBottom: 4 },
   sectionLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
   sectionMicro: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
-  sectionTitle: { fontSize: 18, fontFamily: "Poppins_700Bold", letterSpacing: -0.3 },
+  sectionTitle: { fontSize: 20, fontFamily: "Poppins_700Bold", letterSpacing: -0.4 },
   viewAll: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, paddingBottom: 3 },
 
-  etchedCard: { padding: 12, borderWidth: 1, borderRadius: 8, overflow: "hidden", minHeight: 90 },
+  etchedCard: { padding: 14, borderWidth: 1, borderRadius: 8, overflow: "hidden", minHeight: 100 },
   etchedTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 },
   etchedIconBox: { width: 26, height: 26, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   etchedCode: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5, marginTop: 2 },
-  etchedLabel: { fontSize: 9, fontFamily: "Poppins_500Medium", marginBottom: 2, lineHeight: 13 },
-  etchedValue: { fontSize: 32, fontFamily: "Poppins_900Black", lineHeight: 38, letterSpacing: -1.5 },
+  etchedLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 2, lineHeight: 14 },
+  etchedValue: { fontSize: 36, fontFamily: "Poppins_900Black", lineHeight: 42, letterSpacing: -2 },
   etchedGlow: {
     position: "absolute", bottom: -20, right: -20,
     width: 60, height: 60, borderRadius: 30, opacity: 0.08,
