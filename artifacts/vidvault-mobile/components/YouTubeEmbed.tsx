@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, useWindowDimensions } from "react-native";
 import WebView from "react-native-webview";
 import { Feather } from "@expo/vector-icons";
 
-const { width: SCREEN_W } = Dimensions.get("window");
-export const PLAYER_HEIGHT = Math.round(SCREEN_W * (9 / 16));
+export const PLAYER_HEIGHT = 220; // default; overridden per-instance via hook
 
 export function YouTubePlayer({
   ytId,
@@ -13,12 +12,14 @@ export function YouTubePlayer({
   ytId: string;
   onOpenExternal: () => void;
 }) {
+  const { width } = useWindowDimensions();
+  const playerH = Math.round(width * (9 / 16));
   const [error, setError] = useState(false);
   const embedUri = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
 
   if (error) {
     return (
-      <View style={[styles.player, styles.errCenter]}>
+      <View style={[styles.playerBase, { height: playerH }, styles.errCenter]}>
         <Feather name="youtube" size={28} color="#ef4444" />
         <Text style={[styles.errTitle, { marginTop: 10 }]}>Embedding Restricted</Text>
         <Text style={styles.errSub}>Watch on YouTube instead.</Text>
@@ -31,7 +32,7 @@ export function YouTubePlayer({
   }
 
   return (
-    <View style={styles.player}>
+    <View style={[styles.playerBase, { height: playerH }]}>
       <WebView
         style={{ flex: 1, backgroundColor: "#000" }}
         source={{ uri: embedUri }}
@@ -54,7 +55,7 @@ export function YouTubePlayer({
 }
 
 const styles = StyleSheet.create({
-  player: { width: "100%", height: PLAYER_HEIGHT, backgroundColor: "#000", overflow: "hidden" },
+  playerBase: { width: "100%", backgroundColor: "#000", overflow: "hidden" },
   errCenter: { alignItems: "center", justifyContent: "center", backgroundColor: "#0d0d14" },
   errTitle: { color: "#fff", fontSize: 14, fontFamily: "Poppins_600SemiBold" },
   errSub: {
