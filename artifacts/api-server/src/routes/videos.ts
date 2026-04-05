@@ -279,11 +279,18 @@ router.get("/videos", async (req, res) => {
 
   const enriched = await Promise.all(
     videos.map(async (v) => {
-      const tags = await db
-        .select({ id: tagsTable.id, name: tagsTable.name, color: tagsTable.color })
-        .from(videoTagsTable)
-        .innerJoin(tagsTable, eq(videoTagsTable.tagId, tagsTable.id))
-        .where(eq(videoTagsTable.videoId, v.id));
+      const [tags, noteCountRes, aiCountRes] = await Promise.all([
+        db.select({ id: tagsTable.id, name: tagsTable.name, color: tagsTable.color })
+          .from(videoTagsTable)
+          .innerJoin(tagsTable, eq(videoTagsTable.tagId, tagsTable.id))
+          .where(eq(videoTagsTable.videoId, v.id)),
+        db.select({ count: sql<number>`count(*)::int` })
+          .from(notesTable)
+          .where(and(eq(notesTable.videoId, v.id), eq(notesTable.userId, userId))),
+        db.select({ count: sql<number>`count(*)::int` })
+          .from(aiOutputsTable)
+          .where(and(eq(aiOutputsTable.videoId, v.id), eq(aiOutputsTable.userId, userId))),
+      ]);
       let folderName: string | null = null;
       if (v.folderId) {
         const [folder] = await db
@@ -292,7 +299,13 @@ router.get("/videos", async (req, res) => {
           .where(eq(foldersTable.id, v.folderId));
         folderName = folder?.name || null;
       }
-      return { ...v, tags, folderName };
+      return {
+        ...v,
+        tags,
+        folderName,
+        notesCount: noteCountRes[0]?.count ?? 0,
+        aiOutputsCount: aiCountRes[0]?.count ?? 0,
+      };
     }),
   );
 
