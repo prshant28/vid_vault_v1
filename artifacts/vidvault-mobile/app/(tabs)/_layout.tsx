@@ -6,7 +6,7 @@ import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Platform, StyleSheet, View, StatusBar } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
@@ -96,13 +96,6 @@ function ClassicTabLayout() {
 
   return (
     <>
-      {/* StatusBar — configured for all platforms */}
-      <StatusBar
-        translucent={isAndroid}
-        backgroundColor={isAndroid ? "transparent" : undefined}
-        barStyle={isDark ? "light-content" : "dark-content"}
-      />
-
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: INDIGO,

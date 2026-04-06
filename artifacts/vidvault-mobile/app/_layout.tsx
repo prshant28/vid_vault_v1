@@ -20,17 +20,18 @@ import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { Stack, router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Platform, View, Text, Dimensions, StyleSheet, StatusBar } from "react-native";
+import { Platform, View, Text, Dimensions, StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeProvider, useThemeContext } from "@/contexts/ThemeContext";
 import { setApiToken, setOnUnauthorized } from "@/services/api";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
 
@@ -54,6 +55,8 @@ const asyncStoragePersister = createAsyncStoragePersister({
 
 function RootLayoutNav() {
   const { user, isLoading, token, logout } = useAuth();
+  const { colorScheme } = useThemeContext();
+  const isDark = colorScheme === "dark";
 
   useEffect(() => {
     setApiToken(token);
@@ -89,6 +92,7 @@ function RootLayoutNav() {
     const rows = Math.ceil(H / CELL) + 1;
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0f", alignItems: "center", justifyContent: "center" }}>
+        <StatusBar style="light" translucent backgroundColor="transparent" />
         <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
           {Array.from({ length: cols }).map((_, i) => (
             <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke="rgba(255,255,255,0.035)" strokeWidth={1} />
@@ -107,14 +111,23 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="splash" options={{ headerShown: false, animation: "none" }} />
-      <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
-      <Stack.Screen name="login" options={{ headerShown: false, animation: "fade" }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="video/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
-      <Stack.Screen name="folder/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
-    </Stack>
+    <>
+      {/* Global status bar — always light icons on dark bg, dark icons on light bg */}
+      <StatusBar
+        style={isDark ? "light" : "dark"}
+        translucent
+        backgroundColor="transparent"
+        animated
+      />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="splash" options={{ headerShown: false, animation: "none" }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
+        <Stack.Screen name="login" options={{ headerShown: false, animation: "fade" }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="video/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
+        <Stack.Screen name="folder/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
+      </Stack>
+    </>
   );
 }
 
@@ -160,9 +173,6 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      {Platform.OS === "android" && (
-        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      )}
       <ErrorBoundary>
         <PersistQueryClientProvider
           client={queryClient}

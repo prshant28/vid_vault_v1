@@ -11,6 +11,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
+import { useThemeContext } from "@/contexts/ThemeContext";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 interface TopAppBarProps {
@@ -29,8 +30,9 @@ export function TopAppBar({
   const insets = useSafeAreaInsets();
   const colors = useColors();
 
+  const { colorScheme } = useThemeContext();
   const topPad = Platform.OS === "web" ? 12 : insets.top;
-  const isDark = colors.background === "#09090c";
+  const isDark = colorScheme === "dark";
 
   return (
     <View
