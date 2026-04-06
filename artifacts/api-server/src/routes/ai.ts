@@ -10,7 +10,7 @@ const router = Router();
 router.post("/videos/:videoId/ai/generate", async (req, res) => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
   const { videoId } = req.params;
-  const { type } = req.body as { type: string };
+  const { type, language } = req.body as { type: string; language?: string };
 
   if (!AI_PROMPTS[type]) {
     res.status(400).json({ error: `Invalid type. Must be one of: ${Object.keys(AI_PROMPTS).join(", ")}` });
@@ -25,7 +25,10 @@ router.post("/videos/:videoId/ai/generate", async (req, res) => {
   if (!video) { res.status(404).json({ error: "Video not found" }); return; }
 
   try {
-    const prompt  = AI_PROMPTS[type](video.title, video.description || "", video.channelName || "");
+    const basePrompt = AI_PROMPTS[type](video.title, video.description || "", video.channelName || "");
+    const prompt = language && language !== "en"
+      ? `${basePrompt}\n\nIMPORTANT: Write your entire response in Hindi (हिंदी). Use Devanagari script throughout.`
+      : basePrompt;
     const content = await generateAiText(prompt);
 
     const [existing] = await db

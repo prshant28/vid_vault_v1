@@ -129,6 +129,7 @@ export interface UpdateNoteRequest {
 
 export interface GenerateAiContentRequest {
   type: AiOutputType;
+  language?: string;
 }
 
 export type AiChatRequestHistoryItem = {

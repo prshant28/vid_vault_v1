@@ -482,6 +482,22 @@ function AiNotesPanel({
         {/* AI Outputs */}
         {activeTab === "ai" && (
           <div className="p-3 space-y-3">
+            {/* Language selector */}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[9px] font-mono-ui uppercase tracking-widest text-muted-foreground">Output Language</span>
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg" style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}>
+                {[{ code: "en", label: "EN" }, { code: "hi", label: "हिं" }].map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => { setAiLang(l.code); try { localStorage.setItem("vv_ai_language", l.code); } catch {} }}
+                    className="px-2.5 py-1 rounded-md text-[9px] font-mono-ui uppercase tracking-wider transition-all"
+                    style={{ background: aiLang === l.code ? "#8b5cf6" : "transparent", color: aiLang === l.code ? "#fff" : "var(--vv-text-muted)" }}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {generatingType && (
               <div className="flex items-center gap-3 p-3 rounded-xl"
                 style={{ background: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.2)" }}>
@@ -705,19 +721,23 @@ export default function VideoDetail() {
 
   const generateMutation = useGenerateAiContent();
   const queryClient = useQueryClient();
+  const [aiLang, setAiLang] = useState<string>(() => {
+    try { return localStorage.getItem("vv_ai_language") || "en"; } catch { return "en"; }
+  });
 
   const handleGenerate = useCallback(async (type: string) => {
     if (!video) return;
     setGeneratingType(type);
     try {
-      await generateMutation.mutateAsync({ videoId: video.id, data: { type: type as any } });
-      toast({ title: "Generated!", description: `${TYPE_LABELS[type] || type} is ready.` });
+      await generateMutation.mutateAsync({ videoId: video.id, data: { type: type as any, language: aiLang } as any });
+      const langNote = aiLang === "hi" ? " (Hindi)" : "";
+      toast({ title: "Generated!", description: `${TYPE_LABELS[type] || type}${langNote} is ready.` });
     } catch {
       toast({ title: "Generation failed", description: "Check your AI configuration.", variant: "destructive" });
     } finally {
       setGeneratingType(null);
     }
-  }, [video, generateMutation, toast]);
+  }, [video, generateMutation, toast, aiLang]);
 
   const handleDelete = useCallback(async (outputId: string) => {
     if (!video) return;
@@ -808,10 +828,26 @@ export default function VideoDetail() {
           <div className="flex items-center gap-2 mb-3">
             <div className="text-[9px] font-mono-ui uppercase tracking-[0.3em] text-muted-foreground">//AI_STUDIO</div>
             <div className="flex-1 h-px" style={{ background: "var(--vv-border)" }} />
-            {generatingType && (
+            {generatingType ? (
               <span className="text-[9px] font-mono-ui text-primary animate-pulse flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" /> Generating {TYPE_LABELS[generatingType]}…
               </span>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8px] font-mono-ui uppercase tracking-wider text-muted-foreground">Lang:</span>
+                <div className="flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}>
+                  {[{ code: "en", label: "EN" }, { code: "hi", label: "हिं" }].map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setAiLang(l.code); try { localStorage.setItem("vv_ai_language", l.code); } catch {} }}
+                      className="px-2 py-0.5 rounded text-[8px] font-mono-ui transition-all"
+                      style={{ background: aiLang === l.code ? "#8b5cf6" : "transparent", color: aiLang === l.code ? "#fff" : "var(--vv-text-muted)" }}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2">
