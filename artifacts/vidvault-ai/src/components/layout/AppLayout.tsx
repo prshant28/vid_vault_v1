@@ -252,8 +252,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
           {NAV_ITEMS.map(({ icon: Icon, label, path }) => {
             const isActive =
               path === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(path);
+                ? location === "/"
+                : location.startsWith(path);
             return (
               <motion.button
                 key={path}
