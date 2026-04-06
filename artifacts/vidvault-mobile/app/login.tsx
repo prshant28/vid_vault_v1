@@ -207,7 +207,13 @@ export default function LoginScreen() {
         await register(e, p, firstName.trim() || undefined, lastName.trim() || undefined);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      // If no account exists, auto-suggest registration
+      if (mode === "login" && msg.toLowerCase().includes("no account found")) {
+        setError("No account found. Switch to Register to create one.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

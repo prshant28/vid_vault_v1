@@ -89,8 +89,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedToken = await secureGet(TOKEN_KEY);
         const storedUser = await secureGet(USER_KEY);
         if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          // Validate the token against the server before restoring the session
+          try {
+            const res = await fetch(`${BASE_URL}/api/auth/user`, {
+              headers: { Authorization: `Bearer ${storedToken}` },
+            });
+            if (res.ok) {
+              const data = (await res.json()) as { isAuthenticated: boolean; user: AuthUser | null };
+              if (data.isAuthenticated && data.user) {
+                setToken(storedToken);
+                setUser(data.user);
+              } else {
+                // Session expired or invalid — clear storage
+                await secureDelete(TOKEN_KEY);
+                await secureDelete(USER_KEY);
+              }
+            } else {
+              // Server error or unauthorized — clear storage
+              await secureDelete(TOKEN_KEY);
+              await secureDelete(USER_KEY);
+            }
+          } catch {
+            // Network error — restore from local storage as fallback
+            setToken(storedToken);
+            setUser(JSON.parse(storedUser));
+          }
         }
       } catch {
         // Ignore load errors — user will need to sign in again

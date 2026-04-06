@@ -101,13 +101,13 @@ router.post("/login-manual", async (req: Request, res: Response) => {
       .where(eq(usersTable.email, email));
 
     if (!user || !user.passwordHash) {
-      res.status(401).json({ error: "Invalid email or password" });
+      res.status(401).json({ error: "No account found with this email. Please register first." });
       return;
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      res.status(401).json({ error: "Invalid email or password" });
+      res.status(401).json({ error: "Incorrect password. Please try again." });
       return;
     }
 
