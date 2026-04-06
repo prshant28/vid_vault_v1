@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { videosTable, foldersTable, tagsTable, videoTagsTable, notesTable, aiOutputsTable } from "@workspace/db";
-import { eq, sql, and, desc } from "drizzle-orm";
+import { eq, sql, and, desc, gte } from "drizzle-orm";
 
 const router = Router();
 
@@ -65,7 +65,9 @@ router.get("/stats", async (req, res) => {
     db.select({ totalAiOutputs: sql<number>`count(*)::int` }).from(aiOutputsTable).where(eq(aiOutputsTable.userId, userId)),
   ]);
 
-  const [recentVideosRaw, favoriteVideosRaw, recentAiOutputs, aiOutputsByType] = await Promise.all([
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [recentVideosRaw, favoriteVideosRaw, recentAiOutputs, aiOutputsByType, dailyVideos, dailyAi] = await Promise.all([
     db.select().from(videosTable).where(eq(videosTable.userId, userId)).orderBy(sql`created_at DESC`).limit(10),
     db.select().from(videosTable).where(and(eq(videosTable.userId, userId), eq(videosTable.isFavorite, true))).orderBy(sql`updated_at DESC`).limit(10),
     db.select({
@@ -82,6 +84,18 @@ router.get("/stats", async (req, res) => {
       .limit(6),
     db.select({ type: aiOutputsTable.type, count: sql<number>`count(*)::int` })
       .from(aiOutputsTable).where(eq(aiOutputsTable.userId, userId)).groupBy(aiOutputsTable.type),
+    db.select({
+      day: sql<string>`date_trunc('day', created_at)::date::text`,
+      count: sql<number>`count(*)::int`,
+    }).from(videosTable)
+      .where(and(eq(videosTable.userId, userId), gte(videosTable.createdAt, sevenDaysAgo)))
+      .groupBy(sql`date_trunc('day', created_at)`),
+    db.select({
+      day: sql<string>`date_trunc('day', created_at)::date::text`,
+      count: sql<number>`count(*)::int`,
+    }).from(aiOutputsTable)
+      .where(and(eq(aiOutputsTable.userId, userId), gte(aiOutputsTable.createdAt, sevenDaysAgo)))
+      .groupBy(sql`date_trunc('day', created_at)`),
   ]);
 
   const enrichVideos = async (videos: typeof recentVideosRaw) =>
@@ -102,12 +116,23 @@ router.get("/stats", async (req, res) => {
   const xp = computeXP({ totalVideos, totalFavorites, totalWatched, totalNotes, totalAiOutputs, totalTags });
   const levelInfo = getLevelInfo(xp);
 
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dailyActivity = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000);
+    const key = d.toISOString().slice(0, 10);
+    const label = DAYS[d.getDay()];
+    const videos = dailyVideos.find((r) => r.day === key)?.count ?? 0;
+    const ai = dailyAi.find((r) => r.day === key)?.count ?? 0;
+    return { day: label, date: key, videos, ai };
+  });
+
   res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json({
     totalVideos, totalFolders, totalTags, totalFavorites, totalWatched,
     totalNotes, totalAiOutputs,
     recentVideos, favoriteVideos,
     recentAiOutputs, aiOutputsByType,
+    dailyActivity,
     ...levelInfo,
   });
 });

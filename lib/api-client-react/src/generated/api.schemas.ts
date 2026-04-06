@@ -160,6 +160,13 @@ export interface AiOutputByType {
   count: number;
 }
 
+export interface DailyActivity {
+  day: string;
+  date: string;
+  videos: number;
+  ai: number;
+}
+
 export interface DashboardStats {
   totalVideos: number;
   totalFolders: number;
@@ -172,6 +179,7 @@ export interface DashboardStats {
   favoriteVideos: Video[];
   recentAiOutputs: RecentAiOutput[];
   aiOutputsByType: AiOutputByType[];
+  dailyActivity: DailyActivity[];
   level: number;
   levelTitle: string;
   levelColor: string;
