@@ -30,6 +30,9 @@ interface Preview {
   thumbnail: string | null;
   type: VideoType;
   ytId?: string | null;
+  channelName?: string | null;
+  duration?: string | null;
+  viewCount?: number | null;
 }
 
 function extractYtId(url: string): string | null {
@@ -118,34 +121,48 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
       setPhase("loading");
       setErrorMsg("");
       try {
-        const ytId = extractYtId(trimmed);
         const isPlaylist = isPlaylistUrl(trimmed);
 
-        if (ytId) {
-          let title = "YouTube Video";
-          try {
-            const oe = await fetch(
-              `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`
-            );
-            if (oe.ok) {
-              const od = await oe.json();
-              title = od.title || title;
-            }
-          } catch {}
-
-          setPreview({
-            title,
-            thumbnail: `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`,
-            type: isPlaylist ? "playlist" : "video",
-            ytId,
-          });
-          setEditTitle(title);
-          setPhase("preview");
-        } else if (isPlaylist) {
+        if (isPlaylist) {
           setPreview({ title: "YouTube Playlist", thumbnail: null, type: "playlist" });
           setEditTitle("YouTube Playlist");
           setPhase("preview");
-        } else if (trimmed.startsWith("http")) {
+          return;
+        }
+
+        // Use the API preview endpoint (which uses YouTube Data API key server-side)
+        const BASE = `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
+        const res = await fetch(`${BASE}/preview?url=${encodeURIComponent(trimmed)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const title = data.title || "YouTube Video";
+          const ytId = data.videoId || extractYtId(trimmed);
+          setPreview({
+            title,
+            thumbnail: data.image || (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : null),
+            type: data.type === "youtube" ? "video" : "web",
+            ytId: ytId || null,
+            channelName: data.channelName || null,
+            duration: data.duration || null,
+            viewCount: data.viewCount || null,
+          });
+          setEditTitle(title);
+          setPhase("preview");
+          return;
+        }
+
+        // Fallback for YouTube URLs if API preview fails
+        const ytId = extractYtId(trimmed);
+        if (ytId) {
+          setPreview({
+            title: "YouTube Video",
+            thumbnail: `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`,
+            type: "video",
+            ytId,
+          });
+          setEditTitle("YouTube Video");
+          setPhase("preview");
+        } else {
           setPreview({ title: trimmed, thumbnail: null, type: "web" });
           setEditTitle(trimmed);
           setPhase("preview");
@@ -249,7 +266,26 @@ export function SaveToVaultModal({ visible, onClose }: SaveToVaultModalProps) {
                       </View>
                       <View style={styles.previewTitleOverlay}>
                         <Text style={styles.previewThumbTitle} numberOfLines={2}>{preview.title}</Text>
-                        <Text style={styles.previewDomain}>WWW.YOUTUBE.COM</Text>
+                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 3 }}>
+                          {preview.channelName && (
+                            <Text style={styles.previewDomain}>{preview.channelName.toUpperCase()}</Text>
+                          )}
+                          {preview.duration && (
+                            <Text style={styles.previewDomain}>· {preview.duration}</Text>
+                          )}
+                          {preview.viewCount ? (
+                            <Text style={styles.previewDomain}>
+                              · {preview.viewCount >= 1000000
+                                ? `${(preview.viewCount / 1000000).toFixed(1)}M`
+                                : preview.viewCount >= 1000
+                                ? `${(preview.viewCount / 1000).toFixed(0)}K`
+                                : preview.viewCount.toString()} VIEWS
+                            </Text>
+                          ) : null}
+                          {!preview.channelName && (
+                            <Text style={styles.previewDomain}>WWW.YOUTUBE.COM</Text>
+                          )}
+                        </View>
                       </View>
                     </View>
                   ) : (

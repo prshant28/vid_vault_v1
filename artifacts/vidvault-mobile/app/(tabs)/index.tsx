@@ -357,16 +357,16 @@ export default function HomeScreen() {
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const recentVideos: Video[] = stats?.recentVideos ?? [];
   const favoriteVideos: Video[] = stats?.favoriteVideos ?? [];
-  const recentAiOutputs: RecentAiOutput[] = (stats as any)?.recentAiOutputs ?? [];
+  const recentAiOutputs: RecentAiOutput[] = stats?.recentAiOutputs ?? [];
   const totalWatched = stats?.totalWatched ?? 0;
   const totalVideos = stats?.totalVideos ?? 0;
-  const xp = (stats as any)?.xp ?? 0;
-  const level = (stats as any)?.level ?? 1;
-  const levelTitle = (stats as any)?.levelTitle ?? "Novice";
-  const levelColor = (stats as any)?.levelColor ?? "#6b7280";
-  const progressPct = (stats as any)?.progressPct ?? 0;
-  const nextLevelXP = (stats as any)?.nextLevelXP ?? 100;
-  const isMaxLevel = (stats as any)?.isMaxLevel ?? false;
+  const xp = stats?.xp ?? 0;
+  const level = stats?.level ?? 1;
+  const levelTitle = stats?.levelTitle ?? "Novice";
+  const levelColor = stats?.levelColor ?? "#6b7280";
+  const progressPct = stats?.progressPct ?? 0;
+  const nextLevelXP = stats?.nextLevelXP ?? 100;
+  const isMaxLevel = stats?.isMaxLevel ?? false;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

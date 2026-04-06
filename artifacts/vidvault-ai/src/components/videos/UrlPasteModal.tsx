@@ -18,6 +18,9 @@ interface Preview {
   type: VideoType;
   domain: string;
   favicon: string | null;
+  channelName?: string | null;
+  duration?: string | null;
+  viewCount?: number | null;
 }
 
 function TypeBadge({ type }: { type: VideoType }) {
@@ -82,19 +85,7 @@ export function UrlPasteModal() {
         if (!res.ok) throw new Error("Preview failed");
         const data = await res.json();
 
-        let title = data.title || data.domain || trimmed;
-
-        if (data.type === "youtube" && data.videoId) {
-          try {
-            const oe = await fetch(
-              `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${data.videoId}&format=json`
-            );
-            if (oe.ok) {
-              const od = await oe.json();
-              title = od.title || title;
-            }
-          } catch {}
-        }
+        const title = data.title || data.domain || trimmed;
 
         setPreview({
           title,
@@ -102,6 +93,9 @@ export function UrlPasteModal() {
           type: data.type === "youtube" ? "video" : "web",
           domain: data.domain,
           favicon: data.favicon || null,
+          channelName: data.channelName || null,
+          duration: data.duration || null,
+          viewCount: data.viewCount || null,
         });
         setEditTitle(title);
         setPhase("preview");
@@ -307,9 +301,26 @@ export function UrlPasteModal() {
                             style={{ fontFamily: "'Raleway', sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>
                             {preview.title}
                           </p>
-                          <p className="text-white/60 font-mono-ui text-[9px] uppercase tracking-widest mt-0.5">
-                            {preview.domain}
-                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {preview.channelName && (
+                              <p className="text-white/70 font-mono-ui text-[9px] uppercase tracking-widest">
+                                {preview.channelName}
+                              </p>
+                            )}
+                            {preview.duration && (
+                              <span className="text-white/60 font-mono-ui text-[9px]">· {preview.duration}</span>
+                            )}
+                            {preview.viewCount && (
+                              <span className="text-white/60 font-mono-ui text-[9px]">
+                                · {preview.viewCount.toLocaleString()} views
+                              </span>
+                            )}
+                            {!preview.channelName && (
+                              <p className="text-white/60 font-mono-ui text-[9px] uppercase tracking-widest">
+                                {preview.domain}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
 

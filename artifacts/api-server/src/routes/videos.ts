@@ -72,6 +72,111 @@ router.get("/preview", async (req, res) => {
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
     if (ytMatch) {
       const videoId = ytMatch[1];
+      const apiKey = process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY;
+
+      // Try YouTube Data API v3 first for rich metadata
+      if (apiKey) {
+        try {
+          const ytResp = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails,statistics&key=${apiKey}`,
+            { headers: { "Referer": "https://vidvault.app", "X-Referer": "https://vidvault.app" } },
+          );
+          if (ytResp.ok) {
+            const ytData = await ytResp.json() as {
+              items?: Array<{
+                snippet?: { title?: string; channelTitle?: string; description?: string; publishedAt?: string };
+                contentDetails?: { duration?: string };
+                statistics?: { viewCount?: string };
+              }>;
+            };
+            const item = ytData.items?.[0];
+            if (item) {
+              const rawDuration = item.contentDetails?.duration || "";
+              const parsedDuration = parseDuration(rawDuration);
+              return res.json({
+                title: item.snippet?.title || "YouTube Video",
+                image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                domain,
+                favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+                type: "youtube",
+                videoId,
+                channelName: item.snippet?.channelTitle || null,
+                duration: parsedDuration,
+                viewCount: parseInt(item.statistics?.viewCount || "0") || null,
+                publishedAt: item.snippet?.publishedAt || null,
+              });
+            }
+          }
+        } catch {}
+      }
+
+      // Fallback: scrape YouTube page for title, channel, duration, viewCount
+      try {
+        const pageResp = await fetch(
+          `https://www.youtube.com/watch?v=${videoId}`,
+          { headers: { "User-Agent": "Mozilla/5.0 (compatible; VidVaultBot/1.0)" } },
+        );
+        if (pageResp.ok) {
+          const html = await pageResp.text();
+          const titleMatch = html.match(/"title":"([^"]+)"/);
+          const channelMatch = html.match(/"ownerChannelName":"([^"]+)"/);
+          const durMatch = html.match(/"approxDurationMs":"(\d+)"/);
+          const viewMatch = html.match(/"viewCount":"(\d+)"/);
+          const title = titleMatch?.[1]?.replace(/\\u([\dA-F]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))) || "YouTube Video";
+          const channelName = channelMatch?.[1]?.replace(/\\u([\dA-F]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))) || null;
+          const durationMs = durMatch ? parseInt(durMatch[1]) : null;
+          const durationFormatted = durationMs
+            ? (() => {
+                const totalSecs = Math.floor(durationMs / 1000);
+                const h = Math.floor(totalSecs / 3600);
+                const m = Math.floor((totalSecs % 3600) / 60);
+                const s = totalSecs % 60;
+                return h > 0
+                  ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+                  : `${m}:${String(s).padStart(2, "0")}`;
+              })()
+            : null;
+          const viewCount = viewMatch ? parseInt(viewMatch[1]) : null;
+          if (title !== "YouTube Video" || channelName) {
+            return res.json({
+              title,
+              image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+              domain,
+              favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+              type: "youtube",
+              videoId,
+              channelName,
+              duration: durationFormatted,
+              viewCount,
+              publishedAt: null,
+            });
+          }
+        }
+      } catch {}
+
+      // Fallback: oEmbed for title/channel
+      try {
+        const oeResp = await fetch(
+          `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+        );
+        if (oeResp.ok) {
+          const oe = await oeResp.json() as { title?: string; author_name?: string };
+          return res.json({
+            title: oe.title || "YouTube Video",
+            image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            domain,
+            favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
+            type: "youtube",
+            videoId,
+            channelName: oe.author_name || null,
+            duration: null,
+            viewCount: null,
+            publishedAt: null,
+          });
+        }
+      } catch {}
+
+      // Final fallback: just return minimal info
       return res.json({
         title: "YouTube Video",
         image: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
@@ -79,6 +184,10 @@ router.get("/preview", async (req, res) => {
         favicon: `https://www.google.com/s2/favicons?sz=64&domain=${domain}`,
         type: "youtube",
         videoId,
+        channelName: null,
+        duration: null,
+        viewCount: null,
+        publishedAt: null,
       });
     }
 
@@ -141,6 +250,7 @@ async function fetchVideoMeta(url: string) {
     if (apiKey) {
       const resp = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails,statistics&key=${apiKey}`,
+        { headers: { "Referer": "https://vidvault.app" } },
       );
       if (resp.ok) {
         const data = await resp.json() as { items?: { snippet?: { title?: string; channelTitle?: string; description?: string; publishedAt?: string }; contentDetails?: { duration?: string }; statistics?: { viewCount?: string } }[] };

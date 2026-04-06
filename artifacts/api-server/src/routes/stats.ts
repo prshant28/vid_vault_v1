@@ -102,6 +102,7 @@ router.get("/stats", async (req, res) => {
   const xp = computeXP({ totalVideos, totalFavorites, totalWatched, totalNotes, totalAiOutputs, totalTags });
   const levelInfo = getLevelInfo(xp);
 
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
   res.json({
     totalVideos, totalFolders, totalTags, totalFavorites, totalWatched,
     totalNotes, totalAiOutputs,
