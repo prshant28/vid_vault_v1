@@ -19,7 +19,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
-        <span className="font-mono-ui text-[#333] text-xs uppercase tracking-widest animate-pulse">
+        <span className="font-mono-ui text-xs uppercase tracking-widest animate-pulse" style={{ color: "var(--vv-text-muted)" }}>
           LOADING_VAULT...
         </span>
       </div>
@@ -59,7 +59,7 @@ export default function Home() {
     >
       {/* Header */}
       <motion.div variants={item} className="space-y-2 pt-2">
-        <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">
+        <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em]" style={{ color: "var(--vv-text-muted)" }}>
           //SYSTEM_STATUS
         </span>
         <h1
@@ -72,7 +72,7 @@ export default function Home() {
         >
           Your Vault
         </h1>
-        <p className="text-[#555] text-sm font-mono-ui">
+        <p className="text-sm font-mono-ui" style={{ color: "var(--vv-text-muted)" }}>
           KNOWLEDGE_BASE // ACTIVE
         </p>
       </motion.div>
@@ -83,7 +83,7 @@ export default function Home() {
           <div key={card.code} className="etched-slab p-6 relative overflow-hidden group">
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em]">{card.code}</span>
+                <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em]" style={{ color: "var(--vv-text-muted)" }}>{card.code}</span>
                 <card.icon className="w-4 h-4" style={{ color: card.accent + "60" }} />
               </div>
               <p
@@ -115,7 +115,7 @@ export default function Home() {
         <motion.section variants={item} className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
+              <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em] block mb-1" style={{ color: "var(--vv-text-muted)" }}>
                 //RECENTLY_SAVED
               </span>
               <h2
@@ -127,7 +127,8 @@ export default function Home() {
             </div>
             <Link
               href="/videos"
-              className="font-mono-ui text-[9px] text-[#444] hover:text-[#8b5cf6] uppercase tracking-widest transition-colors"
+              className="font-mono-ui text-[9px] hover:text-[#8b5cf6] uppercase tracking-widest transition-colors"
+              style={{ color: "var(--vv-text-muted)" }}
             >
               VIEW_ALL →
             </Link>
@@ -152,7 +153,7 @@ export default function Home() {
         <motion.section variants={item} className="space-y-5 pb-10">
           <div className="flex items-center justify-between">
             <div>
-              <span className="font-mono-ui text-[9px] text-[#333] uppercase tracking-[0.3em] block mb-1">
+              <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em] block mb-1" style={{ color: "var(--vv-text-muted)" }}>
                 //STARRED
               </span>
               <h2
@@ -182,14 +183,14 @@ export default function Home() {
       {/* Empty State */}
       {(!stats?.recentVideos || stats.recentVideos.length === 0) && (
         <motion.div variants={item} className="etched-slab py-24 text-center">
-          <Library className="w-10 h-10 text-[#222] mx-auto mb-5" />
-          <span className="font-mono-ui text-[10px] text-[#333] uppercase tracking-[0.3em] block mb-3">
+          <Library className="w-10 h-10 mx-auto mb-5" style={{ color: "var(--vv-text-muted)" }} />
+          <span className="font-mono-ui text-[10px] uppercase tracking-[0.3em] block mb-3" style={{ color: "var(--vv-text-muted)" }}>
             VAULT_EMPTY
           </span>
-          <h3 className="text-xl font-black text-[#444] uppercase mb-3">
+          <h3 className="text-xl font-black uppercase mb-3" style={{ color: "var(--vv-text)" }}>
             No Videos Yet
           </h3>
-          <p className="text-[#333] font-mono-ui text-sm max-w-sm mx-auto">
+          <p className="font-mono-ui text-sm max-w-sm mx-auto" style={{ color: "var(--vv-text-desc)" }}>
             Paste a YouTube URL to begin saving videos to your knowledge vault.
           </p>
         </motion.div>

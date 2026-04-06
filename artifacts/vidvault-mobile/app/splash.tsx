@@ -11,7 +11,7 @@ const { width } = Dimensions.get("window");
 
 const BG = "#0a0a0b";
 const PURPLE = "#6366f1";
-const MUTED = "#3a3a4a";
+const MUTED = "rgba(255,255,255,0.5)";
 const WHITE = "#ffffff";
 
 export default function SplashScreen() {

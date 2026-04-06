@@ -21,11 +21,11 @@ const CARD = "#0f0f12";
 const PURPLE = "#6366f1";
 const PURPLE_DIM = "rgba(129,140,248,0.12)";
 const WHITE = "#ffffff";
-const MUTED = "#555566";
-const MUTED2 = "#3a3a4a";
-const BORDER = "rgba(255,255,255,0.08)";
-const BORDER_FOCUS = "rgba(129,140,248,0.45)";
-const INPUT_BG = "#0c0c0e";
+const MUTED = "rgba(255,255,255,0.6)";
+const MUTED2 = "rgba(255,255,255,0.4)";
+const BORDER = "rgba(255,255,255,0.15)";
+const BORDER_FOCUS = "rgba(129,140,248,0.55)";
+const INPUT_BG = "#0e0e12";
 const ERROR_BG = "rgba(239,68,68,0.08)";
 const ERROR_COLOR = "#f87171";
 

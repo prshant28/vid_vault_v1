@@ -284,7 +284,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
       </View>
 
       {/* Tool identity + stats */}
-      <View style={[styles.outputToolHeader, { borderBottomColor: "rgba(255,255,255,0.06)" }]}>
+      <View style={[styles.outputToolHeader, { borderBottomColor: "rgba(255,255,255,0.14)" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
           <View style={[styles.outputToolIcon, { backgroundColor: tool.color + "22", borderColor: tool.color + "30" }]}>
             <Feather name={tool.icon} size={20} color={tool.color} />
@@ -298,8 +298,8 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
           <View style={[styles.outputStatChip, { borderColor: tool.color + "35", backgroundColor: tool.color + "10" }]}>
             <Text style={[styles.outputStatText, { color: tool.color }]}>{wordCount} words</Text>
           </View>
-          <View style={[styles.outputStatChip, { borderColor: "rgba(255,255,255,0.08)" }]}>
-            <Text style={[styles.outputStatText, { color: "rgba(255,255,255,0.3)" }]}>{readMins} min read</Text>
+          <View style={[styles.outputStatChip, { borderColor: "rgba(255,255,255,0.18)" }]}>
+            <Text style={[styles.outputStatText, { color: "rgba(255,255,255,0.6)" }]}>{readMins} min read</Text>
           </View>
         </View>
       </View>

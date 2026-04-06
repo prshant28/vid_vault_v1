@@ -69,18 +69,18 @@
   --vv-bg: #09090c;
   --vv-sidebar: #08080b;
   --vv-surface: #0d0d11;
-  --vv-border: rgba(255,255,255,0.05);
-  --vv-border-section: rgba(255,255,255,0.04);
-  --vv-text: #e0e0e0;
-  --vv-text-muted: rgba(255,255,255,0.45);
-  --vv-text-desc: #505060;
-  --vv-grid-line: rgba(255,255,255,0.025);
-  --vv-hover-bg: rgba(255,255,255,0.015);
+  --vv-border: rgba(255,255,255,0.10);
+  --vv-border-section: rgba(255,255,255,0.07);
+  --vv-text: #e8e8ee;
+  --vv-text-muted: rgba(255,255,255,0.62);
+  --vv-text-desc: #9090a8;
+  --vv-grid-line: rgba(255,255,255,0.032);
+  --vv-hover-bg: rgba(255,255,255,0.04);
   --vv-card-bg: #111115;
-  --vv-card-border: rgba(255,255,255,0.07);
+  --vv-card-border: rgba(255,255,255,0.12);
   --vv-card-shadow: 0 4px 24px rgba(0,0,0,0.4);
   --vv-scrollbar-track: #0a0a0b;
-  --vv-scrollbar-thumb: #2a2a2a;
+  --vv-scrollbar-thumb: #3e3e50;
 
   /* Tailwind Design System */
   --monolith-bg: #0a0a0b;
@@ -102,17 +102,17 @@
   --secondary: 240 5% 12%;
   --secondary-foreground: 0 0% 88%;
   --muted: 240 5% 12%;
-  --muted-foreground: 240 3% 50%;
+  --muted-foreground: 240 3% 65%;
   --accent: 262 83% 65%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 62.8% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 5% 14%;
-  --input: 240 5% 12%;
+  --border: 240 5% 18%;
+  --input: 240 5% 15%;
   --ring: 262 83% 65%;
   --sidebar: 240 5% 5%;
-  --sidebar-foreground: 0 0% 60%;
-  --sidebar-border: 240 5% 12%;
+  --sidebar-foreground: 0 0% 72%;
+  --sidebar-border: 240 5% 15%;
   --sidebar-primary: 262 83% 65%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 5% 10%;
@@ -184,17 +184,17 @@
   --secondary: 240 5% 12%;
   --secondary-foreground: 0 0% 88%;
   --muted: 240 5% 12%;
-  --muted-foreground: 240 3% 50%;
+  --muted-foreground: 240 3% 65%;
   --accent: 262 83% 65%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 62.8% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 5% 14%;
-  --input: 240 5% 12%;
+  --border: 240 5% 18%;
+  --input: 240 5% 15%;
   --ring: 262 83% 65%;
   --sidebar: 240 5% 5%;
-  --sidebar-foreground: 0 0% 60%;
-  --sidebar-border: 240 5% 12%;
+  --sidebar-foreground: 0 0% 72%;
+  --sidebar-border: 240 5% 15%;
   --sidebar-primary: 262 83% 65%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 5% 10%;
@@ -428,7 +428,7 @@
   /* Glass panel (keep for compatibility) */
   .glass-panel {
     background: rgba(26, 26, 28, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(16px);
   }
   [data-theme="light"] .glass-panel {
@@ -459,6 +459,24 @@
     background: rgba(139, 92, 246, 0.08);
     color: #0d0c14;
   }
+
+  /* ─── DARK THEME TEXT COLOR OVERRIDES ─── */
+  /* Near-black hardcoded colors are invisible on dark bg — map to readable muted light */
+  :root .text-\[\#333\]    { color: var(--vv-text-muted) !important; }
+  :root .text-\[\#3a3a3a\] { color: var(--vv-text-muted) !important; }
+  :root .text-\[\#444\]    { color: var(--vv-text-muted) !important; }
+  :root .text-\[\#555\]    { color: var(--vv-text-muted) !important; }
+  :root .text-\[\#666\]    { color: var(--vv-text-muted) !important; }
+  :root .text-\[\#222\]    { color: rgba(255,255,255,0.5) !important; }
+  :root .text-\[\#252525\] { color: rgba(255,255,255,0.5) !important; }
+  :root .text-\[\#282828\] { color: rgba(255,255,255,0.5) !important; }
+  :root .text-\[\#2a2a2a\] { color: rgba(255,255,255,0.5) !important; }
+  :root .text-\[\#1e1e1e\] { color: rgba(255,255,255,0.45) !important; }
+  :root .text-\[\#1a1a1a\] { color: rgba(255,255,255,0.45) !important; }
+  :root .text-\[\#202020\] { color: rgba(255,255,255,0.45) !important; }
+  :root .text-\[\#888\]    { color: rgba(255,255,255,0.6) !important; }
+  :root .text-\[\#999\]    { color: rgba(255,255,255,0.65) !important; }
+  :root .placeholder\:text-\[\#2e2e2e\]::placeholder { color: rgba(255,255,255,0.35) !important; }
 
   /* ─── LIGHT THEME TEXT COLOR OVERRIDES ─── */
   /* These override Tailwind's generated color classes for description text */

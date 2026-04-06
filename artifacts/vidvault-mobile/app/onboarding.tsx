@@ -21,8 +21,8 @@ const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const WHITE  = "#ffffff";
-const MUTED  = "#4a4a5a";
-const MUTED2 = "#2a2a3a";
+const MUTED  = "rgba(255,255,255,0.55)";
+const MUTED2 = "rgba(255,255,255,0.35)";
 
 /* ── Grid cell size — slightly larger on Android to reduce overdraw ── */
 const CELL = Platform.OS === "android" ? 60 : 56;

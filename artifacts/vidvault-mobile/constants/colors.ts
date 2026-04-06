@@ -58,7 +58,7 @@ const colors = {
     secondaryForeground: "#e0e0e0",
 
     muted: "#0d0d11",
-    mutedForeground: "rgba(255,255,255,0.45)",
+    mutedForeground: "rgba(255,255,255,0.62)",
 
     accent: "#161620",
     accentForeground: "#a5b4fc",
@@ -66,8 +66,8 @@ const colors = {
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
 
-    border: "#ffffff12",
-    input: "#ffffff0d",
+    border: "#ffffff1f",
+    input: "#ffffff14",
 
     success: "#10b981",
     warning: "#f59e0b",
@@ -79,7 +79,7 @@ const colors = {
     skeletonHighlight: "#1e1e2a",
 
     surface: "#0d0d11",
-    desc: "#505060",
+    desc: "#9090a8",
   },
   radius: 14,
 };
