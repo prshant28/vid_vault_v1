@@ -756,9 +756,6 @@ export default function HomeScreen() {
           <Text style={[styles.greetingName, { color: colors.foreground }]}>
             Hey, {displayName} 👋
           </Text>
-          <Text style={[styles.greetingSub, { color: colors.mutedForeground }]}>
-           
-          </Text>
         </MotiView>
 
         {/* ── Welcome Banner (first-time / empty vault) ── */}

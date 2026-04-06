@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, Switch,
-  ScrollView, Platform, Alert, Modal, TextInput, FlatList, Image,
+  ScrollView, Platform, Alert, TextInput, FlatList, Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -282,8 +282,7 @@ export default function ProfileScreen() {
       <MotiView
         from={{ opacity: 0 }} animate={{ opacity: 1 }}
         transition={{ type: "timing", duration: 1200 }}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}
       >
         <LinearGradient
           colors={[PURPLE + "14", "transparent"]}
@@ -490,41 +489,50 @@ export default function ProfileScreen() {
         </SettingGroup>
       </ScrollView>
 
-      {/* ── Edit Name Modal ── */}
-      <Modal visible={showEditName} transparent animationType="fade" onRequestClose={() => setShowEditName(false)}>
-        <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: 24 }} activeOpacity={1} onPress={() => setShowEditName(false)}>
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <View style={[styles.editModal, { backgroundColor: colors.background, borderColor: PURPLE + "35" }]}>
-              <LinearGradient colors={[PURPLE + "14", "transparent"]} style={StyleSheet.absoluteFill} />
-              <View style={{ height: 2, backgroundColor: PURPLE, width: "20%", marginBottom: 20 }} />
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
-              <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, marginBottom: 16 }}>Update Name</Text>
-              <TextInput
-                value={editNameVal}
-                onChangeText={setEditNameVal}
-                style={[styles.nameInput, { color: colors.foreground, borderColor: PURPLE + "40", backgroundColor: colors.card }]}
-                placeholderTextColor={colors.mutedForeground}
-                placeholder="Your display name..."
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleSaveName}
-              />
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-                <TouchableOpacity onPress={() => setShowEditName(false)} style={[styles.modalBtn, { borderColor: colors.border, backgroundColor: colors.card, flex: 1 }]}>
-                  <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 11, letterSpacing: 1, color: colors.mutedForeground }}>CANCEL</Text>
-                </TouchableOpacity>
-                <AppButton label="SAVE" icon="check" size="sm" variant="primary" onPress={handleSaveName} />
-              </View>
+      {/* ── Edit Name overlay ── */}
+      {showEditName && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "center", padding: 24, backgroundColor: "rgba(0,0,0,0.65)" }]}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowEditName(false)} />
+          <MotiView
+            from={{ scale: 0.94, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "timing", duration: 220 }}
+            style={[styles.editModal, { backgroundColor: colors.background, borderColor: PURPLE + "35" }]}
+          >
+            <LinearGradient colors={[PURPLE + "14", "transparent"]} style={StyleSheet.absoluteFill} />
+            <View style={{ height: 2, backgroundColor: PURPLE, width: "20%", marginBottom: 20 }} />
+            <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
+            <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, marginBottom: 16 }}>Update Name</Text>
+            <TextInput
+              value={editNameVal}
+              onChangeText={setEditNameVal}
+              style={[styles.nameInput, { color: colors.foreground, borderColor: PURPLE + "40", backgroundColor: colors.card }]}
+              placeholderTextColor={colors.mutedForeground}
+              placeholder="Your display name..."
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSaveName}
+            />
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+              <TouchableOpacity onPress={() => setShowEditName(false)} style={[styles.modalBtn, { borderColor: colors.border, backgroundColor: colors.card, flex: 1 }]}>
+                <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 11, letterSpacing: 1, color: colors.mutedForeground }}>CANCEL</Text>
+              </TouchableOpacity>
+              <AppButton label="SAVE" icon="check" size="sm" variant="primary" onPress={handleSaveName} />
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+          </MotiView>
+        </View>
+      )}
 
-      {/* ── Tag Manager Bottom Sheet ── */}
-      <Modal visible={showTagManager} transparent animationType="slide" onRequestClose={() => setShowTagManager(false)}>
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}>
+      {/* ── Tag Manager overlay ── */}
+      {showTagManager && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTagManager(false)} />
-          <View style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: PURPLE + "30" }]}>
+          <MotiView
+            from={{ translateY: 80, opacity: 0 }}
+            animate={{ translateY: 0, opacity: 1 }}
+            transition={{ type: "timing", duration: 280 }}
+            style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: PURPLE + "30" }]}
+          >
             <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
               <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
             </View>
@@ -540,7 +548,9 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <TouchableOpacity onPress={() => setShowTagManager(false)} style={{ padding: 4 }}>
-                <Feather name="x" size={20} color={colors.mutedForeground} />
+                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                  <Feather name="x" size={14} color={colors.mutedForeground} />
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -601,9 +611,9 @@ export default function ProfileScreen() {
                 </View>
               )}
             />
-          </View>
+          </MotiView>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
@@ -614,7 +624,7 @@ const styles = StyleSheet.create({
 
   identityCard: { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
 
-  avatarRing:  { width: 92, height: 92, borderRadius: 46, alignItems: "center", justifyContent: "center", padding: 3 },
+  avatarRing:  { width: 92, height: 92, borderRadius: 46, alignItems: "center", justifyContent: "center", padding: 3, overflow: "hidden" },
   avatarInner: { flex: 1, width: "100%", borderRadius: 40, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   cameraBadge: { position: "absolute", bottom: 2, right: 2, width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 2 },
 

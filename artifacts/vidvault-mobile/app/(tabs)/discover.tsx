@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, useWindowDimensions, Modal, Alert, FlatList,
+  Platform, useWindowDimensions, Alert, FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -201,8 +201,7 @@ export default function DiscoverScreen() {
       <MotiView
         from={{ opacity: 0 }} animate={{ opacity: 1 }}
         transition={{ type: "timing", duration: 1200 }}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}
       >
         <LinearGradient
           colors={[CYAN + "12", "transparent"]}
@@ -375,11 +374,16 @@ export default function DiscoverScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Templates Modal ── */}
-      <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}>
+      {/* ── Templates overlay (in-page, works on all platforms) ── */}
+      {showTemplates && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTemplates(false)} />
-          <View style={[styles.tmplSheet, { backgroundColor: colors.background, borderColor: AMBER + "30" }]}>
+          <MotiView
+            from={{ translateY: 80, opacity: 0 }}
+            animate={{ translateY: 0, opacity: 1 }}
+            transition={{ type: "timing", duration: 280 }}
+            style={[styles.tmplSheet, { backgroundColor: colors.background, borderColor: AMBER + "35" }]}
+          >
             {/* Handle */}
             <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
               <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
@@ -395,24 +399,26 @@ export default function DiscoverScreen() {
                   <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Export Templates</Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setShowTemplates(false)} style={{ padding: 4 }}>
-                <Feather name="x" size={20} color={colors.mutedForeground} />
+              <TouchableOpacity onPress={() => setShowTemplates(false)} style={{ padding: 6 }}>
+                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                  <Feather name="x" size={14} color={colors.mutedForeground} />
+                </View>
               </TouchableOpacity>
             </View>
             <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 11, color: colors.mutedForeground, paddingHorizontal: 16, paddingVertical: 10, lineHeight: 16 }}>
-              Generate your AI notes and outputs in beautiful, print-ready HTML. Open a video, generate AI content, then tap Export.
+              Apply these templates when exporting AI outputs from any video. Open a video → generate AI content → tap Export.
             </Text>
             <FlatList
               data={ALL_TEMPLATES}
               keyExtractor={t => t.id}
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 8 }}
-              renderItem={({ item: t, index }) => (
+              renderItem={({ item: t }) => (
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => { setShowTemplates(false); router.push("/(tabs)/videos"); }}
                   style={[styles.tmplRow, { backgroundColor: colors.card, borderColor: t.color + "28" }]}
                 >
-                  <LinearGradient colors={[t.color + "08", "transparent"]} style={StyleSheet.absoluteFill} />
+                  <LinearGradient colors={[t.color + "0a", "transparent"]} style={StyleSheet.absoluteFill} />
                   <View style={[styles.tmplRowIcon, { backgroundColor: t.color + "18", borderColor: t.color + "30", borderWidth: 1 }]}>
                     <Feather name={t.icon} size={16} color={t.color} />
                   </View>
@@ -420,15 +426,18 @@ export default function DiscoverScreen() {
                     <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground }}>{t.name}</Text>
                     <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }} numberOfLines={1}>{t.desc}</Text>
                   </View>
-                  <View style={{ backgroundColor: t.color + "14", borderWidth: 1, borderColor: t.color + "30", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={{ backgroundColor: t.color + "14", borderWidth: 1, borderColor: t.color + "30", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 }}>
+                      <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
+                    </View>
+                    <Feather name="arrow-right" size={12} color={t.color + "80"} />
                   </View>
                 </TouchableOpacity>
               )}
             />
-          </View>
+          </MotiView>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
