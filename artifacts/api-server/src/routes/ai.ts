@@ -185,6 +185,55 @@ router.get("/youtube/search", async (req, res) => {
   }
 });
 
+/* ── AI health-check — returns which providers are configured and live ── */
+router.get("/ai/health", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const status: Record<string, any> = {
+    google_api_key: !!process.env.GOOGLE_API_KEY,
+    replit_integration: !!(process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && process.env.AI_INTEGRATIONS_OPENAI_API_KEY),
+    openai_key: !!process.env.OPENAI_API_KEY,
+    gemini_model_tested: null as string | null,
+    gemini_ok: false,
+    error: null as string | null,
+  };
+
+  if (process.env.GOOGLE_API_KEY) {
+    const models = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    for (const model of models) {
+      try {
+        const resp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: "Reply with exactly: OK" }] }],
+              generationConfig: { maxOutputTokens: 10, temperature: 0 },
+            }),
+          },
+        );
+        if (resp.ok) {
+          const data = (await resp.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            status.gemini_ok = true;
+            status.gemini_model_tested = model;
+            break;
+          }
+        } else {
+          const err = (await resp.json()) as { error?: { message?: string } };
+          status.error = err?.error?.message || `HTTP ${resp.status}`;
+        }
+      } catch (e: any) {
+        status.error = e.message;
+      }
+    }
+  }
+
+  res.json(status);
+});
+
 /* ── Global AI chat (with library context + YouTube search) ── */
 router.post("/ai/global-chat", async (req, res) => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }

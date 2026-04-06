@@ -4,57 +4,130 @@ import OpenAI from "openai";
    Shared AI text generation — Gemini first,
    then Replit proxy, then user's OpenAI key.
 ══════════════════════════════════════════ */
+
+/* Models in priority order — 2.5 series has separate free-tier quotas */
+const GEMINI_MODELS = [
+  "gemini-2.5-flash-lite",   /* fastest, highest free-tier limits */
+  "gemini-2.5-flash",        /* more capable, good free-tier limits */
+  "gemini-2.0-flash-lite",   /* fallback if 2.5 quota exhausted */
+  "gemini-2.0-flash",        /* original, exhausted on busy days */
+  "gemini-2.0-flash-001",    /* versioned alias — separate quota bucket */
+];
+
+async function tryGemini(prompt: string, key: string): Promise<string | null> {
+  for (const model of GEMINI_MODELS) {
+    try {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 3000, temperature: 0.75 },
+          }),
+        },
+      );
+
+      if (!resp.ok) {
+        let errMsg = `HTTP ${resp.status}`;
+        try {
+          const errBody = (await resp.json()) as { error?: { message?: string; status?: string } };
+          errMsg = errBody?.error?.message || errMsg;
+          /* Quota/billing errors — no point retrying other models */
+          if (errBody?.error?.status === "RESOURCE_EXHAUSTED" || resp.status === 429) {
+            console.warn(`[Gemini] Quota exhausted for model ${model}: ${errMsg}`);
+            return null;
+          }
+        } catch { /* ignore parse error */ }
+        console.warn(`[Gemini] ${model} failed: ${errMsg}`);
+        continue; /* try next model */
+      }
+
+      const data = (await resp.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
+        promptFeedback?: { blockReason?: string };
+      };
+
+      /* Handle blocked prompts */
+      if (data.promptFeedback?.blockReason) {
+        console.warn(`[Gemini] Prompt blocked (${data.promptFeedback.blockReason})`);
+        return null;
+      }
+
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        console.info(`[Gemini] Success with model ${model}`);
+        return text.trim();
+      }
+
+      console.warn(`[Gemini] ${model} returned empty content`);
+    } catch (err: any) {
+      console.warn(`[Gemini] ${model} threw: ${err.message}`);
+    }
+  }
+  return null;
+}
+
 export async function generateAiText(prompt: string): Promise<string> {
   /* 1️⃣  Google Gemini — preferred when GOOGLE_API_KEY is set */
   const googleKey = process.env.GOOGLE_API_KEY;
   if (googleKey) {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 3000, temperature: 0.75 },
-        }),
-      },
-    );
-    if (resp.ok) {
-      const data = (await resp.json()) as {
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-      };
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text.trim();
-    }
+    const text = await tryGemini(prompt, googleKey);
+    if (text) return text;
+    console.warn("[AI] All Gemini models failed — trying fallback providers");
   }
 
   /* 2️⃣  Replit AI Integration proxy (OpenAI-compatible) */
   const integrationBase = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
   const integrationKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
   if (integrationBase && integrationKey) {
-    const openai = new OpenAI({ apiKey: integrationKey, baseURL: integrationBase });
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_completion_tokens: 2048,
-    });
-    const text = completion.choices[0]?.message?.content;
-    if (text) return text.trim();
+    try {
+      const openai = new OpenAI({ apiKey: integrationKey, baseURL: integrationBase });
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_completion_tokens: 2048,
+      });
+      const text = completion.choices[0]?.message?.content;
+      if (text) {
+        console.info("[AI] Success via Replit Integration proxy");
+        return text.trim();
+      }
+    } catch (err: any) {
+      console.warn(`[AI] Replit proxy failed: ${err.message}`);
+    }
   }
 
   /* 3️⃣  User-supplied OpenAI key */
   const ownKey = process.env.OPENAI_API_KEY;
   if (ownKey) {
-    const openai = new OpenAI({ apiKey: ownKey });
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 2000,
-    });
-    return (completion.choices[0]?.message?.content || "").trim();
+    try {
+      const openai = new OpenAI({ apiKey: ownKey });
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 2000,
+      });
+      const text = completion.choices[0]?.message?.content;
+      if (text) {
+        console.info("[AI] Success via user OpenAI key");
+        return text.trim();
+      }
+    } catch (err: any) {
+      console.warn(`[AI] OpenAI failed: ${err.message}`);
+    }
   }
 
-  throw new Error("No AI provider available. Please add a GOOGLE_API_KEY secret.");
+  const configuredKeys = [
+    googleKey && "GOOGLE_API_KEY",
+    integrationBase && "AI_INTEGRATIONS_OPENAI",
+    ownKey && "OPENAI_API_KEY",
+  ].filter(Boolean).join(", ") || "none";
+
+  throw new Error(
+    `AI generation failed. Configured providers: ${configuredKeys}. Check server logs for details.`,
+  );
 }
 
 /* ══════════════════════════════════════════
@@ -112,8 +185,8 @@ export async function autoAnalyzeVideo(
         const prompt = AI_PROMPTS[type](title, description, channelName);
         const content = await generateAiText(prompt);
         await db.insert(aiOutputsTable).values({ videoId, userId, type, content });
-      } catch {
-        /* silently ignore if AI fails during auto-analysis */
+      } catch (err: any) {
+        console.warn(`[autoAnalyze] ${type} failed for video ${videoId}: ${err.message}`);
       }
     }),
   );

@@ -12,7 +12,7 @@ import { eq, and, ilike, inArray, sql } from "drizzle-orm";
 import { autoAnalyzeVideo } from "../lib/gemini";
 
 async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: string; title: string; description?: string}>> {
-  const apiKey = process.env.YOUTUBE_API_KEY;
+  const apiKey = process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) return [];
 
   const videos: Array<{id: string; title: string; description?: string}> = [];
