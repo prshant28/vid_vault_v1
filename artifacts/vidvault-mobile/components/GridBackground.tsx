@@ -15,7 +15,7 @@ export function GridBackground() {
   const lineColor = isDark ? "#ffffff06" : "#0000000a";
 
   return (
-    <View style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
       <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
         <Defs>
           <RadialGradient id="vignette" cx="50%" cy="50%" r="70%">

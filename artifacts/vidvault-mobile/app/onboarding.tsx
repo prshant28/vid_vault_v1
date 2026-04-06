@@ -16,35 +16,35 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: W, height: H } = Dimensions.get("window");
 
-const BG = "#09090c";
+const BG     = "#09090c";
 const PURPLE = "#6366f1";
-const CYAN = "#06b6d4";
-const GREEN = "#10b981";
-const WHITE = "#ffffff";
-const MUTED = "#4a4a5a";
+const CYAN   = "#06b6d4";
+const GREEN  = "#10b981";
+const WHITE  = "#ffffff";
+const MUTED  = "#4a4a5a";
 const MUTED2 = "#2a2a3a";
-const GRID_LINE = "rgba(139,92,246,0.07)";
-const CELL = 56;
+
+/* ── Grid cell size — slightly larger on Android to reduce overdraw ── */
+const CELL = Platform.OS === "android" ? 60 : 56;
+const GRID_LINE = "rgba(139,92,246,0.06)";
 
 const SLIDES = [
   {
-    icon: "film" as const,
+    icon: "film"   as const,
     code: "01",
     badge: "SAVE_CONTENT",
     title: "Save Any\nYouTube Video",
-    subtitle:
-      "Paste any YouTube URL to instantly save it to your personal knowledge vault.",
+    subtitle: "Paste any YouTube URL to instantly save it to your personal knowledge vault.",
     accent: PURPLE,
-    accentGlow: "rgba(139,92,246,0.12)",
-    accentBorder: "rgba(139,92,246,0.3)",
+    accentGlow: "rgba(99,102,241,0.10)",
+    accentBorder: "rgba(99,102,241,0.30)",
   },
   {
-    icon: "cpu" as const,
+    icon: "cpu"    as const,
     code: "02",
     badge: "AI_INSIGHTS",
     title: "Instant AI\nAnalysis",
-    subtitle:
-      "Generate summaries, study notes, flashcards, and quizzes from any video with one tap.",
+    subtitle: "Generate summaries, study notes, flashcards, and quizzes from any video with one tap.",
     accent: CYAN,
     accentGlow: "rgba(6,182,212,0.10)",
     accentBorder: "rgba(6,182,212,0.28)",
@@ -54,8 +54,7 @@ const SLIDES = [
     code: "03",
     badge: "ORGANIZE",
     title: "Organize &\nDiscover",
-    subtitle:
-      "Sort videos into folders, add tags, and chat with AI to find exactly what you need.",
+    subtitle: "Sort videos into folders, add tags, and chat with AI to find exactly what you need.",
     accent: GREEN,
     accentGlow: "rgba(16,185,129,0.10)",
     accentBorder: "rgba(16,185,129,0.28)",
@@ -69,71 +68,75 @@ const completeOnboarding = async () => {
   router.replace("/login");
 };
 
-/* Grid background — SVG lines forming subtle dark grid */
+/* ─────────────────────────────────────────────
+   Grid background
+   CRITICAL: wrap Svg in View with pointerEvents="none" (prop, not style)
+   so touches pass through on Android.
+───────────────────────────────────────────── */
 function GridBg() {
   const cols = Math.ceil(W / CELL) + 1;
   const rows = Math.ceil(H / CELL) + 1;
   return (
-    <Svg width={W} height={H} style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
-      {Array.from({ length: cols }).map((_, i) => (
-        <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke={GRID_LINE} strokeWidth={1} />
-      ))}
-      {Array.from({ length: rows }).map((_, i) => (
-        <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke={GRID_LINE} strokeWidth={1} />
-      ))}
-    </Svg>
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
+        {Array.from({ length: cols }).map((_, i) => (
+          <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke={GRID_LINE} strokeWidth={1} />
+        ))}
+        {Array.from({ length: rows }).map((_, i) => (
+          <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke={GRID_LINE} strokeWidth={1} />
+        ))}
+      </Svg>
+    </View>
   );
 }
 
-/* Polygon CTA button */
-function PolyBtn({ label, onPress }: { label: string; onPress: () => void }) {
+/* ─────────────────────────────────────────────
+   CTA button — pure RN (no SVG) so it works
+   reliably on Android and iOS.
+───────────────────────────────────────────── */
+function CtaButton({ label, onPress, accent }: { label: string; onPress: () => void; accent: string }) {
   const [pressed, setPressed] = useState(false);
-  const btnW = W - 48;
-  const btnH = 52;
-  const cut = 12;
-  const pts = `${cut},0 ${btnW},0 ${btnW},${btnH - cut} ${btnW - cut},${btnH} 0,${btnH} 0,${cut}`;
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.9}
+      activeOpacity={0.85}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
+      style={[
+        styles.ctaBtn,
+        { backgroundColor: pressed ? "#d8d8d8" : WHITE, borderColor: accent + "40" },
+      ]}
     >
-      <View style={{ width: btnW, height: btnH }}>
-        <Svg width={btnW} height={btnH} style={StyleSheet.absoluteFillObject}>
-          <Polygon points={pts} fill={pressed ? "#d8d8d8" : WHITE} />
-        </Svg>
-        <View style={[StyleSheet.absoluteFillObject, { alignItems: "center", justifyContent: "center" }]}>
-          <Text style={styles.polyLabel}>{label}</Text>
-        </View>
-      </View>
+      <Text style={styles.ctaLabel}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
+/* ─────────────────────────────────────────────
+   Main onboarding screen
+───────────────────────────────────────────── */
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState(0);
 
-  const slide = SLIDES[current];
-  const isLast = current === SLIDES.length - 1;
+  const slide   = SLIDES[current];
+  const isLast  = current === SLIDES.length - 1;
 
   const next = () => {
-    if (isLast) {
-      completeOnboarding();
-    } else {
-      setCurrent((c) => c + 1);
-    }
+    if (isLast) completeOnboarding();
+    else setCurrent((c) => c + 1);
   };
 
+  /* Safe area padding — ensure minimum on Android (nav bar) */
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const botPad = Math.max(insets.bottom, Platform.OS === "android" ? 16 : 0) + (Platform.OS === "web" ? 34 : 0);
+  const botPad = Math.max(insets.bottom, Platform.OS === "android" ? 20 : 0)
+               + (Platform.OS === "web" ? 34 : 0);
 
   return (
     <View style={[styles.container, { paddingTop: topPad, paddingBottom: botPad }]}>
       <GridBg />
 
-      {/* Corner accents */}
+      {/* Corner bracket accents */}
       <View style={[styles.bracketTL, { borderColor: PURPLE + "40" }]} />
       <View style={[styles.bracketBR, { borderColor: slide.accent + "30" }]} />
 
@@ -145,17 +148,22 @@ export default function OnboardingScreen() {
           </View>
           <Text style={styles.logoName}>VidVault</Text>
         </View>
-        <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}>
+
+        <TouchableOpacity
+          onPress={completeOnboarding}
+          activeOpacity={0.7}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        >
           <Text style={styles.skipText}>SKIP</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Slide body ── */}
       <View style={styles.body}>
-        {/* Decorative large number — top-right */}
+        {/* Decorative large slide number — top-right (very faint) */}
         <Text style={[styles.bigCode, { color: slide.accent }]}>{slide.code}</Text>
 
-        {/* Accent line */}
+        {/* Short accent line */}
         <View style={[styles.accentLine, { backgroundColor: slide.accent }]} />
 
         {/* Icon box */}
@@ -178,27 +186,39 @@ export default function OnboardingScreen() {
 
       {/* ── Footer ── */}
       <View style={styles.footer}>
-        {/* Step dots */}
+        {/* Progress dots */}
         <View style={styles.stepRow}>
-          {SLIDES.map((_, i) => (
-            <View key={i} style={[styles.stepDot, {
-              backgroundColor: i === current ? WHITE : MUTED2,
-              width: i === current ? 28 : 6,
-            }]} />
+          {SLIDES.map((s, i) => (
+            <View
+              key={i}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor: i === current ? WHITE : MUTED2,
+                  width: i === current ? 28 : 6,
+                },
+              ]}
+            />
           ))}
           <Text style={styles.stepLabel}>{current + 1} / {SLIDES.length}</Text>
         </View>
 
-        {/* CTA */}
-        <PolyBtn label={isLast ? "GET STARTED" : "CONTINUE →"} onPress={next} />
+        {/* CTA — pure RN button, works on Android and iOS */}
+        <CtaButton
+          label={isLast ? "GET STARTED" : "CONTINUE →"}
+          onPress={next}
+          accent={slide.accent}
+        />
 
-        {/* Bottom hint */}
         <Text style={styles.hint}>KNOWLEDGE_BASE // ACTIVE</Text>
       </View>
     </View>
   );
 }
 
+/* ─────────────────────────────────────────────
+   Styles
+───────────────────────────────────────────── */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -232,7 +252,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 8,
-    marginBottom: 0,
   },
   logoRow: {
     flexDirection: "row",
@@ -240,22 +259,22 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   logoBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 4,
+    width: 34,
+    height: 34,
+    borderRadius: 5,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   logoImg: {
-    width: 22,
-    height: 22,
+    width: 24,
+    height: 24,
   },
   logoName: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 17,
     color: WHITE,
-    letterSpacing: -0.3,
+    /* letterSpacing omitted — Android renders negative values incorrectly */
   },
   skipText: {
     fontFamily: "JetBrainsMono_600SemiBold",
@@ -270,24 +289,27 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
     gap: 18,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
+
   bigCode: {
     fontFamily: "JetBrainsMono_600SemiBold",
     fontSize: 96,
     lineHeight: 96,
-    opacity: 0.06,
+    opacity: 0.05,
     position: "absolute",
     top: -8,
     right: -4,
-    letterSpacing: -4,
+    /* No negative letterSpacing — not reliable on Android */
   },
+
   accentLine: {
     width: 36,
     height: 2,
     borderRadius: 1,
-    opacity: 0.7,
+    opacity: 0.8,
   },
+
   iconBox: {
     width: 100,
     height: 100,
@@ -296,6 +318,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 6,
   },
+
   badge: {
     flexDirection: "row",
     alignItems: "center",
@@ -314,13 +337,15 @@ const styles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 2,
   },
+
   title: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: Platform.OS === "android" ? 36 : 34,
+    fontSize: 36,
     color: WHITE,
-    letterSpacing: -0.8,
-    lineHeight: Platform.OS === "android" ? 44 : 40,
+    lineHeight: 44,
+    /* No negative letterSpacing */
   },
+
   subtitle: {
     fontFamily: "Poppins_400Regular",
     fontSize: 14,
@@ -331,10 +356,11 @@ const styles = StyleSheet.create({
 
   /* Footer */
   footer: {
-    paddingBottom: Platform.OS === "android" ? 8 : 12,
     alignItems: "center",
     gap: 16,
+    paddingBottom: Platform.OS === "android" ? 8 : 12,
   },
+
   stepRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -352,12 +378,24 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginLeft: 6,
   },
-  polyLabel: {
+
+  /* CTA button — pure RN, no SVG */
+  ctaBtn: {
+    width: W - 48,
+    height: 52,
+    borderRadius: 3,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 2,
+  },
+  ctaLabel: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 13,
+    fontSize: 14,
     color: BG,
     letterSpacing: 2,
   },
+
   hint: {
     fontFamily: "JetBrainsMono_400Regular",
     fontSize: 8,

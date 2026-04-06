@@ -70,13 +70,19 @@ async function tryGemini(prompt: string, key: string): Promise<string | null> {
 }
 
 export async function generateAiText(prompt: string): Promise<string> {
-  /* 1️⃣  User-supplied OpenAI key — first priority */
+  /* 1️⃣  User-supplied OpenAI-compatible key — first priority
+         Supports both OpenAI (sk-...) and OpenRouter (sk-or-v1-...) keys */
   const ownKey = process.env.OPENAI_API_KEY;
   if (ownKey) {
     try {
-      const openai = new OpenAI({ apiKey: ownKey });
+      const isOpenRouter = ownKey.startsWith("sk-or-");
+      const openai = new OpenAI({
+        apiKey: ownKey,
+        ...(isOpenRouter ? { baseURL: "https://openrouter.ai/api/v1" } : {}),
+      });
+      const model = isOpenRouter ? "openai/gpt-4o-mini" : "gpt-4o-mini";
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model,
         messages: [{ role: "user", content: prompt }],
         max_tokens: 2000,
       });

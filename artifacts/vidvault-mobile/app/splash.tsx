@@ -31,8 +31,8 @@ export default function SplashScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      {/* Background grid dots */}
-      <View style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+      {/* Background grid dots — pointerEvents as prop (not style) for Android */}
+      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
         {Array.from({ length: 80 }).map((_, i) => {
           const col = i % 10;
           const row = Math.floor(i / 10);
@@ -168,8 +168,8 @@ const styles = StyleSheet.create({
     fontFamily: "AlegreyaSansSC_800ExtraBold",
     fontSize: 42,
     color: WHITE,
-    letterSpacing: -1,
-    lineHeight: 46,
+    /* letterSpacing omitted — negative values not reliable on Android */
+    lineHeight: 50,
   },
   tagline: {
     fontFamily: "JetBrainsMono_400Regular",

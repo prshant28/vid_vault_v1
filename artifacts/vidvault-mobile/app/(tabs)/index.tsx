@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
 
   ambientGlow: {
     position: "absolute", top: 0, left: 0, right: 0, height: 280,
-    zIndex: 0, pointerEvents: "none",
+    zIndex: 0,
   },
 
   greeting: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 8 },

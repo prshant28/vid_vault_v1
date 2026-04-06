@@ -131,11 +131,12 @@ function ClassicTabLayout() {
           tabBarBackground: () =>
             isAndroid ? (
               <>
-                {/* Top accent line */}
+                {/* Top accent line — pointerEvents as prop for Android */}
                 <View
+                  pointerEvents="none"
                   style={[
                     StyleSheet.absoluteFillObject,
-                    { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? "#ffffff14" : "#00000018", pointerEvents: "none" },
+                    { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? "#ffffff14" : "#00000018" },
                   ]}
                 />
                 <LinearGradient
