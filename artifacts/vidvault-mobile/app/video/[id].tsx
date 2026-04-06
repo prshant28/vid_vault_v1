@@ -522,13 +522,34 @@ export default function VideoDetailScreen() {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <GridBackground />
-        <View style={{ aspectRatio: 16 / 9, backgroundColor: colors.card }} />
-        <View style={{ padding: 16, gap: 10 }}>
-          <Skeleton height={22} width="80%" borderRadius={4} />
-          <Skeleton height={14} width="45%" borderRadius={4} />
-          <Skeleton height={44} borderRadius={4} style={{ marginTop: 8 }} />
-          {[1, 2, 3].map((i) => <Skeleton key={i} height={68} borderRadius={4} />)}
-        </View>
+        <TopAppBar showBack title="Loading…" />
+        {/* Video player skeleton */}
+        <MotiView
+          from={{ opacity: 0.4 }}
+          animate={{ opacity: 1 }}
+          transition={{ type: "timing", duration: 900, loop: true }}
+          style={{ aspectRatio: 16 / 9, backgroundColor: colors.card, marginHorizontal: 0 }}
+        />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 12 }} scrollEnabled={false}>
+          {/* Title + meta */}
+          <Skeleton height={24} width="85%" borderRadius={6} />
+          <Skeleton height={14} width="50%" borderRadius={4} style={{ marginTop: 2 }} />
+          {/* Quick action pills skeleton */}
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
+            {[1, 2, 3].map((i) => <Skeleton key={i} height={28} width={72} borderRadius={14} />)}
+          </View>
+          {/* Description skeleton */}
+          <Skeleton height={52} borderRadius={8} style={{ marginTop: 4 }} />
+          {/* AI tool cards skeleton - 3 columns */}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} height={76} width="30%" borderRadius={10} />
+            ))}
+          </View>
+          {/* Notes skeleton */}
+          <Skeleton height={20} width="35%" borderRadius={4} style={{ marginTop: 8 }} />
+          {[1, 2].map((i) => <Skeleton key={i} height={72} borderRadius={8} />)}
+        </ScrollView>
       </View>
     );
   }

@@ -1,8 +1,7 @@
-import { Search, Plus, Sparkles, Sun, Moon } from "lucide-react";
+import { Search, Plus, Sparkles } from "lucide-react";
 import { useUI } from "@/contexts/ui-context";
 import { useLocation } from "wouter";
 import { useRef } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "DASHBOARD",
@@ -15,7 +14,6 @@ export function TopNav() {
   const { setAiSidebarOpen, setUrlModalOpen } = useUI();
   const [location, setLocation] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isDark, toggleTheme } = useTheme();
 
   const pageTitle = PAGE_TITLES[location] || "VAULT";
 
@@ -27,82 +25,64 @@ export function TopNav() {
 
   return (
     <header
-      className="h-14 flex items-center justify-between px-5 lg:px-8 sticky top-0 z-40 border-b transition-colors duration-300"
-      style={{
-        background: "var(--vv-sidebar)",
-        borderColor: "var(--vv-border)",
-      }}
+      className="h-14 flex items-center justify-between px-5 lg:px-8 sticky top-0 z-40 border-b transition-colors duration-300 flex-shrink-0"
+      style={{ background: "var(--vv-sidebar)", borderColor: "var(--vv-border)" }}
     >
-      {/* Page title */}
+      {/* Left: breadcrumb + search */}
       <div className="flex items-center gap-4">
-        <span className="font-mono-ui text-[10px] text-[#333] hidden sm:block">
+        <span className="text-[10px] hidden sm:block" style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--vv-text-muted)" }}>
           //{pageTitle}
         </span>
-        <div
-          className="h-4 w-px hidden sm:block"
-          style={{ background: "var(--vv-border)" }}
-        />
-        {/* Search */}
+        <div className="h-4 w-px hidden sm:block" style={{ background: "var(--vv-border)" }} />
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#333] group-focus-within:text-[#8b5cf6] transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors" style={{ color: "var(--vv-text-muted)" }} />
           <input
             ref={inputRef}
-            placeholder="SEARCH VAULT..."
-            className="w-48 sm:w-64 h-9 bg-transparent border pl-9 pr-3 text-xs font-mono-ui uppercase tracking-widest focus:outline-none transition-colors placeholder:text-[#2a2a2a]"
+            placeholder="Search vault…"
+            className="w-44 sm:w-64 h-9 bg-transparent border pl-9 pr-3 text-xs rounded-lg focus:outline-none transition-all"
             style={{
               borderColor: "var(--vv-border)",
-              color: isDark ? "#666" : "#555568",
+              color: "var(--vv-text)",
+              fontFamily: "'JetBrains Mono', monospace",
             }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)";
-              e.currentTarget.style.color = isDark ? "#fff" : "#0d0c14";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "var(--vv-border)";
-              e.currentTarget.style.color = isDark ? "#666" : "#555568";
-            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.5)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--vv-border)"; }}
             onKeyDown={handleSearch}
           />
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={toggleTheme}
-          className="theme-toggle"
-          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-        </button>
-
+      {/* Right: actions */}
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setAiSidebarOpen(true)}
-          className="flex items-center gap-2 px-3 h-9 text-[10px] font-mono-ui uppercase tracking-widest text-[#8b5cf6] border border-[rgba(139,92,246,0.2)] hover:bg-[rgba(139,92,246,0.08)] hover:border-[rgba(139,92,246,0.4)] transition-all"
+          className="flex items-center gap-2 px-3 h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            color: "#8b5cf6",
+            border: "1px solid rgba(139,92,246,0.25)",
+            background: "rgba(139,92,246,0.06)",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.12)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.4)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.06)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.25)"; }}
         >
-          <Sparkles className="w-3 h-3" />
-          <span className="hidden sm:inline">AI_TOOLS</span>
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">AI Tools</span>
         </button>
 
         <button
           onClick={() => setUrlModalOpen(true)}
-          className="flex items-center gap-2 px-3 h-9 text-[10px] font-mono-ui uppercase tracking-widest font-bold transition-all"
+          className="flex items-center gap-2 px-3 h-9 text-[10px] font-bold uppercase tracking-wider text-white rounded-lg transition-all"
           style={{
-            background: isDark ? "#ffffff" : "#0d0c14",
-            color: isDark ? "#000" : "#fff",
-            clipPath: "polygon(8% 0px, 100% 0px, 100% 70%, 92% 100%, 0px 100%, 0px 30%)",
+            fontFamily: "'JetBrains Mono', monospace",
+            background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+            boxShadow: "0 2px 12px rgba(139,92,246,0.3)",
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#8b5cf6";
-            (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = isDark ? "#ffffff" : "#0d0c14";
-            (e.currentTarget as HTMLButtonElement).style.color = isDark ? "#000" : "#fff";
-          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(139,92,246,0.5)"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 12px rgba(139,92,246,0.3)"; (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
         >
-          <Plus className="w-3 h-3" />
-          <span className="hidden sm:inline">SAVE</span>
+          <Plus className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Save Video</span>
         </button>
       </div>
     </header>

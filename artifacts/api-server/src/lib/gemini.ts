@@ -17,11 +17,21 @@ const GEMINI_MODELS = [
 async function tryGemini(prompt: string, key: string): Promise<string | null> {
   for (const model of GEMINI_MODELS) {
     try {
+      /* Server-side fetch must include a Referer header if the API key
+         has HTTP referrer restrictions set in the Google Cloud console. */
+      const refererOrigin = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : "https://vidvault.ai";
+
       const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Referer": refererOrigin,
+            "Origin": refererOrigin,
+          },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { maxOutputTokens: 3000, temperature: 0.75 },
@@ -32,14 +42,28 @@ async function tryGemini(prompt: string, key: string): Promise<string | null> {
       if (!resp.ok) {
         let errMsg = `HTTP ${resp.status}`;
         try {
-          const errBody = (await resp.json()) as { error?: { message?: string; status?: string } };
+          const errBody = (await resp.json()) as {
+            error?: { message?: string; status?: string; details?: Array<{ reason?: string }> }
+          };
           errMsg = errBody?.error?.message || errMsg;
           /* Quota/billing errors — no point retrying other models */
           if (errBody?.error?.status === "RESOURCE_EXHAUSTED" || resp.status === 429) {
             console.warn(`[Gemini] Quota exhausted for model ${model}: ${errMsg}`);
             return null;
           }
-        } catch { /* ignore parse error */ }
+          /* HTTP referrer restriction — all models will fail, stop now */
+          const isReferrerBlocked = errBody?.error?.details?.some(d => d.reason === "API_KEY_HTTP_REFERRER_BLOCKED");
+          if (isReferrerBlocked) {
+            throw new Error(
+              "GOOGLE_API_KEY has HTTP referrer restrictions that block server-side calls. " +
+              "To fix: open Google Cloud Console → APIs & Services → Credentials → edit your API key → " +
+              "remove the HTTP referrer restrictions (or add * to allow all). Then the AI will work."
+            );
+          }
+        } catch (innerErr: any) {
+          if (innerErr.message?.includes("HTTP referrer restrictions")) throw innerErr;
+          /* ignore parse error */
+        }
         console.warn(`[Gemini] ${model} failed: ${errMsg}`);
         continue; /* try next model */
       }
@@ -63,6 +87,8 @@ async function tryGemini(prompt: string, key: string): Promise<string | null> {
 
       console.warn(`[Gemini] ${model} returned empty content`);
     } catch (err: any) {
+      /* Re-throw fatal errors (e.g. referrer restriction) — retrying other models won't help */
+      if (err.message?.includes("HTTP referrer restrictions")) throw err;
       console.warn(`[Gemini] ${model} threw: ${err.message}`);
     }
   }

@@ -178,7 +178,7 @@ function QuizTemplatePicker({ onSelect, onClose }: { onSelect: (tplId: number) =
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
         className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto hide-scrollbar"
-        style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)" }}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -195,7 +195,7 @@ function QuizTemplatePicker({ onSelect, onClose }: { onSelect: (tplId: number) =
               key={tpl.id}
               onClick={() => onSelect(tpl.id)}
               className="text-left p-3 rounded-xl border transition-all hover:border-primary/40 hover:bg-primary/5 group"
-              style={{ background: "#111115", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
             >
               <div className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mb-1">Template {tpl.id}</div>
               <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{tpl.name}</div>
@@ -264,12 +264,12 @@ function AiOutputCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-xl overflow-hidden"
-        style={{ background: "#0d0d11", border: `1px solid ${border}`, borderLeft: `3px solid ${accent}` }}
+        style={{ background: "var(--vv-card-bg)", border: `1px solid ${border}`, borderLeft: `3px solid ${accent}` }}
       >
         {/* Card header */}
         <div
           className="flex items-center gap-3 px-4 py-3 cursor-pointer"
-          style={{ borderBottom: expanded ? `1px solid rgba(255,255,255,0.05)` : "none" }}
+          style={{ borderBottom: expanded ? `1px solid var(--vv-border)` : "none" }}
           onClick={() => setExpanded(e => !e)}
         >
           {tool && (
@@ -288,7 +288,7 @@ function AiOutputCard({
               <button
                 onClick={e => { e.stopPropagation(); setShowQuiz(q => !q); setExpanded(true); }}
                 className="flex items-center gap-1 text-[9px] font-mono-ui uppercase tracking-wider px-2.5 py-1.5 rounded-lg transition-all"
-                style={{ background: showQuiz ? "#22c55e18" : "rgba(255,255,255,0.04)", border: `1px solid ${showQuiz ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.06)'}`, color: showQuiz ? "#4ade80" : "#666" }}
+                style={{ background: showQuiz ? "#22c55e18" : "var(--vv-surface)", border: `1px solid ${showQuiz ? 'rgba(34,197,94,0.3)' : 'var(--vv-card-border)'}`, color: showQuiz ? "#4ade80" : "var(--vv-text-muted)" }}
               >
                 {showQuiz ? <><X className="w-2.5 h-2.5" /> Exit</> : <><CheckSquare className="w-2.5 h-2.5" /> Take Quiz</>}
               </button>
@@ -296,7 +296,7 @@ function AiOutputCard({
             <button
               onClick={e => { e.stopPropagation(); isQuiz ? setShowTemplatePicker(true) : handleDownload(); }}
               className="p-1.5 rounded-lg transition-all text-muted-foreground hover:text-foreground"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
               title="Download HTML"
             >
               <Download className="w-3 h-3" />
@@ -304,7 +304,7 @@ function AiOutputCard({
             <button
               onClick={e => { e.stopPropagation(); onDelete(output.id); }}
               className="p-1.5 rounded-lg transition-all text-muted-foreground hover:text-red-400"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
               title="Delete"
             >
               <Trash2 className="w-3 h-3" />
@@ -326,14 +326,15 @@ function AiOutputCard({
                   <InteractiveQuiz questions={parsedQuiz.questions} />
                 ) : (
                   <div
-                    className="prose prose-invert prose-sm max-w-none text-foreground/85 leading-relaxed
-                      prose-headings:font-display prose-headings:text-foreground prose-headings:font-bold
+                    className="prose prose-sm max-w-none leading-relaxed
+                      prose-headings:font-display prose-headings:font-bold
                       prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
-                      prose-strong:text-foreground prose-strong:font-semibold
-                      prose-code:text-xs prose-code:font-mono prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                      prose-ul:space-y-1 prose-li:text-foreground/80
-                      prose-blockquote:border-l-2 prose-blockquote:border-primary/40 prose-blockquote:text-muted-foreground prose-blockquote:not-italic
+                      prose-strong:font-semibold
+                      prose-code:text-xs prose-code:font-mono prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                      prose-ul:space-y-1
+                      prose-blockquote:border-l-2 prose-blockquote:border-primary/40 prose-blockquote:not-italic
                       prose-hr:border-border/30"
+                    style={{ color: "var(--vv-text)" }}
                     dangerouslySetInnerHTML={{ __html: contentHtml }}
                   />
                 )}
@@ -397,13 +398,13 @@ function AiNotesPanel({
   return (
     <div className={`flex flex-col ${isMobile ? "gap-3" : "h-full gap-3"}`}>
       {/* Tab switcher */}
-      <div className="flex p-1 rounded-xl" style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="flex p-1 rounded-xl" style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}>
         <button
           onClick={() => setActiveTab("ai")}
           className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
           style={{
             background: activeTab === "ai" ? "#8b5cf6" : "transparent",
-            color: activeTab === "ai" ? "#fff" : "#555",
+            color: activeTab === "ai" ? "#fff" : "var(--vv-text-muted)",
           }}
         >
           AI Outputs {(video.aiOutputs?.length ?? 0) > 0 && `(${video.aiOutputs!.length})`}
@@ -413,7 +414,7 @@ function AiNotesPanel({
           className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
           style={{
             background: activeTab === "notes" ? "#8b5cf6" : "transparent",
-            color: activeTab === "notes" ? "#fff" : "#555",
+            color: activeTab === "notes" ? "#fff" : "var(--vv-text-muted)",
           }}
         >
           My Notes {(video.notes?.length ?? 0) > 0 && `(${video.notes!.length})`}
@@ -423,7 +424,7 @@ function AiNotesPanel({
       {/* Tab content */}
       <div
         className={`rounded-2xl hide-scrollbar ${isMobile ? "max-h-[70vh] overflow-y-auto" : "flex-1 overflow-y-auto"}`}
-        style={{ background: "#08080b", border: "1px solid rgba(255,255,255,0.04)" }}
+        style={{ background: "var(--vv-bg)", border: "1px solid var(--vv-border)" }}
       >
         {/* AI Outputs */}
         {activeTab === "ai" && (
@@ -481,7 +482,7 @@ function AiNotesPanel({
                 (video.notes || []).map((note: any) => (
                   <div key={note.id}
                     className="rounded-xl p-3 relative"
-                    style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.05)", borderLeft: "3px solid rgba(139,92,246,0.4)" }}>
+                    style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)", borderLeft: "3px solid rgba(139,92,246,0.4)" }}>
                     {note.timestamp !== null && (
                       <span className="inline-flex items-center text-[10px] font-mono-ui text-primary border border-primary/30 bg-primary/10 px-2 py-0.5 rounded mb-2">
                         {Math.floor(note.timestamp / 60)}:{(note.timestamp % 60).toString().padStart(2, "0")}
@@ -494,14 +495,14 @@ function AiNotesPanel({
             </div>
 
             {/* Note input */}
-            <div className="pt-3 mt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+            <div className="pt-3 mt-2 border-t" style={{ borderColor: "var(--vv-border)" }}>
               <textarea
                 value={noteText}
                 onChange={e => setNoteText(e.target.value)}
                 className="w-full bg-transparent border rounded-xl text-sm resize-none px-3 py-2.5 text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-colors"
-                style={{ borderColor: "rgba(255,255,255,0.07)" }}
+                style={{ borderColor: "var(--vv-card-border)" }}
                 onFocus={e => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)")}
-                onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
+                onBlur={e => (e.currentTarget.style.borderColor = "var(--vv-card-border)")}
                 placeholder="Take a note…"
                 rows={3}
                 onKeyDown={e => {
@@ -603,7 +604,7 @@ export default function VideoDetail() {
       {/* ── Left column: Player + info + AI tools ── */}
       <div className="lg:col-span-2 space-y-4">
         {/* Video player */}
-        <div className="rounded-xl overflow-hidden aspect-video shadow-2xl" style={{ background: "#090910" }}>
+        <div className="rounded-xl overflow-hidden aspect-video shadow-2xl" style={{ background: "var(--vv-surface)" }}>
           {ytId ? (
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1`}
@@ -637,7 +638,7 @@ export default function VideoDetail() {
           {video.description && (
             <div
               className="rounded-xl p-3 text-xs text-muted-foreground whitespace-pre-wrap max-h-24 overflow-y-auto hide-scrollbar leading-relaxed"
-              style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.05)" }}
+              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
             >
               {video.description}
             </div>
@@ -648,7 +649,7 @@ export default function VideoDetail() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="text-[9px] font-mono-ui uppercase tracking-[0.3em] text-muted-foreground">//AI_STUDIO</div>
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.04)" }} />
+            <div className="flex-1 h-px" style={{ background: "var(--vv-border)" }} />
             {generatingType && (
               <span className="text-[9px] font-mono-ui text-primary animate-pulse flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" /> Generating {TYPE_LABELS[generatingType]}…
@@ -669,8 +670,8 @@ export default function VideoDetail() {
                   disabled={!!generatingType}
                   className="relative group flex flex-col items-start gap-1.5 p-2.5 sm:p-3 rounded-xl text-left transition-all duration-200 overflow-hidden touch-manipulation"
                   style={{
-                    background: hasOutput ? `linear-gradient(135deg, ${tool.accent}12, transparent)` : "#0d0d11",
-                    border: `1px solid ${hasOutput ? tool.border : 'rgba(255,255,255,0.06)'}`,
+                    background: hasOutput ? `linear-gradient(135deg, ${tool.accent}12, var(--vv-card-bg))` : "var(--vv-card-bg)",
+                    border: `1px solid ${hasOutput ? tool.border : 'var(--vv-card-border)'}`,
                     opacity: generatingType && !isGenerating ? 0.45 : 1,
                     WebkitTapHighlightColor: 'transparent',
                   }}
@@ -681,7 +682,7 @@ export default function VideoDetail() {
                     }
                   }}
                   onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = hasOutput ? tool.border : 'rgba(255,255,255,0.06)';
+                    (e.currentTarget as HTMLElement).style.borderColor = hasOutput ? tool.border : 'var(--vv-card-border)';
                     (e.currentTarget as HTMLElement).style.boxShadow = 'none';
                   }}
                 >
