@@ -113,6 +113,25 @@ router.get("/videos/:videoId/ai/outputs", async (req, res) => {
   res.json({ outputs });
 });
 
+/* ── Get a single AI output by type for a video ── */
+router.get("/videos/:videoId/ai/outputs/type/:type", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { videoId, type } = req.params;
+
+  const [video] = await db
+    .select({ id: videosTable.id, title: videosTable.title, channelName: videosTable.channelName, url: videosTable.url })
+    .from(videosTable)
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.user.id)));
+  if (!video) { res.status(404).json({ error: "Video not found" }); return; }
+
+  const [output] = await db
+    .select()
+    .from(aiOutputsTable)
+    .where(and(eq(aiOutputsTable.videoId, videoId), eq(aiOutputsTable.userId, req.user.id), eq(aiOutputsTable.type, type)));
+
+  res.json({ video, output: output || null });
+});
+
 /* ── Video-specific AI chat ── */
 router.post("/ai/chat", async (req, res) => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
@@ -264,7 +283,7 @@ function formatDuration(seconds: number | null | undefined): string {
 }
 
 async function searchYouTube(query: string, maxResults = 5) {
-  const apiKey = process.env.GOOGLE_API_KEY;
+  const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) return [];
   try {
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${maxResults}&key=${apiKey}`;

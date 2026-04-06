@@ -1,103 +1,15 @@
 import OpenAI from "openai";
 
 /* ══════════════════════════════════════════
-   Shared AI text generation — Gemini first,
-   then Replit proxy, then user's OpenAI key.
+   AI text generation — OpenAI (OPENAI_API_KEY)
+   is the primary provider. Replit AI Integration
+   proxy acts as a fallback if available.
+   GOOGLE_API_KEY / YOUTUBE_API_KEY are only
+   used for YouTube Data API calls (in routes).
 ══════════════════════════════════════════ */
 
-/* Models in priority order — 2.5 series has separate free-tier quotas */
-const GEMINI_MODELS = [
-  "gemini-2.5-flash-lite",   /* fastest, highest free-tier limits */
-  "gemini-2.5-flash",        /* more capable, good free-tier limits */
-  "gemini-2.0-flash-lite",   /* fallback if 2.5 quota exhausted */
-  "gemini-2.0-flash",        /* original, exhausted on busy days */
-  "gemini-2.0-flash-001",    /* versioned alias — separate quota bucket */
-];
-
-async function tryGemini(prompt: string, key: string): Promise<string | null> {
-  for (const model of GEMINI_MODELS) {
-    try {
-      /* Server-side fetch must include a Referer header if the API key
-         has HTTP referrer restrictions set in the Google Cloud console. */
-      const refererOrigin = process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : "https://vidvault.ai";
-
-      const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Referer": refererOrigin,
-            "Origin": refererOrigin,
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { maxOutputTokens: 3000, temperature: 0.75 },
-          }),
-        },
-      );
-
-      if (!resp.ok) {
-        let errMsg = `HTTP ${resp.status}`;
-        try {
-          const errBody = (await resp.json()) as {
-            error?: { message?: string; status?: string; details?: Array<{ reason?: string }> }
-          };
-          errMsg = errBody?.error?.message || errMsg;
-          /* Quota/billing errors — no point retrying other models */
-          if (errBody?.error?.status === "RESOURCE_EXHAUSTED" || resp.status === 429) {
-            console.warn(`[Gemini] Quota exhausted for model ${model}: ${errMsg}`);
-            return null;
-          }
-          /* HTTP referrer restriction — all models will fail, stop now */
-          const isReferrerBlocked = errBody?.error?.details?.some(d => d.reason === "API_KEY_HTTP_REFERRER_BLOCKED");
-          if (isReferrerBlocked) {
-            throw new Error(
-              "GOOGLE_API_KEY has HTTP referrer restrictions that block server-side calls. " +
-              "To fix: open Google Cloud Console → APIs & Services → Credentials → edit your API key → " +
-              "remove the HTTP referrer restrictions (or add * to allow all). Then the AI will work."
-            );
-          }
-        } catch (innerErr: any) {
-          if (innerErr.message?.includes("HTTP referrer restrictions")) throw innerErr;
-          /* ignore parse error */
-        }
-        console.warn(`[Gemini] ${model} failed: ${errMsg}`);
-        continue; /* try next model */
-      }
-
-      const data = (await resp.json()) as {
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
-        promptFeedback?: { blockReason?: string };
-      };
-
-      /* Handle blocked prompts */
-      if (data.promptFeedback?.blockReason) {
-        console.warn(`[Gemini] Prompt blocked (${data.promptFeedback.blockReason})`);
-        return null;
-      }
-
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        console.info(`[Gemini] Success with model ${model}`);
-        return text.trim();
-      }
-
-      console.warn(`[Gemini] ${model} returned empty content`);
-    } catch (err: any) {
-      /* Re-throw fatal errors (e.g. referrer restriction) — retrying other models won't help */
-      if (err.message?.includes("HTTP referrer restrictions")) throw err;
-      console.warn(`[Gemini] ${model} threw: ${err.message}`);
-    }
-  }
-  return null;
-}
-
 export async function generateAiText(prompt: string): Promise<string> {
-  /* 1️⃣  User-supplied OpenAI-compatible key — first priority
-         Supports both OpenAI (sk-...) and OpenRouter (sk-or-v1-...) keys */
+  /* 1️⃣  User-supplied OpenAI-compatible key — primary */
   const ownKey = process.env.OPENAI_API_KEY;
   if (ownKey) {
     try {
@@ -110,15 +22,17 @@ export async function generateAiText(prompt: string): Promise<string> {
       const completion = await openai.chat.completions.create({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 2000,
+        max_tokens: 2500,
+        temperature: 0.75,
       });
       const text = completion.choices[0]?.message?.content;
       if (text) {
-        console.info("[AI] Success via primary provider");
+        console.info("[AI] Success via OpenAI");
         return text.trim();
       }
     } catch (err: any) {
-      console.warn(`[AI] Primary provider failed: ${err.message}`);
+      console.warn(`[AI] OpenAI failed: ${err.message}`);
+      throw new Error(`OpenAI request failed: ${err.message}`);
     }
   }
 
@@ -131,31 +45,23 @@ export async function generateAiText(prompt: string): Promise<string> {
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
-        max_completion_tokens: 2048,
+        max_completion_tokens: 2500,
       });
       const text = completion.choices[0]?.message?.content;
       if (text) {
-        console.info("[AI] Success via integration proxy");
+        console.info("[AI] Success via Replit integration proxy");
         return text.trim();
       }
     } catch (err: any) {
-      console.warn(`[AI] Integration proxy failed: ${err.message}`);
+      console.warn(`[AI] Replit integration proxy failed: ${err.message}`);
     }
   }
 
-  /* 3️⃣  Google Gemini — fallback */
-  const googleKey = process.env.GOOGLE_API_KEY;
-  if (googleKey) {
-    const text = await tryGemini(prompt, googleKey);
-    if (text) return text;
-    console.warn("[AI] All Gemini models failed");
-  }
-
-  const hasProviders = ownKey || (integrationBase && integrationKey) || googleKey;
+  const hasProviders = !!ownKey || !!(integrationBase && integrationKey);
   throw new Error(
     hasProviders
-      ? "AI generation failed — all configured providers returned errors. Check server logs for details."
-      : "No AI provider configured. Please add an API key in the environment settings.",
+      ? "AI generation failed — the configured provider returned an error. Check your OPENAI_API_KEY."
+      : "No AI provider configured. Please add your OPENAI_API_KEY in the Secrets panel.",
   );
 }
 
@@ -197,7 +103,7 @@ export const AI_PROMPTS: Record<string, (title: string, desc: string, channel: s
     `Write a concise executive briefing document (300-400 words) for this video that a busy professional can read in 2 minutes. Include: a 1-sentence TL;DR, the 3 most important points, business implications, and recommended next steps.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nExecutive Brief:`,
 };
 
-/* Auto-analysis: generate summary + key_insights in parallel */
+/* Auto-analysis: generate summary + key_insights in parallel on video save */
 export async function autoAnalyzeVideo(
   videoId: string,
   userId: string,

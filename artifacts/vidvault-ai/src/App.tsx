@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Videos from "./pages/Videos";
 import Folders from "./pages/Folders";
 import VideoDetail from "./pages/VideoDetail";
+import AiOutputView from "./pages/AiOutputView";
 import AIAssistant from "./pages/AIAssistant";
 import Login from "./pages/Login";
 
@@ -38,6 +39,9 @@ function Router() {
       </Route>
       <Route path="/videos/:id">
         <AppLayout><VideoDetail /></AppLayout>
+      </Route>
+      <Route path="/videos/:id/output/:type">
+        <AppLayout><AiOutputView /></AppLayout>
       </Route>
       <Route path="/ai">
         <AppLayout><AIAssistant /></AppLayout>

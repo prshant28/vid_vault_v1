@@ -25,7 +25,7 @@ A full-stack AI-powered video knowledge management web application. Users save Y
 - **Email/Password Auth** — Manual registration and login with bcryptjs password hashing
 - **Session Management** — Secure session handling with PostgreSQL
 
-### 🤖 AI Features (via Replit OpenAI)
+### 🤖 AI Features (via OPENAI_API_KEY)
 - Video summarization
 - Study notes extraction
 - Multiple choice question generation
@@ -34,6 +34,13 @@ A full-stack AI-powered video knowledge management web application. Users save Y
 - PowerPoint outline generation
 - Key insights extraction
 - Interactive AI chat
+- **AI Output Full View**: dedicated page `/videos/:id/output/:type` with Copy/Markdown/HTML/PDF export
+- **Auto-analysis**: summary + key_insights generated automatically on video save
+
+### 📺 YouTube Integration (via YOUTUBE_API_KEY)
+- Video metadata fetch (title, thumbnail, duration, views)
+- Playlist import (extract all videos from a playlist URL)
+- YouTube search in global AI chat
 
 ## Stack
 

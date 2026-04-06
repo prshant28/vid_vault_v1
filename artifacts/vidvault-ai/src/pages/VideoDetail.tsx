@@ -1,11 +1,11 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useGetVideo, useGenerateAiContent } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { extractYoutubeId } from "@/lib/youtube";
 import {
   Loader2, Calendar, Folder as FolderIcon, Sparkles, FileText, CheckSquare,
   Presentation, Download, Trash2, Brain, Layers, BookOpen, Twitter, Zap,
-  BookMarked, Target, X, StickyNote,
+  BookMarked, Target, X, StickyNote, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useCallback } from "react";
@@ -213,14 +213,17 @@ function AiOutputCard({
   tool,
   videoTitle,
   channelName,
+  videoId,
   onDelete,
 }: {
   output: any;
   tool: typeof AI_TOOLS[0] | undefined;
   videoTitle: string;
   channelName?: string;
+  videoId: string;
   onDelete: (id: string) => void;
 }) {
+  const [, navigate] = useLocation();
   const [showQuiz, setShowQuiz] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [expanded, setExpanded] = useState(true);
@@ -293,6 +296,14 @@ function AiOutputCard({
                 {showQuiz ? <><X className="w-2.5 h-2.5" /> Exit</> : <><CheckSquare className="w-2.5 h-2.5" /> Take Quiz</>}
               </button>
             )}
+            <button
+              onClick={e => { e.stopPropagation(); navigate(`/videos/${videoId}/output/${output.type}`); }}
+              className="flex items-center gap-1 text-[9px] font-mono-ui uppercase tracking-wider px-2.5 py-1.5 rounded-lg transition-all"
+              style={{ background: `${accent}12`, border: `1px solid ${accent}30`, color: accent }}
+              title="View full page + export"
+            >
+              <ExternalLink className="w-2.5 h-2.5" /> View Full
+            </button>
             <button
               onClick={e => { e.stopPropagation(); isQuiz ? setShowTemplatePicker(true) : handleDownload(); }}
               className="p-1.5 rounded-lg transition-all text-muted-foreground hover:text-foreground"
@@ -457,6 +468,7 @@ function AiNotesPanel({
                     tool={AI_TOOLS.find(t => t.type === output.type)}
                     videoTitle={video.title}
                     channelName={video.channelName || undefined}
+                    videoId={video.id}
                     onDelete={handleDelete}
                   />
                 ))}
