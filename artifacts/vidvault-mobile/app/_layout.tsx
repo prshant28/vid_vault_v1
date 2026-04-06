@@ -25,7 +25,7 @@ import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Platform, View, Text, Dimensions, StyleSheet } from "react-native";
+import { Platform, View, Text, Dimensions, StyleSheet, StatusBar } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -160,6 +160,9 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      {Platform.OS === "android" && (
+        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      )}
       <ErrorBoundary>
         <PersistQueryClientProvider
           client={queryClient}

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  View, Text, Image, TouchableOpacity, StyleSheet,
+  View, Text, Image, TouchableOpacity, StyleSheet, Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -53,6 +53,7 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
           backgroundColor: isSelected ? PURPLE + "16" : colors.card,
           borderRadius: 12,
           borderColor: isSelected ? PURPLE + "60" : colors.border,
+          ...(Platform.OS === "android" ? { elevation: isSelected ? 6 : 2 } : {}),
         },
       ]}
     >
