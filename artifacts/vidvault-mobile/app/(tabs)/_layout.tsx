@@ -183,6 +183,8 @@ function ClassicTabLayout() {
             }}
           />
         ))}
+        {/* Hide file-based tabs that should not appear in the tab bar */}
+        <Tabs.Screen name="folders" options={{ href: null }} />
       </Tabs>
     </>
   );

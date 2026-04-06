@@ -1,26 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Switch,
-  ScrollView,
-  Platform,
-  Alert,
-  Modal,
-  TextInput,
-  FlatList,
+  View, Text, TouchableOpacity, StyleSheet, Switch,
+  ScrollView, Platform, Alert, Modal, TextInput, FlatList, Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
-import Svg, { Polygon } from "react-native-svg";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
+import { AppButton } from "@/components/ui/AppButton";
 import { useThemeToggle } from "@/hooks/useThemeToggle";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api";
@@ -34,48 +27,39 @@ const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const PINK   = "#ec4899";
 const AMBER  = "#f59e0b";
+const RED    = "#ef4444";
+
+const AVATAR_KEY   = "vv_profile_image_uri";
+const DNAME_KEY    = "vv_display_name";
 
 const TAG_COLORS = [PURPLE, PINK, GREEN, AMBER, CYAN, "#a78bfa", "#f87171", "#4ade80", "#facc15", "#38bdf8"];
-
 type Tag = { id: string; name: string; color?: string | null; userId: string; videoCount?: number };
 
-/* ── Stat card ── */
-function StatCard({ label, value, icon, color, delay }: {
-  label: string; value: number; icon: FeatherIconName; color: string; delay: number;
-}) {
-  const colors = useColors();
-  return (
-    <MotiView
-      from={{ opacity: 0, translateY: 12 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: "timing", duration: 340, delay }}
-      style={{ flex: 1, minWidth: "40%" }}
-    >
-      <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: color + "28" }]}>
-        <LinearGradient
-          colors={[color + "0c", "transparent"]}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[styles.statIconWrap, { backgroundColor: color + "18", borderColor: color + "30", borderWidth: 1 }]}>
-          <Feather name={icon} size={14} color={color} />
-        </View>
-        <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
-        <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
-      </View>
-    </MotiView>
-  );
-}
+/* ── Achievement definition ── */
+const ACHIEVEMENTS: Array<{
+  id: string; icon: FeatherIconName; label: string; desc: string;
+  color: string; check: (s: any) => boolean;
+}> = [
+  { id: "first_save",   icon: "video",      label: "First Save",       desc: "Save your first YouTube video",        color: PURPLE, check: s => s.totalVideos >= 1   },
+  { id: "ai_explorer",  icon: "cpu",        label: "AI Explorer",      desc: "Generate 5 AI outputs",                color: PINK,   check: s => s.totalAiOutputs >= 5 },
+  { id: "note_taker",   icon: "edit-3",     label: "Note Taker",       desc: "Write 10 timestamped notes",           color: CYAN,   check: s => s.totalNotes >= 10    },
+  { id: "organizer",    icon: "folder",     label: "Organizer",        desc: "Create 3 folders",                     color: AMBER,  check: s => s.totalFolders >= 3   },
+  { id: "tag_master",   icon: "tag",        label: "Tag Master",       desc: "Add 10 tags to your vault",            color: GREEN,  check: s => s.totalTags >= 10     },
+  { id: "binge",        icon: "play-circle",label: "Binge Learner",    desc: "Watch 20 videos",                      color: "#a78bfa", check: s => s.totalWatched >= 20 },
+  { id: "collector",    icon: "star",       label: "Collector",        desc: "Save 25 videos to your vault",         color: AMBER,  check: s => s.totalVideos >= 25   },
+  { id: "ai_master",    icon: "zap",        label: "AI Master",        desc: "Generate 50 AI outputs",               color: PURPLE, check: s => s.totalAiOutputs >= 50},
+];
 
 /* ── Setting row ── */
 function SettingRow({
-  icon, label, value, onPress, danger, rightElement, delay = 0,
+  icon, label, value, onPress, danger, rightElement, color, delay = 0,
 }: {
   icon: FeatherIconName; label: string; value?: string;
-  onPress?: () => void; danger?: boolean; rightElement?: React.ReactNode; delay?: number;
+  onPress?: () => void; danger?: boolean; rightElement?: React.ReactNode;
+  color?: string; delay?: number;
 }) {
   const colors = useColors();
-  const accent = danger ? "#ef4444" : PURPLE;
+  const accent = danger ? RED : (color || PURPLE);
   return (
     <MotiView
       from={{ opacity: 0, translateX: -6 }}
@@ -88,21 +72,21 @@ function SettingRow({
         activeOpacity={onPress ? 0.72 : 1}
         style={[styles.row, { borderBottomColor: colors.border }]}
       >
-        <View style={[styles.rowIcon, { backgroundColor: accent + "15", borderColor: accent + "25", borderWidth: 1 }]}>
+        <View style={[styles.rowIcon, { backgroundColor: accent + "15", borderColor: accent + "28", borderWidth: 1 }]}>
           <Feather name={icon} size={16} color={accent} />
         </View>
-        <Text style={[styles.rowLabel, { color: danger ? "#ef4444" : colors.foreground }]}>{label}</Text>
+        <Text style={[styles.rowLabel, { color: danger ? RED : colors.foreground }]}>{label}</Text>
         <View style={styles.rowRight}>
-          {value ? <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>{value}</Text> : null}
+          {value ? <Text style={[styles.rowValue, { color: colors.mutedForeground }]} numberOfLines={1}>{value}</Text> : null}
           {rightElement}
-          {onPress && !rightElement ? <Feather name="chevron-right" size={14} color={colors.mutedForeground + "80"} /> : null}
+          {onPress && !rightElement ? <Feather name="chevron-right" size={13} color={colors.mutedForeground + "70"} /> : null}
         </View>
       </TouchableOpacity>
     </MotiView>
   );
 }
 
-/* ── Settings group card ── */
+/* ── Settings group ── */
 function SettingGroup({ title, children }: { title: string; children: React.ReactNode }) {
   const colors = useColors();
   return (
@@ -115,55 +99,31 @@ function SettingGroup({ title, children }: { title: string; children: React.Reac
   );
 }
 
-/* ── Level tier badge ── */
-function LevelBadge({ level, title, color, xp, nextXP, pct }: {
-  level: number; title: string; color: string; xp: number; nextXP: number; pct: number;
-}) {
+/* ── Achievement badge ── */
+function AchievementBadge({ item, unlocked }: { item: typeof ACHIEVEMENTS[0]; unlocked: boolean }) {
   const colors = useColors();
   return (
     <MotiView
-      from={{ opacity: 0, scale: 0.95 }}
+      from={{ opacity: 0, scale: 0.88 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "timing", duration: 400, delay: 200 }}
-      style={{ marginHorizontal: 20, marginBottom: 20 }}
+      transition={{ type: "spring", stiffness: 180, damping: 14 }}
+      style={{ alignItems: "center", width: 72 }}
     >
-      <View style={[styles.levelCard, { backgroundColor: colors.card, borderColor: color + "35" }]}>
-        <LinearGradient
-          colors={[color + "14", "transparent"]}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={{ height: 2, backgroundColor: color, width: "30%", borderBottomRightRadius: 2 }} />
-        <View style={{ padding: 16, flexDirection: "row", alignItems: "center", gap: 14 }}>
-          {/* Level orb */}
-          <View style={[styles.levelOrb, { backgroundColor: color + "20", borderColor: color + "50", borderWidth: 2 }]}>
-            <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 20, color, lineHeight: 24 }}>
-              {level}
-            </Text>
+      <View style={[
+        styles.achieveOrb,
+        { borderColor: unlocked ? item.color + "60" : colors.border },
+        unlocked ? { backgroundColor: item.color + "18" } : { backgroundColor: colors.card },
+      ]}>
+        <Feather name={item.icon} size={20} color={unlocked ? item.color : colors.mutedForeground + "40"} />
+        {unlocked && (
+          <View style={[styles.achieveCheck, { backgroundColor: item.color }]}>
+            <Feather name="check" size={7} color="#fff" />
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 3 }}>
-              // CURRENT_RANK
-            </Text>
-            <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.3 }}>
-              {title}
-            </Text>
-            {/* XP bar */}
-            <View style={{ marginTop: 8 }}>
-              <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.border, overflow: "hidden" }}>
-                <LinearGradient
-                  colors={[color, color + "aa"]}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                  style={{ width: `${Math.round(pct * 100)}%`, height: "100%" }}
-                />
-              </View>
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 0.8, color: colors.mutedForeground, marginTop: 5 }}>
-                {xp} XP · {nextXP - xp} XP to next rank
-              </Text>
-            </View>
-          </View>
-        </View>
+        )}
       </View>
+      <Text style={[styles.achieveLabel, { color: unlocked ? colors.foreground : colors.mutedForeground + "50" }]} numberOfLines={2}>
+        {item.label}
+      </Text>
     </MotiView>
   );
 }
@@ -177,30 +137,39 @@ export default function ProfileScreen() {
 
   const isDark = preference === "dark" || preference === "system";
 
-  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email?.split("@")[0] || "User";
-  const initials    = displayName.slice(0, 2).toUpperCase();
-
+  const [avatarUri, setAvatarUri]     = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [showEditName, setShowEditName] = useState(false);
+  const [editNameVal, setEditNameVal] = useState("");
   const [showTagManager, setShowTagManager] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState(TAG_COLORS[0]);
+  const [showStats, setShowStats] = useState(false);
 
-  const { data: statsData } = useQuery({
-    queryKey: ["stats"],
-    queryFn: () => api.getStats(),
-  });
+  /* ── Load persisted avatar + display name ── */
+  useEffect(() => {
+    AsyncStorage.multiGet([AVATAR_KEY, DNAME_KEY]).then(pairs => {
+      const av   = pairs[0][1];
+      const dn   = pairs[1][1];
+      if (av) setAvatarUri(av);
+      const fallback = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email?.split("@")[0] || "User";
+      setDisplayName(dn || fallback);
+    });
+  }, [user]);
 
-  const { data: tagsData } = useQuery({
-    queryKey: ["tags"],
-    queryFn: () => api.listTags(),
-  });
+  const initials = (displayName || "??").slice(0, 2).toUpperCase();
+
+  /* ── Data queries ── */
+  const { data: statsData } = useQuery({ queryKey: ["stats"], queryFn: () => api.getStats() });
+  const { data: tagsData  } = useQuery({ queryKey: ["tags"],  queryFn: () => api.listTags()  });
   const tags: Tag[] = tagsData?.tags ?? [];
 
+  /* ── Tag mutations ── */
   const createTagMutation = useMutation({
     mutationFn: ({ name, color }: { name: string; color: string }) => api.createTag(name, color),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tags"] });
-      setNewTagName("");
-      setSelectedColor(TAG_COLORS[0]);
+      setNewTagName(""); setSelectedColor(TAG_COLORS[0]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
     onError: (err: any) => Alert.alert("Error", err.message || "Could not create tag."),
@@ -208,15 +177,71 @@ export default function ProfileScreen() {
 
   const deleteTagMutation = useMutation({
     mutationFn: (id: string) => api.deleteTag(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["tags"] });
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    },
-    onError: (err: any) => Alert.alert("Error", err.message || "Could not delete tag."),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tags"] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
+    onError:   (err: any) => Alert.alert("Error", err.message || "Could not delete tag."),
   });
 
+  /* ── Pick profile image ── */
+  const handlePickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permission needed", "Allow access to photos to set a profile picture."); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      const uri = result.assets[0].uri;
+      setAvatarUri(uri);
+      await AsyncStorage.setItem(AVATAR_KEY, uri);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  /* ── Take photo ── */
+  const handleTakePhoto = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permission needed", "Allow camera access to take a profile photo."); return; }
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    if (!result.canceled && result.assets[0]?.uri) {
+      const uri = result.assets[0].uri;
+      setAvatarUri(uri);
+      await AsyncStorage.setItem(AVATAR_KEY, uri);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  /* ── Remove photo ── */
+  const handleRemovePhoto = async () => {
+    setAvatarUri(null);
+    await AsyncStorage.removeItem(AVATAR_KEY);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  /* ── Avatar picker sheet ── */
+  const handleAvatarPress = () => {
+    const opts: Array<{ text: string; onPress?: () => void; style?: "cancel" | "destructive" }> = [
+      { text: "Choose from Library", onPress: handlePickImage },
+      { text: "Take Photo",          onPress: handleTakePhoto },
+    ];
+    if (avatarUri) opts.push({ text: "Remove Photo", onPress: handleRemovePhoto, style: "destructive" });
+    opts.push({ text: "Cancel", style: "cancel" });
+    Alert.alert("Profile Photo", "Update your profile picture", opts);
+  };
+
+  /* ── Save display name ── */
+  const handleSaveName = async () => {
+    const trimmed = editNameVal.trim();
+    if (!trimmed) return;
+    setDisplayName(trimmed);
+    await AsyncStorage.setItem(DNAME_KEY, trimmed);
+    setShowEditName(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
   const handleLogout = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+    Alert.alert("Sign Out", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       { text: "Sign Out", style: "destructive", onPress: logout },
     ]);
@@ -234,8 +259,7 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
-
+  const botInset  = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const level       = statsData?.level       ?? 1;
   const levelTitle  = statsData?.levelTitle  ?? "Novice";
   const levelColor  = statsData?.levelColor  ?? "#6b7280";
@@ -243,18 +267,18 @@ export default function ProfileScreen() {
   const nextLevelXP = statsData?.nextLevelXP ?? 100;
   const progressPct = statsData?.progressPct ?? 0;
 
-  const STAT_CARDS = [
-    { label: "Videos",    key: "totalVideos",    icon: "film"    as FeatherIconName, color: PURPLE, delay: 260 },
-    { label: "AI Outputs",key: "totalAiOutputs", icon: "cpu"     as FeatherIconName, color: PINK,   delay: 310 },
-    { label: "Notes",     key: "totalNotes",     icon: "edit-3"  as FeatherIconName, color: CYAN,   delay: 360 },
-    { label: "Favorites", key: "totalFavorites", icon: "heart"   as FeatherIconName, color: AMBER,  delay: 410 },
+  const STAT_ITEMS = [
+    { label: "Videos",     key: "totalVideos",    icon: "film"     as FeatherIconName, color: PURPLE },
+    { label: "AI Outputs", key: "totalAiOutputs", icon: "cpu"      as FeatherIconName, color: PINK   },
+    { label: "Notes",      key: "totalNotes",     icon: "edit-3"   as FeatherIconName, color: CYAN   },
+    { label: "Watched",    key: "totalWatched",   icon: "play"     as FeatherIconName, color: GREEN  },
+    { label: "Favorites",  key: "totalFavorites", icon: "heart"    as FeatherIconName, color: AMBER  },
+    { label: "Folders",    key: "totalFolders",   icon: "folder"   as FeatherIconName, color: "#a78bfa" },
   ];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GridBackground />
-
-      {/* Ambient glow */}
       <MotiView
         from={{ opacity: 0 }} animate={{ opacity: 1 }}
         transition={{ type: "timing", duration: 1200 }}
@@ -270,63 +294,76 @@ export default function ProfileScreen() {
 
       <TopAppBar />
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: botInset + 100 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Page Header ── */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 20 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: botInset + 100 }} showsVerticalScrollIndicator={false}>
+        {/* ── Page header ── */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 18 }}>
           <Text style={[styles.pageCode,  { color: colors.mutedForeground }]}>//USER_PROFILE</Text>
           <Text style={[styles.pageTitle, { color: colors.foreground }]}>Profile</Text>
         </View>
 
-        {/* ── Avatar + Identity Card ── */}
+        {/* ── Identity Card ── */}
         <MotiView
-          from={{ opacity: 0, translateY: -10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 450, delay: 80 }}
-          style={{ marginHorizontal: 20, marginBottom: 20 }}
+          from={{ opacity: 0, translateY: -12 }} animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 450, delay: 60 }}
+          style={{ marginHorizontal: 20, marginBottom: 16 }}
         >
           <View style={[styles.identityCard, { backgroundColor: colors.card, borderColor: PURPLE + "30" }]}>
-            <LinearGradient
-              colors={[PURPLE + "18", "transparent"]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            {/* Top accent */}
-            <View style={{ height: 2, backgroundColor: PURPLE, width: "25%" }} />
-            <View style={{ padding: 22, alignItems: "center", gap: 10 }}>
-              {/* Avatar with gradient ring */}
-              <View style={styles.avatarRing}>
-                <LinearGradient
-                  colors={[PURPLE, CYAN, PINK]}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View style={[styles.avatarInner, { backgroundColor: colors.background }]}>
-                  <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 28, color: PURPLE }}>
-                    {initials}
-                  </Text>
+            <LinearGradient colors={[PURPLE + "18", "transparent"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+            <View style={{ height: 2, backgroundColor: PURPLE, width: "20%" }} />
+            <View style={{ padding: 22, alignItems: "center", gap: 12 }}>
+              {/* Avatar */}
+              <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.85} style={{ position: "relative" }}>
+                <View style={styles.avatarRing}>
+                  <LinearGradient colors={[PURPLE, CYAN, PINK]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+                  <View style={[styles.avatarInner, { backgroundColor: colors.background }]}>
+                    {avatarUri ? (
+                      <Image source={{ uri: avatarUri }} style={{ width: "100%", height: "100%", borderRadius: 38 }} />
+                    ) : (
+                      <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 28, color: PURPLE }}>{initials}</Text>
+                    )}
+                  </View>
                 </View>
-              </View>
+                {/* Camera badge */}
+                <View style={[styles.cameraBadge, { backgroundColor: PURPLE, borderColor: colors.background }]}>
+                  <Feather name="camera" size={11} color="#fff" />
+                </View>
+              </TouchableOpacity>
+
               {/* Name + email */}
-              <View style={{ alignItems: "center", gap: 3 }}>
-                <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 22, color: colors.foreground, letterSpacing: -0.3 }}>
-                  {displayName}
-                </Text>
+              <View style={{ alignItems: "center", gap: 2 }}>
+                <TouchableOpacity onPress={() => { setEditNameVal(displayName); setShowEditName(true); }} activeOpacity={0.75} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 22, color: colors.foreground, letterSpacing: -0.3 }}>{displayName}</Text>
+                  <Feather name="edit-2" size={12} color={PURPLE + "90"} />
+                </TouchableOpacity>
                 {user?.email && (
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 12, color: colors.mutedForeground }}>
-                    {user.email}
-                  </Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 12, color: colors.mutedForeground }}>{user.email}</Text>
                 )}
               </View>
-              {/* Member badge */}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: PURPLE + "14", borderWidth: 1, borderColor: PURPLE + "30", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 }}>
-                <Feather name="shield" size={10} color={PURPLE} />
-                <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.2, color: PURPLE }}>
-                  FREE MEMBER
-                </Text>
+
+              {/* Pills row */}
+              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                <View style={[styles.pill, { borderColor: PURPLE + "35", backgroundColor: PURPLE + "12" }]}>
+                  <Feather name="shield" size={9} color={PURPLE} />
+                  <Text style={[styles.pillText, { color: PURPLE }]}>FREE MEMBER</Text>
+                </View>
+                <View style={[styles.pill, { borderColor: levelColor + "50", backgroundColor: levelColor + "12" }]}>
+                  <Feather name="award" size={9} color={levelColor} />
+                  <Text style={[styles.pillText, { color: levelColor }]}>LVL {level} · {levelTitle.toUpperCase()}</Text>
+                </View>
+              </View>
+
+              {/* Action buttons */}
+              <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
+                <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.8}
+                  style={[styles.idBtn, { borderColor: PURPLE + "40", backgroundColor: PURPLE + "10" }]}>
+                  <Feather name="camera" size={12} color={PURPLE} />
+                  <Text style={[styles.idBtnText, { color: PURPLE }]}>PHOTO</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setEditNameVal(displayName); setShowEditName(true); }} activeOpacity={0.8}
+                  style={[styles.idBtn, { borderColor: colors.border, backgroundColor: colors.card }]}>
+                  <Feather name="edit-2" size={12} color={colors.mutedForeground} />
+                  <Text style={[styles.idBtnText, { color: colors.mutedForeground }]}>EDIT NAME</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -334,55 +371,99 @@ export default function ProfileScreen() {
 
         {/* ── Level / XP Card ── */}
         {statsData && (
-          <LevelBadge
-            level={level}
-            title={levelTitle}
-            color={levelColor}
-            xp={xp}
-            nextXP={nextLevelXP}
-            pct={progressPct}
-          />
+          <MotiView
+            from={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "timing", duration: 380, delay: 140 }}
+            style={{ marginHorizontal: 20, marginBottom: 16 }}
+          >
+            <View style={[styles.levelCard, { backgroundColor: colors.card, borderColor: levelColor + "35" }]}>
+              <LinearGradient colors={[levelColor + "12", "transparent"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+              <View style={{ height: 2, backgroundColor: levelColor, width: "25%" }} />
+              <View style={{ padding: 16, flexDirection: "row", alignItems: "center", gap: 14 }}>
+                <View style={[styles.levelOrb, { backgroundColor: levelColor + "20", borderColor: levelColor + "55", borderWidth: 2 }]}>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: levelColor }}>{level}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CURRENT_RANK</Text>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground }}>{levelTitle}</Text>
+                  <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.border, overflow: "hidden", marginTop: 8 }}>
+                    <LinearGradient colors={[levelColor, levelColor + "aa"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${Math.round(progressPct * 100)}%`, height: "100%" }} />
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 5 }}>
+                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, color: colors.mutedForeground }}>{xp} XP earned</Text>
+                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, color: levelColor }}>{nextLevelXP - xp} XP to go</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </MotiView>
         )}
 
         {/* ── Stats grid ── */}
         {statsData && (
-          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>// VAULT_STATS</Text>
+          <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>//VAULT_STATS</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-              {STAT_CARDS.map((cfg) => (
-                <StatCard
+              {STAT_ITEMS.map((cfg, i) => (
+                <MotiView
                   key={cfg.key}
-                  label={cfg.label.toUpperCase()}
-                  value={(statsData as any)[cfg.key] ?? 0}
-                  icon={cfg.icon}
-                  color={cfg.color}
-                  delay={cfg.delay}
-                />
+                  from={{ opacity: 0, translateY: 10 }} animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ type: "timing", duration: 300, delay: 200 + i * 50 }}
+                  style={{ flex: 1, minWidth: "28%" }}
+                >
+                  <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: cfg.color + "25" }]}>
+                    <LinearGradient colors={[cfg.color + "0a", "transparent"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+                    <View style={[styles.statIconWrap, { backgroundColor: cfg.color + "18", borderColor: cfg.color + "30", borderWidth: 1 }]}>
+                      <Feather name={cfg.icon} size={13} color={cfg.color} />
+                    </View>
+                    <Text style={[styles.statValue, { color: colors.foreground }]}>{(statsData as any)[cfg.key] ?? 0}</Text>
+                    <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{cfg.label.toUpperCase()}</Text>
+                  </View>
+                </MotiView>
               ))}
             </View>
           </View>
         )}
 
+        {/* ── Achievements ── */}
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>//ACHIEVEMENTS</Text>
+            <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Milestones</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 14 }}>
+            {ACHIEVEMENTS.map((ach, i) => {
+              const unlocked = statsData ? ach.check(statsData) : false;
+              return (
+                <MotiView
+                  key={ach.id}
+                  from={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "timing", duration: 320, delay: 260 + i * 40 }}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => Alert.alert(ach.label, `${ach.desc}${unlocked ? "\n\n✅ Unlocked!" : "\n\n🔒 Keep going!"}`) }
+                    style={[styles.achieveCard, { backgroundColor: colors.card, borderColor: unlocked ? ach.color + "50" : colors.border }]}
+                  >
+                    <LinearGradient colors={unlocked ? [ach.color + "12", "transparent"] : ["transparent", "transparent"]} style={StyleSheet.absoluteFill} />
+                    <AchievementBadge item={ach} unlocked={unlocked} />
+                  </TouchableOpacity>
+                </MotiView>
+              );
+            })}
+          </ScrollView>
+        </View>
+
         {/* ── Settings ── */}
-        <SettingGroup title="// TAGS">
-          <SettingRow
-            icon="tag"
-            label="Manage Tags"
-            value={`${tags.length} tag${tags.length !== 1 ? "s" : ""}`}
-            onPress={() => setShowTagManager(true)}
-            delay={440}
-          />
+        <SettingGroup title="//CONTENT">
+          <SettingRow icon="tag"       label="Manage Tags"      value={`${tags.length} tags`} onPress={() => setShowTagManager(true)} delay={360} />
+          <SettingRow icon="download"  label="Export Vault Data" onPress={() => Alert.alert("Export", `Your vault has ${statsData?.totalVideos ?? 0} videos, ${statsData?.totalNotes ?? 0} notes, and ${statsData?.totalAiOutputs ?? 0} AI outputs.\n\nFull export feature coming in Pro.`)} delay={380} />
         </SettingGroup>
 
-        <SettingGroup title="// APPEARANCE">
-          <SettingRow
-            icon="moon"
-            label="Dark Mode"
-            delay={470}
+        <SettingGroup title="//APPEARANCE">
+          <SettingRow icon="moon" label="Dark Mode" delay={400}
             rightElement={
-              <Switch
-                value={isDark}
-                onValueChange={async (v) => { await setTheme(v ? "dark" : "light"); }}
+              <Switch value={isDark} onValueChange={async v => { await setTheme(v ? "dark" : "light"); }}
                 trackColor={{ false: colors.border, true: PURPLE + "70" }}
                 thumbColor={isDark ? PURPLE : colors.mutedForeground}
               />
@@ -390,31 +471,61 @@ export default function ProfileScreen() {
           />
         </SettingGroup>
 
-        <SettingGroup title="// ACCOUNT">
-          <SettingRow icon="user"         label="Account"       value={user?.email ?? "—"}        delay={500} />
-          <SettingRow icon="lock"         label="Privacy"       onPress={() => {}}                delay={530} />
-          <SettingRow icon="bell"         label="Notifications" onPress={() => {}}                delay={560} />
+        <SettingGroup title="//ACCOUNT">
+          <SettingRow icon="user"  label="Email"       value={user?.email ?? "—"}        delay={420} />
+          <SettingRow icon="lock"  label="Change Password" onPress={() => Alert.alert("Password", "Password change is managed through your account portal.")} delay={440} color={CYAN} />
+          <SettingRow icon="bell"  label="Notifications"   onPress={() => Alert.alert("Notifications", "Notification settings coming soon.")} delay={460} />
+          <SettingRow icon="globe" label="Language"         onPress={() => Alert.alert("Language", "English and Hindi supported in AI output generation.")} delay={480} color={GREEN} />
         </SettingGroup>
 
-        <SettingGroup title="// APP_INFO">
-          <SettingRow icon="info"         label="Version"       value="2.0.0"                     delay={590} />
-          <SettingRow icon="star"         label="Rate VidVault" onPress={() => {}}                delay={620} />
-          <SettingRow icon="help-circle"  label="Help & Docs"   onPress={() => {}}                delay={650} />
-          <SettingRow icon="share-2"      label="Share App"     onPress={() => {}}                delay={680} />
+        <SettingGroup title="//APP_INFO">
+          <SettingRow icon="info"        label="Version"        value="2.0.0"  delay={500} />
+          <SettingRow icon="star"        label="Rate VidVault"  onPress={() => Alert.alert("Rate App", "Thank you! Please rate us on the App Store.")} delay={520} color={AMBER} />
+          <SettingRow icon="help-circle" label="Help & Docs"    onPress={() => Alert.alert("Help", "Documentation and support coming soon.")} delay={540} />
+          <SettingRow icon="share-2"     label="Share VidVault" onPress={() => Alert.alert("Share", "Share VidVault AI with friends!")} delay={560} color={PINK} />
         </SettingGroup>
 
-        <SettingGroup title="// SESSION">
-          <SettingRow icon="log-out"      label="Sign Out"      onPress={handleLogout} danger     delay={710} />
+        <SettingGroup title="//DANGER_ZONE">
+          <SettingRow icon="log-out" label="Sign Out" onPress={handleLogout} danger delay={580} />
         </SettingGroup>
       </ScrollView>
+
+      {/* ── Edit Name Modal ── */}
+      <Modal visible={showEditName} transparent animationType="fade" onRequestClose={() => setShowEditName(false)}>
+        <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: 24 }} activeOpacity={1} onPress={() => setShowEditName(false)}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <View style={[styles.editModal, { backgroundColor: colors.background, borderColor: PURPLE + "35" }]}>
+              <LinearGradient colors={[PURPLE + "14", "transparent"]} style={StyleSheet.absoluteFill} />
+              <View style={{ height: 2, backgroundColor: PURPLE, width: "20%", marginBottom: 20 }} />
+              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
+              <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, marginBottom: 16 }}>Update Name</Text>
+              <TextInput
+                value={editNameVal}
+                onChangeText={setEditNameVal}
+                style={[styles.nameInput, { color: colors.foreground, borderColor: PURPLE + "40", backgroundColor: colors.card }]}
+                placeholderTextColor={colors.mutedForeground}
+                placeholder="Your display name..."
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={handleSaveName}
+              />
+              <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+                <TouchableOpacity onPress={() => setShowEditName(false)} style={[styles.modalBtn, { borderColor: colors.border, backgroundColor: colors.card, flex: 1 }]}>
+                  <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 11, letterSpacing: 1, color: colors.mutedForeground }}>CANCEL</Text>
+                </TouchableOpacity>
+                <AppButton label="SAVE" icon="check" size="sm" variant="primary" onPress={handleSaveName} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       {/* ── Tag Manager Bottom Sheet ── */}
       <Modal visible={showTagManager} transparent animationType="slide" onRequestClose={() => setShowTagManager(false)}>
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}>
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTagManager(false)} />
-          <View style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
-            {/* Handle */}
-            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}>
+          <View style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: PURPLE + "30" }]}>
+            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
               <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
             </View>
             {/* Header */}
@@ -429,43 +540,29 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <TouchableOpacity onPress={() => setShowTagManager(false)} style={{ padding: 4 }}>
-                <Feather name="x" size={18} color={colors.mutedForeground} />
+                <Feather name="x" size={20} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
 
-            {/* Create new tag */}
-            <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>NEW TAG</Text>
+            {/* Create tag */}
+            <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW TAG</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TextInput
-                  value={newTagName}
-                  onChangeText={setNewTagName}
-                  placeholder="Tag name..."
-                  placeholderTextColor={colors.mutedForeground + "80"}
+                  value={newTagName} onChangeText={setNewTagName} placeholder="Tag name..."
+                  placeholderTextColor={colors.mutedForeground + "70"}
                   style={[styles.tagInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
-                  returnKeyType="done"
-                  onSubmitEditing={handleCreateTag}
+                  returnKeyType="done" onSubmitEditing={handleCreateTag}
                 />
-                <TouchableOpacity
-                  onPress={handleCreateTag}
-                  disabled={!newTagName.trim() || createTagMutation.isPending}
-                  style={[styles.createTagBtn, { backgroundColor: newTagName.trim() ? PURPLE : colors.border }]}
-                  activeOpacity={0.8}
-                >
+                <TouchableOpacity onPress={handleCreateTag} disabled={!newTagName.trim() || createTagMutation.isPending}
+                  style={[styles.createTagBtn, { backgroundColor: newTagName.trim() ? PURPLE : colors.border }]} activeOpacity={0.8}>
                   <Feather name="plus" size={18} color="#fff" />
                 </TouchableOpacity>
               </View>
-              {/* Color picker */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                {TAG_COLORS.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    onPress={() => setSelectedColor(c)}
-                    style={[
-                      styles.colorDot,
-                      { backgroundColor: c },
-                      selectedColor === c && { borderWidth: 3, borderColor: colors.foreground },
-                    ]}
+                {TAG_COLORS.map(c => (
+                  <TouchableOpacity key={c} onPress={() => setSelectedColor(c)}
+                    style={[styles.colorDot, { backgroundColor: c, borderWidth: selectedColor === c ? 3 : 1.5, borderColor: selectedColor === c ? colors.foreground : c + "40" }]}
                   />
                 ))}
               </ScrollView>
@@ -473,21 +570,15 @@ export default function ProfileScreen() {
 
             {/* Tag list */}
             <FlatList
-              data={tags}
-              keyExtractor={(item) => item.id}
-              style={{ flex: 1 }}
+              data={tags} keyExtractor={item => item.id} style={{ flex: 1 }}
               contentContainerStyle={{ paddingBottom: 32 }}
               ListEmptyComponent={
                 <View style={{ paddingTop: 32, alignItems: "center", gap: 8 }}>
-                  <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: PURPLE + "14", borderWidth: 1, borderColor: PURPLE + "25", alignItems: "center", justifyContent: "center" }}>
-                    <Feather name="tag" size={20} color={PURPLE + "80"} />
+                  <View style={{ width: 50, height: 50, borderRadius: 14, backgroundColor: PURPLE + "14", borderWidth: 1, borderColor: PURPLE + "25", alignItems: "center", justifyContent: "center" }}>
+                    <Feather name="tag" size={22} color={PURPLE + "80"} />
                   </View>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground }}>
-                    No tags yet
-                  </Text>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "70" }}>
-                    Create your first tag above
-                  </Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground }}>No tags yet</Text>
+                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first tag above</Text>
                 </View>
               }
               renderItem={({ item: tag, index }) => (
@@ -495,19 +586,17 @@ export default function ProfileScreen() {
                   <View style={[styles.tagDot, { backgroundColor: tag.color || PURPLE }]} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 14, color: colors.foreground }}>{tag.name}</Text>
-                    {tag.videoCount !== undefined && (
-                      <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
-                        {tag.videoCount} VIDEO{tag.videoCount !== 1 ? "S" : ""}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={[{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, borderWidth: 1, backgroundColor: (tag.color || PURPLE) + "14", borderColor: (tag.color || PURPLE) + "30" }]}>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: tag.color || PURPLE }}>
+                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
                       TAG_{(index + 1).toString().padStart(2, "0")}
                     </Text>
                   </View>
+                  <View style={{ backgroundColor: (tag.color || PURPLE) + "14", borderRadius: 20, borderWidth: 1, borderColor: (tag.color || PURPLE) + "30", paddingHorizontal: 8, paddingVertical: 3 }}>
+                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: tag.color || PURPLE }}>
+                      {tag.videoCount ?? 0} VID{(tag.videoCount ?? 0) !== 1 ? "S" : ""}
+                    </Text>
+                  </View>
                   <TouchableOpacity onPress={() => handleDeleteTag(tag)} style={{ padding: 6, marginLeft: 4 }} activeOpacity={0.7}>
-                    <Feather name="trash-2" size={14} color="#ef4444" />
+                    <Feather name="trash-2" size={14} color={RED} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -525,29 +614,28 @@ const styles = StyleSheet.create({
 
   identityCard: { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
 
-  avatarRing: {
-    width: 88, height: 88, borderRadius: 44,
-    alignItems: "center", justifyContent: "center", padding: 3,
-  },
-  avatarInner: {
-    flex: 1, width: "100%", borderRadius: 40,
-    alignItems: "center", justifyContent: "center",
-  },
+  avatarRing:  { width: 92, height: 92, borderRadius: 46, alignItems: "center", justifyContent: "center", padding: 3 },
+  avatarInner: { flex: 1, width: "100%", borderRadius: 40, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  cameraBadge: { position: "absolute", bottom: 2, right: 2, width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 2 },
+
+  pill:     { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  pillText: { fontFamily: "JetBrainsMono_600SemiBold", fontSize: 8, letterSpacing: 1.1 },
+
+  idBtn:     { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  idBtnText: { fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1 },
 
   levelCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
-  levelOrb: {
-    width: 58, height: 58, borderRadius: 29,
-    alignItems: "center", justifyContent: "center",
-  },
+  levelOrb:  { width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center" },
 
-  statCard: {
-    flex: 1, padding: 14, borderRadius: 14, borderWidth: 1,
-    alignItems: "center", gap: 6, overflow: "hidden",
-    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
-  },
-  statIconWrap: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  statValue:    { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 26, letterSpacing: -1 },
-  statLabel:    { fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 2 },
+  statCard:    { padding: 12, borderRadius: 12, borderWidth: 1, alignItems: "center", gap: 5, overflow: "hidden" },
+  statIconWrap:{ width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  statValue:   { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -1 },
+  statLabel:   { fontFamily: "JetBrainsMono_400Regular", fontSize: 6.5, letterSpacing: 1.5 },
+
+  achieveCard: { width: 80, padding: 10, borderRadius: 14, borderWidth: 1, alignItems: "center", overflow: "hidden" },
+  achieveOrb:  { width: 46, height: 46, borderRadius: 14, borderWidth: 1.5, alignItems: "center", justifyContent: "center", marginBottom: 8, position: "relative" },
+  achieveCheck:{ position: "absolute", top: -4, right: -4, width: 14, height: 14, borderRadius: 7, alignItems: "center", justifyContent: "center" },
+  achieveLabel:{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7.5, letterSpacing: 0.5, textAlign: "center", lineHeight: 11 },
 
   groupLabel: { fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2.5, marginBottom: 8 },
   groupCard:  { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
@@ -555,11 +643,15 @@ const styles = StyleSheet.create({
   row:       { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   rowIcon:   { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginRight: 12 },
   rowLabel:  { flex: 1, fontSize: 14, fontFamily: "Poppins_500Medium" },
-  rowRight:  { flexDirection: "row", alignItems: "center", gap: 8 },
-  rowValue:  { fontSize: 12, fontFamily: "Poppins_400Regular" },
+  rowRight:  { flexDirection: "row", alignItems: "center", gap: 8, maxWidth: 140 },
+  rowValue:  { fontSize: 11, fontFamily: "Poppins_400Regular" },
 
-  tagSheet:    { maxHeight: "82%", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, overflow: "hidden" },
-  sheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+  editModal: { borderRadius: 18, borderWidth: 1, overflow: "hidden", padding: 20 },
+  nameInput: { height: 48, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1.5, fontSize: 16, fontFamily: "Poppins_400Regular" },
+  modalBtn:  { height: 40, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+
+  tagSheet:     { maxHeight: "82%", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, overflow: "hidden" },
+  sheetHeader:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   sheetIconWrap:{ width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   sheetTitle:   { fontSize: 17, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3 },
 

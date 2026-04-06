@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, useWindowDimensions,
+  Platform, useWindowDimensions, Modal, Alert, FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -33,22 +33,28 @@ const TOOLS: Array<{
   color: string;
   badge: string | null;
   route?: string;
+  action?: "templates" | "coming-soon";
 }> = [
   { id: "ai-studio",  icon: "cpu",         label: "AI Studio",          desc: "Generate summaries, flashcards, MCQs & more.",              color: PURPLE, badge: null,          route: "/(tabs)/ai-studio" },
-  { id: "flashcards", icon: "book-open",   label: "Flashcard Deck",     desc: "Review key concepts with spaced repetition.",               color: CYAN,   badge: null          },
-  { id: "kg",         icon: "share-2",     label: "Knowledge Graph",    desc: "See how your videos connect through shared topics.",        color: GREEN,  badge: null          },
-  { id: "notes",      icon: "edit-3",      label: "Timestamped Notes",  desc: "Capture insights at exact moments in any video.",           color: PINK,   badge: null          },
-  { id: "templates",  icon: "layout",      label: "Template Library",   desc: "Export AI outputs in 10 professional HTML formats.",        color: AMBER,  badge: "10 FREE"     },
-  { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON" },
+  { id: "videos",     icon: "film",        label: "Video Library",      desc: "Browse and manage your entire knowledge vault.",            color: CYAN,   badge: null,          route: "/(tabs)/videos"    },
+  { id: "notes",      icon: "edit-3",      label: "Timestamped Notes",  desc: "Capture insights at exact moments in any video.",           color: PINK,   badge: null,          route: "/(tabs)/videos"    },
+  { id: "folders",    icon: "folder",      label: "Folders",            desc: "Organize your vault into custom collections.",              color: GREEN,  badge: null,          route: "/(tabs)/folders"   },
+  { id: "templates",  icon: "layout",      label: "Template Library",   desc: "Export AI outputs in 10 professional HTML formats.",        color: AMBER,  badge: "10 FREE",     action: "templates"        },
+  { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON", action: "coming-soon"      },
 ];
 
-const TEMPLATES = [
-  { id: "dark-academic",  name: "Dark Academic",   icon: "book-open"   as FeatherIconName, color: PURPLE, category: "Study"    },
-  { id: "neon-cyberpunk", name: "Neon Cyberpunk",  icon: "zap"         as FeatherIconName, color: CYAN,   category: "Design"   },
-  { id: "paper-ink",      name: "Paper & Ink",     icon: "file-text"   as FeatherIconName, color: AMBER,  category: "Classic"  },
-  { id: "ocean",          name: "Ocean Depths",    icon: "droplet"     as FeatherIconName, color: BLUE,   category: "Visual"   },
-  { id: "emerald",        name: "Emerald Forest",  icon: "feather"     as FeatherIconName, color: GREEN,  category: "Nature"   },
-  { id: "bauhaus",        name: "Bauhaus Minimal", icon: "align-left"  as FeatherIconName, color: PINK,   category: "Minimal"  },
+
+const ALL_TEMPLATES = [
+  { id: "dark-academic",   name: "Dark Academic",      icon: "book-open"   as FeatherIconName, color: PURPLE, category: "Study",   desc: "Elegant dark tones for scholarly notes."        },
+  { id: "neon-cyberpunk",  name: "Neon Cyberpunk",     icon: "zap"         as FeatherIconName, color: CYAN,   category: "Design",  desc: "High-contrast neon glows on dark backgrounds."  },
+  { id: "paper-ink",       name: "Paper & Ink",        icon: "file-text"   as FeatherIconName, color: AMBER,  category: "Classic", desc: "Clean serif layout mimicking printed pages."    },
+  { id: "ocean",           name: "Ocean Depths",       icon: "droplet"     as FeatherIconName, color: "#3b82f6", category: "Visual", desc: "Deep blue gradients for immersive reading."  },
+  { id: "emerald",         name: "Emerald Forest",     icon: "feather"     as FeatherIconName, color: GREEN,  category: "Nature",  desc: "Fresh greens with nature-inspired typography."  },
+  { id: "bauhaus",         name: "Bauhaus Minimal",    icon: "align-left"  as FeatherIconName, color: PINK,   category: "Minimal", desc: "Bold geometry and clean whitespace."            },
+  { id: "retro-terminal",  name: "Retro Terminal",     icon: "terminal"    as FeatherIconName, color: GREEN,  category: "Hacker", desc: "Green-on-black terminal aesthetic."             },
+  { id: "aurora",          name: "Aurora Borealis",    icon: "sun"         as FeatherIconName, color: PURPLE, category: "Vivid",  desc: "Northern lights palette with shimmer effects."  },
+  { id: "sepia",           name: "Sepia Vintage",      icon: "camera"      as FeatherIconName, color: AMBER,  category: "Retro",  desc: "Warm sepia tones for a timeless feel."          },
+  { id: "midnight-glass",  name: "Midnight Glass",     icon: "layers"      as FeatherIconName, color: CYAN,   category: "Dark",   desc: "Frosted glass panels on deep midnight canvas."  },
 ];
 
 /* ── Polygon button matching AppButton style ── */
@@ -99,7 +105,7 @@ function SectionHead({ micro, title, delay = 0 }: { micro: string; title: string
 }
 
 /* ── Tool card matching AI Studio etched-slab style ── */
-function ToolCard({ tool, index }: { tool: typeof TOOLS[0]; index: number }) {
+function ToolCard({ tool, index, onPress }: { tool: typeof TOOLS[0]; index: number; onPress: () => void }) {
   const colors = useColors();
   const { width } = useWindowDimensions();
   const cardW = (width - 48 - 10) / 2;
@@ -112,7 +118,7 @@ function ToolCard({ tool, index }: { tool: typeof TOOLS[0]; index: number }) {
     >
       <TouchableOpacity
         activeOpacity={0.78}
-        onPress={() => { if (tool.route) router.push(tool.route as any); }}
+        onPress={onPress}
         style={[styles.toolCard, { backgroundColor: colors.card, borderColor: tool.color + "28" }]}
       >
         <LinearGradient
@@ -120,19 +126,16 @@ function ToolCard({ tool, index }: { tool: typeof TOOLS[0]; index: number }) {
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
-        {/* Icon */}
         <View style={[styles.toolIconWrap, { backgroundColor: tool.color + "18", borderColor: tool.color + "30" }]}>
           <Feather name={tool.icon} size={18} color={tool.color} />
         </View>
         <Text style={[styles.toolLabel, { color: colors.foreground }]}>{tool.label}</Text>
         <Text style={[styles.toolDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{tool.desc}</Text>
-        {/* Badge */}
         {tool.badge && (
           <View style={[styles.toolBadge, { backgroundColor: tool.color + "18", borderColor: tool.color + "40" }]}>
             <Text style={[styles.toolBadgeText, { color: tool.color }]}>{tool.badge}</Text>
           </View>
         )}
-        {/* Arrow */}
         <View style={{ position: "absolute", top: 10, right: 10 }}>
           <Feather name="arrow-up-right" size={11} color={tool.color + "60"} />
         </View>
@@ -142,7 +145,7 @@ function ToolCard({ tool, index }: { tool: typeof TOOLS[0]; index: number }) {
 }
 
 /* ── Template row card ── */
-function TemplateCard({ template, index }: { template: typeof TEMPLATES[0]; index: number }) {
+function TemplateCard({ template, index, onPress }: { template: typeof ALL_TEMPLATES[0]; index: number; onPress?: () => void }) {
   const colors = useColors();
   return (
     <MotiView
@@ -152,6 +155,7 @@ function TemplateCard({ template, index }: { template: typeof TEMPLATES[0]; inde
     >
       <TouchableOpacity
         activeOpacity={0.75}
+        onPress={onPress}
         style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.border }]}
       >
         <View style={[styles.templateIcon, { backgroundColor: template.color + "18", borderColor: template.color + "30", borderWidth: 1 }]}>
@@ -171,6 +175,7 @@ export default function DiscoverScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const { data: stats } = useQuery({
     queryKey: ["stats"],
@@ -181,6 +186,12 @@ export default function DiscoverScreen() {
   const totalAiOutputs = stats?.totalAiOutputs ?? 0;
   const totalTags      = stats?.totalTags      ?? 0;
   const totalNotes     = stats?.totalNotes     ?? 0;
+
+  const handleToolPress = (tool: typeof TOOLS[0]) => {
+    if (tool.action === "templates")   { setShowTemplates(true); return; }
+    if (tool.action === "coming-soon") { Alert.alert("Coming Soon", `${tool.label} is in development and will be available in a future update.`); return; }
+    if (tool.route) router.push(tool.route as any);
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -253,7 +264,7 @@ export default function DiscoverScreen() {
           <SectionHead micro="//01_TOOLS" title="Learning Tools" delay={100} />
           <View style={styles.toolGrid}>
             {TOOLS.map((tool, i) => (
-              <ToolCard key={tool.id} tool={tool} index={i} />
+              <ToolCard key={tool.id} tool={tool} index={i} onPress={() => handleToolPress(tool)} />
             ))}
           </View>
         </View>
@@ -265,11 +276,12 @@ export default function DiscoverScreen() {
             Export your AI outputs in 10 professionally designed HTML formats.
           </Text>
           <View style={{ gap: 8 }}>
-            {TEMPLATES.map((t, i) => (
-              <TemplateCard key={t.id} template={t} index={i} />
+            {ALL_TEMPLATES.slice(0, 5).map((t, i) => (
+              <TemplateCard key={t.id} template={t} index={i} onPress={() => setShowTemplates(true)} />
             ))}
           </View>
           <TouchableOpacity
+            onPress={() => setShowTemplates(true)}
             style={[styles.viewAllBtn, { borderColor: PURPLE + "45", backgroundColor: PURPLE + "0e" }]}
             activeOpacity={0.75}
           >
@@ -362,6 +374,61 @@ export default function DiscoverScreen() {
           </MotiView>
         </View>
       </ScrollView>
+
+      {/* ── Templates Modal ── */}
+      <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTemplates(false)} />
+          <View style={[styles.tmplSheet, { backgroundColor: colors.background, borderColor: AMBER + "30" }]}>
+            {/* Handle */}
+            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
+              <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
+            </View>
+            {/* Header */}
+            <View style={[styles.tmplHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={[styles.tmplHeaderIcon, { backgroundColor: AMBER + "18", borderColor: AMBER + "30", borderWidth: 1 }]}>
+                  <Feather name="layout" size={16} color={AMBER} />
+                </View>
+                <View>
+                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TEMPLATE_LIBRARY</Text>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Export Templates</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setShowTemplates(false)} style={{ padding: 4 }}>
+                <Feather name="x" size={20} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 11, color: colors.mutedForeground, paddingHorizontal: 16, paddingVertical: 10, lineHeight: 16 }}>
+              Generate your AI notes and outputs in beautiful, print-ready HTML. Open a video, generate AI content, then tap Export.
+            </Text>
+            <FlatList
+              data={ALL_TEMPLATES}
+              keyExtractor={t => t.id}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 8 }}
+              renderItem={({ item: t, index }) => (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => { setShowTemplates(false); router.push("/(tabs)/videos"); }}
+                  style={[styles.tmplRow, { backgroundColor: colors.card, borderColor: t.color + "28" }]}
+                >
+                  <LinearGradient colors={[t.color + "08", "transparent"]} style={StyleSheet.absoluteFill} />
+                  <View style={[styles.tmplRowIcon, { backgroundColor: t.color + "18", borderColor: t.color + "30", borderWidth: 1 }]}>
+                    <Feather name={t.icon} size={16} color={t.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground }}>{t.name}</Text>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }} numberOfLines={1}>{t.desc}</Text>
+                  </View>
+                  <View style={{ backgroundColor: t.color + "14", borderWidth: 1, borderColor: t.color + "30", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 }}>
+                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -417,4 +484,10 @@ const styles = StyleSheet.create({
   proIconWrap:{ width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   proTitle:   { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -0.5 },
   proDesc:    { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 17, textAlign: "center" },
+
+  tmplSheet:      { maxHeight: "82%", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, overflow: "hidden" },
+  tmplHeader:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  tmplHeaderIcon: { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  tmplRow:        { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, overflow: "hidden" },
+  tmplRowIcon:    { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
 });
