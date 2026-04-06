@@ -355,7 +355,7 @@ export default function AIAssistant() {
                 VidVault AI Studio
               </p>
               <p className="font-mono-ui text-[8px] uppercase tracking-widest" style={{ color: textMuted }}>
-                POWERED_BY_AI // YOUTUBE_SEARCH_ENABLED
+                LIBRARY_SEARCH // YOUTUBE_SEARCH_ENABLED
               </p>
             </div>
           </div>

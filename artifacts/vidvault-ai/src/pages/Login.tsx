@@ -1678,7 +1678,7 @@ function HowItWorksSection() {
     {
       n: "02",
       title: "AI Processes",
-      desc: "Our engine extracts the transcript & metadata, then sends to GPT for deep structured analysis.",
+      desc: "Our engine extracts the transcript & metadata, then uses AI for deep structured analysis.",
       icon: Zap,
       color: "#06b6d4",
     },

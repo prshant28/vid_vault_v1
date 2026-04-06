@@ -5,10 +5,11 @@ import { extractYoutubeId } from "@/lib/youtube";
 import {
   Loader2, Calendar, Folder as FolderIcon, Sparkles, FileText, CheckSquare,
   Presentation, Download, Trash2, Brain, Layers, BookOpen, Twitter, Zap,
-  BookMarked, Target, X, StickyNote, ExternalLink,
+  BookMarked, Target, X, StickyNote, ExternalLink, Send, Bot, MessageSquare,
+  Clock,
 } from "lucide-react";
 import { format } from "date-fns";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { marked } from "marked";
 import { useToast } from "@/hooks/use-toast";
 import { parseQuizContent } from "@/lib/quiz-parser";
@@ -298,11 +299,11 @@ function AiOutputCard({
             )}
             <button
               onClick={e => { e.stopPropagation(); navigate(`/videos/${videoId}/output/${output.type}`); }}
-              className="flex items-center gap-1 text-[9px] font-mono-ui uppercase tracking-wider px-2.5 py-1.5 rounded-lg transition-all"
+              className="p-1.5 rounded-lg transition-all"
               style={{ background: `${accent}12`, border: `1px solid ${accent}30`, color: accent }}
-              title="View full page + export"
+              title="View full page & export"
             >
-              <ExternalLink className="w-2.5 h-2.5" /> View Full
+              <ExternalLink className="w-3 h-3" />
             </button>
             <button
               onClick={e => { e.stopPropagation(); isQuiz ? setShowTemplatePicker(true) : handleDownload(); }}
@@ -369,13 +370,15 @@ function AiOutputCard({
 }
 
 /* ─── Shared AI Outputs + Notes panel ──────────────────────── */
+interface ChatMsg { role: "user" | "assistant"; content: string; ts: Date; }
+
 function AiNotesPanel({
   video, activeTab, setActiveTab, generatingType, noteText, setNoteText,
   handleDelete, handleDownloadNotes, isMobile = false,
 }: {
   video: any;
-  activeTab: "notes" | "ai";
-  setActiveTab: (t: "notes" | "ai") => void;
+  activeTab: "notes" | "ai" | "chat";
+  setActiveTab: (t: "notes" | "ai" | "chat") => void;
   generatingType: string | null;
   noteText: string;
   setNoteText: (t: string) => void;
@@ -386,17 +389,37 @@ function AiNotesPanel({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [savingNote, setSavingNote] = useState(false);
+  const [timestampInput, setTimestampInput] = useState("");
+
+  /* chat state */
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
+
+  const parseTimestamp = (val: string): number | null => {
+    if (!val.trim()) return null;
+    const parts = val.split(":").map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts[0] * 60 + parts[1];
+    }
+    if (parts.length === 1 && !isNaN(parts[0])) return parts[0];
+    return null;
+  };
 
   const handleSaveNote = async () => {
     if (!noteText.trim()) return;
     setSavingNote(true);
     try {
+      const timestamp = parseTimestamp(timestampInput);
       await fetch(`/api/videos/${video.id}/notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: noteText.trim(), timestamp: null }),
+        body: JSON.stringify({ content: noteText.trim(), timestamp }),
       });
       setNoteText("");
+      setTimestampInput("");
       queryClient.invalidateQueries({ queryKey: [`/api/videos/${video.id}`] });
       toast({ title: "Note saved" });
     } catch {
@@ -406,30 +429,49 @@ function AiNotesPanel({
     }
   };
 
+  const handleSendChat = async () => {
+    if (!chatInput.trim() || chatSending) return;
+    const msg = chatInput.trim();
+    setChatInput("");
+    setChatSending(true);
+    const userMsg: ChatMsg = { role: "user", content: msg, ts: new Date() };
+    setChatMessages(prev => [...prev, userMsg]);
+    try {
+      const history = chatMessages.map(m => ({ role: m.role, content: m.content }));
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, history, videoId: video.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chat failed");
+      setChatMessages(prev => [...prev, { role: "assistant", content: data.message, ts: new Date() }]);
+    } catch (err: any) {
+      setChatMessages(prev => [...prev, { role: "assistant", content: `Sorry, something went wrong. ${err.message || ""}`, ts: new Date() }]);
+    } finally {
+      setChatSending(false);
+    }
+  };
+
   return (
     <div className={`flex flex-col ${isMobile ? "gap-3" : "h-full gap-3"}`}>
       {/* Tab switcher */}
       <div className="flex p-1 rounded-xl" style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}>
-        <button
-          onClick={() => setActiveTab("ai")}
-          className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
-          style={{
-            background: activeTab === "ai" ? "#8b5cf6" : "transparent",
-            color: activeTab === "ai" ? "#fff" : "var(--vv-text-muted)",
-          }}
-        >
-          AI Outputs {(video.aiOutputs?.length ?? 0) > 0 && `(${video.aiOutputs!.length})`}
-        </button>
-        <button
-          onClick={() => setActiveTab("notes")}
-          className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
-          style={{
-            background: activeTab === "notes" ? "#8b5cf6" : "transparent",
-            color: activeTab === "notes" ? "#fff" : "var(--vv-text-muted)",
-          }}
-        >
-          My Notes {(video.notes?.length ?? 0) > 0 && `(${video.notes!.length})`}
-        </button>
+        {(["ai", "notes", "chat"] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="flex-1 py-1.5 text-[10px] font-mono-ui uppercase tracking-wider rounded-lg transition-all"
+            style={{
+              background: activeTab === tab ? "#8b5cf6" : "transparent",
+              color: activeTab === tab ? "#fff" : "var(--vv-text-muted)",
+            }}
+          >
+            {tab === "ai" && `Outputs${(video.aiOutputs?.length ?? 0) > 0 ? ` (${video.aiOutputs!.length})` : ""}`}
+            {tab === "notes" && `Notes${(video.notes?.length ?? 0) > 0 ? ` (${video.notes!.length})` : ""}`}
+            {tab === "chat" && "Chat"}
+          </button>
+        ))}
       </div>
 
       {/* Tab content */}
@@ -521,6 +563,21 @@ function AiNotesPanel({
                   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSaveNote();
                 }}
               />
+              {/* Timestamp input */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-1.5 flex-1 px-2.5 py-1.5 rounded-lg border transition-colors"
+                  style={{ background: "var(--vv-surface)", borderColor: "var(--vv-card-border)" }}>
+                  <Clock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                  <input
+                    value={timestampInput}
+                    onChange={e => setTimestampInput(e.target.value)}
+                    placeholder="mm:ss (optional)"
+                    className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none font-mono-ui"
+                    maxLength={8}
+                    onKeyDown={e => { if (e.key === "Enter") handleSaveNote(); }}
+                  />
+                </div>
+              </div>
               <div className="flex items-center justify-between mt-2">
                 {(video.notes?.length ?? 0) > 0 && (
                   <button
@@ -544,6 +601,93 @@ function AiNotesPanel({
             </div>
           </div>
         )}
+
+        {/* Chat tab */}
+        {activeTab === "chat" && (
+          <div className={`flex flex-col ${isMobile ? "" : "h-full"}`} style={{ minHeight: 320 }}>
+            {/* Chat header with clear */}
+            <div className="flex items-center justify-between px-3 py-2 border-b shrink-0" style={{ borderColor: "var(--vv-border)" }}>
+              <div className="flex items-center gap-2">
+                <Bot className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] font-mono-ui uppercase tracking-widest text-muted-foreground">Video Chat</span>
+              </div>
+              {chatMessages.length > 0 && (
+                <button
+                  onClick={() => setChatMessages([])}
+                  className="flex items-center gap-1 text-[9px] font-mono-ui uppercase tracking-wider px-2 py-1 rounded transition-all"
+                  style={{ color: "var(--vv-text-muted)", border: "1px solid var(--vv-card-border)" }}
+                  title="Clear chat"
+                >
+                  <Trash2 className="w-2.5 h-2.5" /> Clear
+                </button>
+              )}
+            </div>
+
+            {/* Messages */}
+            <div className={`flex-1 overflow-y-auto p-3 space-y-3 hide-scrollbar ${isMobile ? "max-h-56" : ""}`}>
+              {chatMessages.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3"
+                    style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                  </div>
+                  <p className="text-xs font-medium text-foreground/60 mb-1">Ask anything about this video</p>
+                  <p className="text-[10px] text-muted-foreground">Summaries, concepts, questions, etc.</p>
+                </div>
+              )}
+              {chatMessages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className="max-w-[88%] px-3 py-2 rounded-xl text-xs leading-relaxed"
+                    style={{
+                      background: m.role === "user" ? "rgba(139,92,246,0.15)" : "var(--vv-card-bg)",
+                      border: `1px solid ${m.role === "user" ? "rgba(139,92,246,0.3)" : "var(--vv-card-border)"}`,
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+              {chatSending && (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {[0, 1, 2].map(i => (
+                      <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Chat input */}
+            <div className="p-3 border-t shrink-0" style={{ borderColor: "var(--vv-border)" }}>
+              <div className="flex gap-2">
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendChat(); } }}
+                  placeholder="Ask about this video…"
+                  className="flex-1 text-xs px-3 py-2 rounded-lg bg-transparent border focus:outline-none transition-colors"
+                  style={{ borderColor: "var(--vv-card-border)", color: "var(--vv-text)" }}
+                  onFocus={e => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)")}
+                  onBlur={e => (e.currentTarget.style.borderColor = "var(--vv-card-border)")}
+                />
+                <button
+                  onClick={handleSendChat}
+                  disabled={!chatInput.trim() || chatSending}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-40 flex-shrink-0"
+                  style={{ background: "#8b5cf6" }}
+                >
+                  {chatSending ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" /> : <Send className="w-3.5 h-3.5 text-white" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -553,7 +697,7 @@ function AiNotesPanel({
 export default function VideoDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: video, isLoading } = useGetVideo(id || "");
-  const [activeTab, setActiveTab] = useState<"notes" | "ai">("ai");
+  const [activeTab, setActiveTab] = useState<"notes" | "ai" | "chat">("ai");
   const [generatingType, setGeneratingType] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
   const { toast } = useToast();
@@ -641,11 +785,12 @@ export default function VideoDetail() {
                 {format(new Date(video.publishedAt), "MMM d, yyyy")}
               </span>
             )}
-            {video.folderName && (
-              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-secondary/60">
-                <FolderIcon className="w-3 h-3" /> {video.folderName}
+            {(video as any).folderName ? (
+              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-mono-ui tracking-wide"
+                style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}>
+                <FolderIcon className="w-3 h-3" /> {(video as any).folderName}
               </span>
-            )}
+            ) : null}
           </div>
           {video.description && (
             <div

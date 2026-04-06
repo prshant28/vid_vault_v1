@@ -5,13 +5,14 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Download, Copy, Printer, FileText, RefreshCw,
   Sparkles, CheckSquare, Layers, BookOpen, Presentation,
-  Brain, Target, BookMarked, Twitter, Zap, Check,
+  Brain, Target, BookMarked, Twitter, Zap, Check, X,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { contentExportTemplate } from "@/lib/html-templates";
+import { contentExportTemplate, QUIZ_TEMPLATES } from "@/lib/html-templates";
 import { parseQuizContent } from "@/lib/quiz-parser";
 import { InteractiveQuiz } from "@/components/ai/InteractiveQuiz";
+import { AnimatePresence } from "framer-motion";
 
 marked.setOptions({ breaks: true });
 
@@ -49,6 +50,47 @@ function downloadMarkdown(content: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+function QuizTemplatePicker({ onSelect, onClose }: { onSelect: (id: number) => void; onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+        className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+        style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)" }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <div className="text-[9px] font-mono-ui uppercase tracking-widest text-muted-foreground mb-1">// EXPORT</div>
+            <h3 className="font-display font-bold text-lg text-foreground">Choose Quiz Template</h3>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1.5 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {QUIZ_TEMPLATES.map(tpl => (
+            <button
+              key={tpl.id}
+              onClick={() => onSelect(tpl.id)}
+              className="text-left p-3 rounded-xl border transition-all hover:border-primary/40 hover:bg-primary/5 group"
+              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
+            >
+              <div className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mb-1">Template {tpl.id}</div>
+              <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{tpl.name}</div>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function AiOutputView() {
   const { id: videoId, type } = useParams<{ id: string; type: string }>();
   const [, navigate] = useLocation();
@@ -56,6 +98,7 @@ export default function AiOutputView() {
   const [copied, setCopied] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: [`/api/videos/${videoId}/ai/outputs/type/${type}`],
@@ -92,15 +135,28 @@ export default function AiOutputView() {
     toast({ title: "Downloaded as Markdown" });
   };
 
-  const handleDownloadHtml = () => {
+  const handleDownloadHtml = (tplId?: number) => {
     if (!output) return;
-    const html = contentExportTemplate({
-      title: videoTitle, videoTitle, channelName,
-      content: output.content, contentHtml,
-      type: output.type, generatedAt: now,
-    });
-    downloadHtml(html, `${safeFilename}_${type}.html`);
-    toast({ title: "Downloaded as HTML" });
+    if (isQuiz && parsedQuiz && parsedQuiz.questions.length > 0) {
+      const tpl = QUIZ_TEMPLATES.find(t => t.id === (tplId ?? 4)) ?? QUIZ_TEMPLATES[3];
+      const html = tpl.fn({ title: videoTitle, videoTitle, channelName, questions: parsedQuiz.questions, generatedAt: now });
+      downloadHtml(html, `${safeFilename}_quiz_${tpl.name.replace(/ /g, "_")}.html`);
+      toast({ title: `Downloaded: ${tpl.name}` });
+      setShowTemplatePicker(false);
+    } else {
+      const html = contentExportTemplate({ title: videoTitle, videoTitle, channelName, content: output.content, contentHtml, type: output.type, generatedAt: now });
+      downloadHtml(html, `${safeFilename}_${type}.html`);
+      toast({ title: "Downloaded as HTML" });
+    }
+  };
+
+  const handleHtmlClick = () => {
+    if (!output) return;
+    if (isQuiz && parsedQuiz && parsedQuiz.questions.length > 0) {
+      setShowTemplatePicker(true);
+    } else {
+      handleDownloadHtml();
+    }
   };
 
   const handlePrint = () => {
@@ -141,6 +197,15 @@ export default function AiOutputView() {
   };
 
   return (
+    <>
+    <AnimatePresence>
+      {showTemplatePicker && (
+        <QuizTemplatePicker
+          onSelect={id => handleDownloadHtml(id)}
+          onClose={() => setShowTemplatePicker(false)}
+        />
+      )}
+    </AnimatePresence>
     <div className="min-h-screen" style={{ background: "var(--vv-bg)" }}>
       {/* ── Header bar ── */}
       <div
@@ -193,10 +258,10 @@ export default function AiOutputView() {
               <span className="hidden sm:inline">.md</span>
             </button>
             <button
-              onClick={handleDownloadHtml}
+              onClick={handleHtmlClick}
               className="flex items-center gap-1.5 text-[10px] font-mono-ui uppercase tracking-wider px-2.5 py-1.5 rounded-lg transition-all text-muted-foreground hover:text-foreground"
               style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
-              title="Download as HTML"
+              title={isQuiz ? "Choose quiz template" : "Download as HTML"}
             >
               <Download className="w-3 h-3" />
               <span className="hidden sm:inline">.html</span>
@@ -327,8 +392,8 @@ export default function AiOutputView() {
               <button onClick={handleDownloadMd} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
                 <Download className="w-3 h-3" /> Markdown (.md)
               </button>
-              <button onClick={handleDownloadHtml} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
-                <Download className="w-3 h-3" /> HTML Page
+              <button onClick={handleHtmlClick} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
+                <Download className="w-3 h-3" /> {isQuiz ? "HTML (Pick Template)" : "HTML Page"}
               </button>
               <button onClick={handlePrint} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
                 <Printer className="w-3 h-3" /> Print / PDF
@@ -338,5 +403,6 @@ export default function AiOutputView() {
         )}
       </div>
     </div>
+    </>
   );
 }
