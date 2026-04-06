@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow — My Daily Schedule</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   ROOT & RESET
+══════════════════════════════════════════ */
+:root {
+  --bg:        #f7f4ee;
+  --surface:   #ffffff;
+  --surface2:  #f0ece2;
+  --ink:       #1a1814;
+  --muted:     #6b6456;
+  --rule:      #ddd8cc;
+  --red:       #c0392b;
+  --navy:      #1a3a5c;
+  --green:     #1e6b4a;
+  --gold:      #b8860b;
+  --study-bg:  #eaf6ed; --study-b: #1e6b4a; --study-t: #14532d;
+  --break-bg:  #fef6e4; --break-b: #b8860b; --break-t: #78350f;
+  --talk-bg:   #eef2ff; --talk-b:  #3730a3; --talk-t:  #312e81;
+  --serif: 'Playfair Display', Georgia, serif;
+  --mono:  'DM Mono', monospace;
+  --body:  'Outfit', sans-serif;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.13), 0 3px 12px rgba(0,0,0,0.07);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,244,238,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: 56px;
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.nav-logo span { color: var(--red); font-style: italic; }
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-link {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  border: none; background: none;
+  font-family: var(--body);
+}
+.nav-link:hover { color: var(--ink); background: var(--surface2); }
+.nav-link.active { background: var(--ink); color: #fff; }
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.btn-print {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-family: var(--body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-print:hover { opacity: 0.85; }
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+.hero {
+  background: var(--ink);
+  color: #fff;
+  padding: 3.5rem 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -45deg, transparent, transparent 40px,
+    rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px
+  );
+}
+.hero-stripe {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: repeating-linear-gradient(90deg,
+    var(--red) 0, var(--red) 25%,
+    var(--navy) 25%, var(--navy) 50%,
+    var(--green) 50%, var(--green) 75%,
+    var(--gold) 75%, var(--gold) 100%);
+}
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 0.75rem;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin-bottom: 0.75rem;
+}
+.hero h1 em { color: #fbbf24; font-style: italic; }
+.hero-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.6);
+  max-width: 560px;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+.hero-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-stat .val {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.hero-stat .lbl {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+.hero-stat:nth-child(1) .val { color: #4ade80; }
+.hero-stat:nth-child(2) .val { color: #fbbf24; }
+.hero-stat:nth-child(3) .val { color: #818cf8; }
+
+/* ══════════════════════════════════════════
+   LIVE CLOCK STRIP
+══════════════════════════════════════════ */
+.clock-strip {
+  background: var(--navy);
+  color: #fff;
+  padding: 0.6rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+.clock-strip .time-big {
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: #fbbf24;
+}
+.clock-strip .date-str { color: rgba(255,255,255,0.55); font-size: 0.72rem; }
+.now-block-info {
+  margin-left: auto;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.75);
+}
+.now-dot { display: inline-block; width: 6px; height: 6px; background: #4ade80; border-radius: 50%; margin-right: 5px; animation: blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ══════════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════════ */
+.main-wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* ══════════════════════════════════════════
+   SCHEDULE SELECTOR TABS
+══════════════════════════════════════════ */
+.schedule-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.sched-tab {
+  background: var(--surface);
+  border: 2px solid var(--rule);
+  border-radius: 14px;
+  padding: 1.1rem 1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.sched-tab::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 2px 2px 0 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sched-tab:nth-child(1)::before { background: var(--red); }
+.sched-tab:nth-child(2)::before { background: var(--gold); }
+.sched-tab:nth-child(3)::before { background: var(--navy); }
+.sched-tab.active::before { opacity: 1; }
+.sched-tab:hover, .sched-tab.active { border-color: transparent; box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.sched-tab.active { background: var(--surface); }
+.sched-tab .wake-emoji { font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sched-tab .wake-label {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+.sched-tab .wake-sub {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+.sched-tab .wake-badge {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.6rem;
+  font-family: var(--mono);
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.sched-tab:nth-child(1) .wake-badge { background: #fee2e2; color: var(--red); }
+.sched-tab:nth-child(2) .wake-badge { background: #fef9c3; color: #92400e; }
+.sched-tab:nth-child(3) .wake-badge { background: #dbeafe; color: #1e3a8a; }
+
+/* ══════════════════════════════════════════
+   PROGRESS + FILTERS ROW
+══════════════════════════════════════════ */
+.controls-row {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.done-pct { font-size: 0.85rem; font-weight: 500; color: var(--ink); }
+.progress-track {
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  gap: 1px;
+  margin-bottom: 0.9rem;
+}
+.prog-seg {
+  height: 100%;
+  border-radius: 2px;
+  transition: opacity 0.3s;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.filters-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.flt-btn {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  padding: 0.28rem 0.85rem;
+  border-radius: 20px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.flt-btn:hover { border-color: var(--ink); color: var(--ink); }
+.flt-btn.active[data-f="all"]   { background: var(--ink); color: #fff; border-color: var(--ink); }
+.flt-btn.active[data-f="study"] { background: var(--study-bg); color: var(--study-t); border-color: var(--study-b); }
+.flt-btn.active[data-f="break"] { background: var(--break-bg); color: var(--break-t); border-color: var(--break-b); }
+.flt-btn.active[data-f="talk"]  { background: var(--talk-bg);  color: var(--talk-t);  border-color: var(--talk-b); }
+.reset-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  padding: 0.28rem 1rem;
+  border-radius: 20px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.reset-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ══════════════════════════════════════════
+   SCHEDULE PANELS
+══════════════════════════════════════════ */
+.sched-panel { display: none; }
+.sched-panel.active { display: block; animation: fadeUp 0.35s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* Section heading */
+.sec-head {
+  display: flex; align-items: center; gap: 8px;
+  margin: 1.4rem 0 0.5rem;
+}
+.sec-head .ico { font-size: 1rem; }
+.sec-head h3 { font-family: var(--serif); font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.sec-head::after { content:''; flex:1; height:1px; background: var(--rule); margin-left: 8px; }
+
+/* Block cards */
+.block-list { display: flex; flex-direction: column; gap: 4px; }
+
+.blk {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, opacity 0.2s;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.blk::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; border-radius: 3px 0 0 3px;
+}
+.blk.study { background: var(--study-bg); border-color: #c3e6cb; }
+.blk.study::before { background: var(--study-b); }
+.blk.break { background: var(--break-bg); border-color: #f0dfa0; }
+.blk.break::before { background: var(--break-b); }
+.blk.talk  { background: var(--talk-bg);  border-color: #c7d2fe; }
+.blk.talk::before  { background: var(--talk-b); }
+.blk:hover { transform: translateX(3px); box-shadow: var(--shadow); }
+.blk.done { opacity: 0.38; }
+.blk.done .blk-label { text-decoration: line-through; }
+.blk-emoji { font-size: 1rem; text-align: center; }
+.blk-label { font-weight: 600; font-size: 0.875rem; color: var(--ink); }
+.blk-time { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.blk-dur {
+  font-family: var(--mono); font-size: 0.65rem;
+  padding: 2px 8px; border-radius: 20px; white-space: nowrap; font-weight: 500;
+}
+.blk.study .blk-dur { background: rgba(30,107,74,0.12); color: var(--study-t); }
+.blk.break .blk-dur { background: rgba(184,134,11,0.12); color: var(--break-t); }
+.blk.talk  .blk-dur { background: rgba(55,48,163,0.12);  color: var(--talk-t); }
+.blk-chk {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--rule);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; flex-shrink: 0; transition: all 0.2s;
+  color: transparent;
+}
+.blk.done .blk-chk { background: var(--study-b); border-color: var(--study-b); color: #fff; }
+
+/* NOW row */
+.now-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0.4rem 1rem;
+  background: #fffbeb; border: 1px solid #fcd34d;
+  border-radius: 8px; margin-bottom: 3px;
+  font-family: var(--mono); font-size: 0.7rem; color: #92400e;
+}
+
+/* ══════════════════════════════════════════
+   QUOTE SECTION
+══════════════════════════════════════════ */
+.quote-section {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 16px;
+  padding: 1.8rem 2rem;
+  margin: 2rem 0;
+  position: relative;
+  overflow: hidden;
+}
+.quote-section::after {
+  content: '"';
+  position: absolute; right: 1.5rem; top: -0.5rem;
+  font-family: var(--serif); font-size: 8rem; color: rgba(255,255,255,0.05);
+  line-height: 1; pointer-events: none;
+}
+.q-eyebrow { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.75rem; }
+.q-carousel { position: relative; min-height: 60px; }
+.q-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s; }
+.q-slide.active { opacity: 1; position: relative; }
+.q-text { font-family: var(--serif); font-size: 1.2rem; font-style: italic; line-height: 1.5; color: #fff; margin-bottom: 0.4rem; }
+.q-author { font-family: var(--mono); font-size: 0.7rem; color: rgba(255,255,255,0.45); }
+.q-dots { display: flex; gap: 6px; margin-top: 1rem; }
+.q-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: background 0.2s; border: none; }
+.q-dot.active { background: #fbbf24; }
+
+/* ══════════════════════════════════════════
+   LEGEND
+══════════════════════════════════════════ */
+.legend-row {
+  display: flex; gap: 1.5rem; align-items: center;
+  padding: 0.85rem 1.25rem;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 10px; margin-bottom: 1.5rem;
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  flex-wrap: wrap;
+}
+.leg-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+/* ══════════════════════════════════════════
+   MOTIVATIONAL GRID
+══════════════════════════════════════════ */
+.motive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.motive-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.2rem 1.25rem;
+  border-left: 3px solid var(--rule);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+.motive-card:hover { transform: translateY(-2px); }
+.motive-card:nth-child(1) { border-left-color: var(--red); }
+.motive-card:nth-child(2) { border-left-color: var(--navy); }
+.motive-card:nth-child(3) { border-left-color: var(--green); }
+.motive-card:nth-child(4) { border-left-color: var(--gold); }
+.motive-card:nth-child(5) { border-left-color: #7c3aed; }
+.motive-card:nth-child(6) { border-left-color: #0891b2; }
+.motive-q { font-family: var(--serif); font-size: 0.9rem; font-style: italic; color: var(--ink); line-height: 1.5; margin-bottom: 0.35rem; }
+.motive-a { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ══════════════════════════════════════════
+   TIPS SECTION
+══════════════════════════════════════════ */
+.tips-section {
+  margin: 2rem 0;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--ink);
+}
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.tip-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.1rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--rule);
+}
+.tip-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.tip-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.3rem; color: var(--ink); }
+.tip-body { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.5);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+}
+footer strong { color: #fff; }
+
+/* ══════════════════════════════════════════
+   PRINT STYLES
+══════════════════════════════════════════ */
+@media print {
+  body { background: #fff; }
+  nav, .clock-strip, .hero, .quote-section, .motive-grid, .tips-section, footer,
+  .sched-tab-row, .schedule-selector, .filters-row, .reset-btn, .now-row, .no-print { display: none !important; }
+  .main-wrap { max-width: 100%; padding: 0; }
+  .controls-row { border: none; box-shadow: none; padding: 0 0 8px; }
+  .sched-panel { display: block !important; }
+  .sched-panel:not(.active) { display: none !important; }
+  .blk { break-inside: avoid; }
+  .legend-row { border: 1px solid #ccc; }
+  .print-header { display: block !important; }
+  @page { size: A4; margin: 15mm; }
+}
+.print-header {
+  display: none;
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #000;
+}
+.print-header h2 { font-family: var(--serif); font-size: 18pt; }
+.print-header p { font-size: 9pt; color: #555; font-family: var(--mono); margin-top: 4px; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .schedule-selector { grid-template-columns: 1fr; }
+  .motive-grid { grid-template-columns: 1fr; }
+  .tips-grid { grid-template-columns: 1fr; }
+  .blk { grid-template-columns: 24px 1fr auto auto; }
+  .blk-dur { display: none; }
+  .hero-stats { gap: 1.2rem; }
+  nav { padding: 0 1rem; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Study<span>Flow</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="scrollTo('#schedules')">📅 Schedules</button>
+    <button class="nav-link" onclick="scrollTo('#quotes')">💡 Motivation</button>
+    <button class="nav-link" onclick="scrollTo('#tips')">🎯 Study Tips</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-print" onclick="window.print()">🖨️ Print A4</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-stripe"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">📚 My Personal Study System</div>
+    <h1>Daily Study<br><em>Timetable</em></h1>
+    <p class="hero-sub">Three adaptive schedules for every wake-up time. Track your progress, stay consistent, and build the habit of a champion.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="val">11h 45m</span><span class="lbl">Study (3AM plan)</span></div>
+      <div class="hero-stat"><span class="val">9h 45m</span><span class="lbl">Study (5AM plan)</span></div>
+      <div class="hero-stat"><span class="val">8h 45m</span><span class="lbl">Study (6AM plan)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE CLOCK -->
+<div class="clock-strip">
+  <div class="time-big" id="live-time">--:--:--</div>
+  <div>
+    <div id="live-date" class="date-str"></div>
+    <div id="live-day" style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:1px;letter-spacing:1px;text-transform:uppercase"></div>
+  </div>
+  <div class="now-block-info" id="now-block-info">
+    <span class="now-dot"></span><span id="now-block-text">Loading...</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- Print header (only visible on print) -->
+  <div class="print-header">
+    <h2>Daily Study Timetable</h2>
+    <p id="print-schedule-label">Full Schedule</p>
+  </div>
+
+  <!-- SCHEDULE SELECTOR -->
+  <div id="schedules"></div>
+  <div class="schedule-selector">
+    <div class="sched-tab active" onclick="switchSched(0)" id="tab-0">
+      <div class="wake-emoji">🌑</div>
+      <div class="wake-label">3:00 AM Wake</div>
+      <div class="wake-sub">Maximum study day</div>
+      <div class="wake-badge">Primary Plan</div>
+    </div>
+    <div class="sched-tab" onclick="switchSched(1)" id="tab-1">
+      <div class="wake-emoji">🌤️</div>
+      <div class="wake-label">5:00 AM Wake</div>
+      <div class="wake-sub">Backup — early morning</div>
+      <div class="wake-badge">Backup A</div>
+    </div>
+    <div class="sched-tab" onclick="switchSched(2)" id="tab-2">
+      <div class="wake-emoji">☀️</div>
+      <div class="wake-label">6:00 AM Wake</div>
+      <div class="wake-sub">Backup — standard morning</div>
+      <div class="wake-badge">Backup B</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend-row">
+    <strong style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--ink)">Legend:</strong>
+    <div class="leg-item"><div class="leg-dot" style="background:#1e6b4a"></div>Study</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#b8860b"></div>Break</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#3730a3"></div>Talk / Rest</div>
+    <span style="margin-left:auto;font-size:0.65rem">👆 Click any block to mark complete</span>
+  </div>
+
+  <!-- PROGRESS + FILTERS -->
+  <div class="controls-row">
+    <div class="progress-meta">
+      <span>📊 DAY PROGRESS</span>
+      <span><span class="done-pct" id="done-pct">0%</span> &nbsp;·&nbsp; <span id="done-count">0 / 0 done</span></span>
+    </div>
+    <div class="progress-track" id="progress-track"></div>
+    <div class="filters-row">
+      <button class="flt-btn active" data-f="all">All</button>
+      <button class="flt-btn" data-f="study">📚 Study</button>
+      <button class="flt-btn" data-f="break">☕ Break</button>
+      <button class="flt-btn" data-f="talk">💬 Talk</button>
+      <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- SCHEDULE PANELS -->
+  <div id="panel-0" class="sched-panel active"></div>
+  <div id="panel-1" class="sched-panel"></div>
+  <div id="panel-2" class="sched-panel"></div>
+
+  <!-- QUOTE CAROUSEL -->
+  <div class="quote-section" id="quotes">
+    <div class="q-eyebrow">✨ Daily Motivation</div>
+    <div class="q-carousel" id="q-carousel"></div>
+    <div class="q-dots" id="q-dots"></div>
+  </div>
+
+  <!-- MOTIVATION GRID -->
+  <div id="motivation-anchor"></div>
+  <div class="section-title">💡 Words That Fuel the Grind</div>
+  <div class="motive-grid">
+    <div class="motive-card"><div class="motive-q">"Discipline is choosing between what you want now and what you want most."</div><div class="motive-a">— Abraham Lincoln</div></div>
+    <div class="motive-card"><div class="motive-q">"It does not matter how slowly you go as long as you do not stop."</div><div class="motive-a">— Confucius</div></div>
+    <div class="motive-card"><div class="motive-q">"Success is the sum of small efforts repeated day in and day out."</div><div class="motive-a">— Robert Collier</div></div>
+    <div class="motive-card"><div class="motive-q">"Push yourself, because no one else is going to do it for you."</div><div class="motive-a">— Unknown</div></div>
+    <div class="motive-card"><div class="motive-q">"The secret of getting ahead is getting started — one hour at a time."</div><div class="motive-a">— Mark Twain (adapted)</div></div>
+    <div class="motive-card"><div class="motive-q">"You don't have to be great to start, but you must start to be great."</div><div class="motive-a">— Zig Ziglar</div></div>
+  </div>
+
+  <!-- STUDY TIPS -->
+  <div class="tips-section" id="tips">
+    <div class="section-title">🎯 Study Strategy Tips</div>
+    <div class="tips-grid">
+      <div class="tip-card"><div class="tip-icon">🧠</div><div class="tip-title">Active Recall</div><div class="tip-body">After each study block, close your notes and write everything you remember. This beats re-reading by 3×.</div></div>
+      <div class="tip-card"><div class="tip-icon">⏱️</div><div class="tip-title">Pomodoro Inside Blocks</div><div class="tip-body">Split each study block into 25-min focus + 5-min micro-rest cycles for maximum retention.</div></div>
+      <div class="tip-card"><div class="tip-icon">💧</div><div class="tip-title">Hydrate Every Break</div><div class="tip-body">Drink a full glass of water every break. Dehydration cuts cognitive performance by up to 15%.</div></div>
+      <div class="tip-card"><div class="tip-icon">📵</div><div class="tip-title">Phone in Another Room</div><div class="tip-body">Physical distance from your phone increases deep focus. Silence isn't enough — out of sight matters.</div></div>
+      <div class="tip-card"><div class="tip-icon">✍️</div><div class="tip-title">Write by Hand</div><div class="tip-body">Handwriting notes activates deeper processing than typing. Use your talk breaks to review written notes.</div></div>
+      <div class="tip-card"><div class="tip-icon">🌙</div><div class="tip-title">Protect Sleep</div><div class="tip-body">The 3AM plan only works if you sleep by 10–11PM. Quality sleep consolidates everything you studied.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built for <strong>consistency</strong> · Stay focused, stay hungry 🔥 · <strong>StudyFlow</strong></p>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════
+   SCHEDULE DATA
+══════════════════════════════════════════ */
+const SCHEDULES = [
+  // ── 0: 3AM WAKE (PRIMARY) ──
+  {
+    name:"3:00 AM Wake — Primary Plan",
+    totalStudy:"11h 45m", totalBreak:"1h 45m", totalTalk:"2h 15m",
+    sections:[
+      { label:"🌑 Night Start", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"3:00 AM – 5:00 AM",   d:"2 hrs",        s:3*60,    n:5*60},
+        {type:"break",e:"☕",l:"Break",     t:"5:00 AM – 5:15 AM",   d:"15 min",       s:5*60,    n:5*60+15},
+        {type:"study",e:"✅",l:"Study",     t:"5:15 AM – 6:15 AM",   d:"1 hr",         s:5*60+15, n:6*60+15},
+        {type:"break",e:"☕",l:"Break",     t:"6:15 AM – 7:00 AM",   d:"45 min",       s:6*60+15, n:7*60},
+      ]},
+      { label:"📚 Early Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"7:15 AM – 8:15 AM",   d:"1 hr",         s:7*60+15, n:8*60+15},
+        {type:"break",e:"☕",l:"Break",     t:"8:15 AM – 8:30 AM",   d:"15 min",       s:8*60+15, n:8*60+30},
+      ]},
+      { label:"📚 Mid Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"9:00 AM – 10:00 AM",  d:"1 hr",         s:9*60,    n:10*60},
+      ]},
+      { label:"📚 Late Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"11:00 AM – 12:00 PM", d:"1 hr",         s:11*60,   n:12*60},
+        {type:"talk", e:"💬",l:"Talk/Break",t:"12:00 PM – 12:30 PM", d:"30 min",       s:12*60,   n:12*60+30},
+      ]},
+      { label:"📚 Afternoon", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"12:30 PM – 2:00 PM",  d:"1 hr 30 min",  s:12*60+30,n:14*60},
+        {type:"break",e:"☕",l:"Break",     t:"2:00 PM – 2:15 PM",   d:"15 min",       s:14*60,   n:14*60+15},
+        {type:"study",e:"✅",l:"Study",     t:"2:15 PM – 4:15 PM",   d:"2 hrs",        s:14*60+15,n:16*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"4:15 PM – 4:45 PM",   d:"30 min",       s:16*60+15,n:16*60+45},
+      ]},
+      { label:"📚 Evening", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"4:45 PM – 5:45 PM",   d:"1 hr",         s:16*60+45,n:17*60+45},
+      ]},
+      { label:"🌙 Night", blocks:[
+        {type:"break",e:"☕",l:"Break",     t:"6:00 PM – 6:15 PM",   d:"15 min",       s:18*60,   n:18*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"6:15 PM – 7:00 PM",   d:"45 min",       s:18*60+15,n:19*60},
+        {type:"study",e:"✅",l:"Study",     t:"7:00 PM – 8:00 PM",   d:"1 hr",         s:19*60,   n:20*60},
+        {type:"talk", e:"💬",l:"Talk",      t:"8:00 PM – 9:00 PM",   d:"1 hr",         s:20*60,   n:21*60},
+        {type:"study",e:"✅",l:"Study",     t:"9:00 PM – 10:00 PM",  d:"1 hr",         s:21*60,   n:22*60},
+        {type:"study",e:"✅",l:"Late Night Study", t:"10:00 PM – 11:00 PM", d:"1 hr",  s:22*60,   n:23*60},
+      ]},
+    ]
+  },
+
+  // ── 1: 5AM WAKE (BACKUP A) ──
+  {
+    name:"5:00 AM Wake — Backup Plan A",
+    totalStudy:"9h 45m", totalBreak:"2h", totalTalk:"2h 15m",
+    sections:[
+      { label:"🌅 Early Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"5:00 AM – 6:15 AM",   d:"1 hr 15 min",  s:5*60,    n:6*60+15},
+        {type:"break",e:"☕",l:"Break",     t:"6:15 AM – 7:00 AM",   d:"45 min",       s:6*60+15, n:7*60},
+      ]},
+      { label:"📚 Morning Study", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"7:15 AM – 8:15 AM",   d:"1 hr",         s:7*60+15, n:8*60+15},
+        {type:"break",e:"☕",l:"Break",     t:"8:15 AM – 8:30 AM",   d:"15 min",       s:8*60+15, n:8*60+30},
+      ]},
+      { label:"📚 Mid Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"9:00 AM – 10:00 AM",  d:"1 hr",         s:9*60,    n:10*60},
+      ]},
+      { label:"📚 Late Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"11:00 AM – 12:00 PM", d:"1 hr",         s:11*60,   n:12*60},
+        {type:"talk", e:"💬",l:"Talk/Break",t:"12:00 PM – 12:30 PM", d:"30 min",       s:12*60,   n:12*60+30},
+      ]},
+      { label:"📚 Afternoon", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"12:30 PM – 2:00 PM",  d:"1 hr 30 min",  s:12*60+30,n:14*60},
+        {type:"break",e:"☕",l:"Break",     t:"2:00 PM – 2:15 PM",   d:"15 min",       s:14*60,   n:14*60+15},
+        {type:"study",e:"✅",l:"Study",     t:"2:15 PM – 4:15 PM",   d:"2 hrs",        s:14*60+15,n:16*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"4:15 PM – 4:45 PM",   d:"30 min",       s:16*60+15,n:16*60+45},
+      ]},
+      { label:"📚 Evening", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"4:45 PM – 5:45 PM",   d:"1 hr",         s:16*60+45,n:17*60+45},
+      ]},
+      { label:"🌙 Night", blocks:[
+        {type:"break",e:"☕",l:"Break",     t:"6:00 PM – 6:15 PM",   d:"15 min",       s:18*60,   n:18*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"6:15 PM – 7:00 PM",   d:"45 min",       s:18*60+15,n:19*60},
+        {type:"study",e:"✅",l:"Study",     t:"7:00 PM – 8:00 PM",   d:"1 hr",         s:19*60,   n:20*60},
+        {type:"talk", e:"💬",l:"Talk",      t:"8:00 PM – 9:00 PM",   d:"1 hr",         s:20*60,   n:21*60},
+        {type:"study",e:"✅",l:"Study",     t:"9:00 PM – 10:00 PM",  d:"1 hr",         s:21*60,   n:22*60},
+        {type:"study",e:"✅",l:"Late Night Study", t:"10:00 PM – 11:00 PM", d:"1 hr",  s:22*60,   n:23*60},
+      ]},
+    ]
+  },
+
+  // ── 2: 6AM WAKE (BACKUP B) ──
+  {
+    name:"6:00 AM Wake — Backup Plan B",
+    totalStudy:"8h 45m", totalBreak:"1h 45m", totalTalk:"2h 15m",
+    sections:[
+      { label:"🌅 Morning Start", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"6:00 AM – 7:15 AM",   d:"1 hr 15 min",  s:6*60,    n:7*60+15},
+        {type:"break",e:"☕",l:"Break",     t:"7:15 AM – 7:30 AM",   d:"15 min",       s:7*60+15, n:7*60+30},
+      ]},
+      { label:"📚 Morning Study", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"7:30 AM – 8:30 AM",   d:"1 hr",         s:7*60+30, n:8*60+30},
+        {type:"break",e:"☕",l:"Break",     t:"8:30 AM – 8:45 AM",   d:"15 min",       s:8*60+30, n:8*60+45},
+      ]},
+      { label:"📚 Mid Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"9:00 AM – 10:00 AM",  d:"1 hr",         s:9*60,    n:10*60},
+      ]},
+      { label:"📚 Late Morning", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"11:00 AM – 12:00 PM", d:"1 hr",         s:11*60,   n:12*60},
+        {type:"talk", e:"💬",l:"Talk/Break",t:"12:00 PM – 12:30 PM", d:"30 min",       s:12*60,   n:12*60+30},
+      ]},
+      { label:"📚 Afternoon", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"12:30 PM – 2:00 PM",  d:"1 hr 30 min",  s:12*60+30,n:14*60},
+        {type:"break",e:"☕",l:"Break",     t:"2:00 PM – 2:15 PM",   d:"15 min",       s:14*60,   n:14*60+15},
+        {type:"study",e:"✅",l:"Study",     t:"2:15 PM – 4:15 PM",   d:"2 hrs",        s:14*60+15,n:16*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"4:15 PM – 4:45 PM",   d:"30 min",       s:16*60+15,n:16*60+45},
+      ]},
+      { label:"📚 Evening", blocks:[
+        {type:"study",e:"✅",l:"Study",     t:"4:45 PM – 5:45 PM",   d:"1 hr",         s:16*60+45,n:17*60+45},
+      ]},
+      { label:"🌙 Night", blocks:[
+        {type:"break",e:"☕",l:"Break",     t:"6:00 PM – 6:15 PM",   d:"15 min",       s:18*60,   n:18*60+15},
+        {type:"talk", e:"💬",l:"Talk",      t:"6:15 PM – 7:00 PM",   d:"45 min",       s:18*60+15,n:19*60},
+        {type:"study",e:"✅",l:"Study",     t:"7:00 PM – 8:00 PM",   d:"1 hr",         s:19*60,   n:20*60},
+        {type:"talk", e:"💬",l:"Talk",      t:"8:00 PM – 9:00 PM",   d:"1 hr",         s:20*60,   n:21*60},
+        {type:"study",e:"✅",l:"Study",     t:"9:00 PM – 10:00 PM",  d:"1 hr",         s:21*60,   n:22*60},
+        {type:"study",e:"✅",l:"Late Night Study", t:"10:00 PM – 11:00 PM", d:"1 hr",  s:22*60,   n:23*60},
+      ]},
+    ]
+  }
+];
+
+const QUOTES = [
+  {q:"The secret of getting ahead is getting started.", a:"Mark Twain"},
+  {q:"Hard work beats talent when talent doesn't work hard.", a:"Tim Notke"},
+  {q:"Don't watch the clock — do what it does. Keep going.", a:"Sam Levenson"},
+  {q:"A little progress each day adds up to big results.", a:"Satya Nani"},
+  {q:"Wake up with determination. Go to bed with satisfaction.", a:"Unknown"},
+  {q:"You don't have to be great to start, but you must start to be great.", a:"Zig Ziglar"},
+  {q:"The pain of discipline is far less than the pain of regret.", a:"Unknown"},
+  {q:"Champions aren't made in gyms — they're made from an intangible quality called desire.", a:"Muhammad Ali"},
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let activeSched = 0;
+let completed = {};
+try { completed = JSON.parse(localStorage.getItem('sf-done') || '{}'); } catch(e){}
+function save(){ try{localStorage.setItem('sf-done', JSON.stringify(completed));}catch(e){} }
+
+function blockId(si,secI,blkI){ return `${si}-${secI}-${blkI}`; }
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function renderAll(){
+  SCHEDULES.forEach((sched, si) => {
+    const panel = document.getElementById(`panel-${si}`);
+    panel.innerHTML = '';
+    const now = new Date();
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    let nowShown = false;
+
+    sched.sections.forEach((sec, secI) => {
+      const grp = document.createElement('div');
+      const parts = sec.label.split(' ');
+      const hdr = document.createElement('div');
+      hdr.className = 'sec-head';
+      hdr.innerHTML = `<span class="ico">${parts[0]}</span><h3>${parts.slice(1).join(' ')}</h3>`;
+      grp.appendChild(hdr);
+
+      const list = document.createElement('div');
+      list.className = 'block-list';
+
+      sec.blocks.forEach((b, blkI) => {
+        const id = blockId(si, secI, blkI);
+        if(si===activeSched && !nowShown && nowMin>=b.s && nowMin<b.n){
+          const nr = document.createElement('div');
+          nr.className = 'now-row no-print';
+          nr.innerHTML = `<span class="now-dot"></span><span>You are here — ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · ${b.l} in progress</span>`;
+          list.appendChild(nr);
+          nowShown = true;
+        }
+
+        const card = document.createElement('div');
+        const done = completed[id];
+        card.className = `blk ${b.type}${done?' done':''}`;
+        card.dataset.id = id;
+        card.dataset.type = b.type;
+        card.innerHTML = `
+          <div class="blk-emoji">${b.e}</div>
+          <div class="blk-label">${b.l}</div>
+          <div class="blk-time">${b.t}</div>
+          <div class="blk-dur">${b.d}</div>
+          <div class="blk-chk">${done?'✓':''}</div>
+        `;
+        card.addEventListener('click', ()=>{
+          if(completed[id]){ delete completed[id]; card.classList.remove('done'); card.querySelector('.blk-chk').textContent=''; }
+          else { completed[id]=true; card.classList.add('done'); card.querySelector('.blk-chk').textContent='✓'; }
+          save(); updateStats(); buildProgress();
+        });
+        list.appendChild(card);
+      });
+
+      grp.appendChild(list);
+      panel.appendChild(grp);
+    });
+  });
+  updateStats();
+  buildProgress();
+}
+
+/* ══════════════════════════════════════════
+   STATS & PROGRESS
+══════════════════════════════════════════ */
+function allBlocksOfSched(si){
+  const blocks = [];
+  SCHEDULES[si].sections.forEach((sec,secI) => sec.blocks.forEach((b,blkI) => blocks.push({b, id:blockId(si,secI,blkI)})));
+  return blocks;
+}
+
+function updateStats(){
+  const blocks = allBlocksOfSched(activeSched);
+  const total = blocks.length;
+  const done = blocks.filter(x => completed[x.id]).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('done-count').textContent = `${done} / ${total} done`;
+  document.getElementById('done-pct').textContent = pct+'%';
+}
+
+function buildProgress(){
+  const track = document.getElementById('progress-track');
+  if(!track) return;
+  track.innerHTML = '';
+  const blocks = allBlocksOfSched(activeSched);
+  const minStart = Math.min(...blocks.map(x=>x.b.s));
+  const maxEnd   = Math.max(...blocks.map(x=>x.b.n));
+  const total = maxEnd - minStart;
+  const col = {study:'#1e6b4a', break:'#b8860b', talk:'#3730a3'};
+  blocks.forEach(({b,id}) => {
+    const w = ((b.n - b.s)/total*100).toFixed(2);
+    const seg = document.createElement('div');
+    seg.className = 'prog-seg';
+    seg.style.width = w+'%';
+    seg.style.background = col[b.type];
+    seg.style.opacity = completed[id] ? '1' : '0.18';
+    seg.title = `${b.t} · ${b.l}`;
+    track.appendChild(seg);
+  });
+}
+
+/* ══════════════════════════════════════════
+   SWITCH SCHEDULE
+══════════════════════════════════════════ */
+function switchSched(i){
+  activeSched = i;
+  document.querySelectorAll('.sched-panel').forEach((p,idx) => p.classList.toggle('active', idx===i));
+  document.querySelectorAll('.sched-tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
+  document.getElementById('print-schedule-label').textContent = SCHEDULES[i].name;
+  // re-apply active filter
+  const activeFilter = document.querySelector('.flt-btn.active');
+  if(activeFilter) applyFilter(activeFilter.dataset.f);
+  updateStats();
+  buildProgress();
+}
+
+/* ══════════════════════════════════════════
+   FILTER
+══════════════════════════════════════════ */
+function applyFilter(type){
+  const panel = document.getElementById(`panel-${activeSched}`);
+  panel.querySelectorAll('.blk').forEach(el => {
+    el.style.display = (type==='all' || el.dataset.type===type) ? '' : 'none';
+  });
+  panel.querySelectorAll('.sec-head').forEach(hdr => {
+    const grp = hdr.parentElement;
+    const vis = [...grp.querySelectorAll('.blk')].some(b => b.style.display !== 'none');
+    grp.style.display = vis ? '' : 'none';
+  });
+}
+
+document.querySelectorAll('.flt-btn[data-f]').forEach(btn => {
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.flt-btn[data-f]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.f);
+  });
+});
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+function resetAll(){
+  // only reset current schedule
+  const blocks = allBlocksOfSched(activeSched);
+  blocks.forEach(({id}) => delete completed[id]);
+  save();
+  document.querySelectorAll(`#panel-${activeSched} .blk`).forEach(c => {
+    c.classList.remove('done');
+    c.querySelector('.blk-chk').textContent = '';
+  });
+  updateStats(); buildProgress();
+}
+
+/* ══════════════════════════════════════════
+   LIVE CLOCK
+══════════════════════════════════════════ */
+function updateClock(){
+  const now = new Date();
+  document.getElementById('live-time').textContent = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('live-date').textContent = now.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('live-day').textContent  = now.toLocaleDateString('en-IN',{weekday:'long'});
+
+  // Find current block in active schedule
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  let found = null;
+  SCHEDULES[activeSched].sections.forEach(sec => sec.blocks.forEach(b => {
+    if(nowMin >= b.s && nowMin < b.n) found = b;
+  }));
+  const info = document.getElementById('now-block-text');
+  if(found) info.textContent = `${found.l} — ${found.t}`;
+  else info.textContent = 'Outside schedule';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ══════════════════════════════════════════
+   QUOTE CAROUSEL
+══════════════════════════════════════════ */
+let qIndex = 0;
+function buildQuotes(){
+  const carousel = document.getElementById('q-carousel');
+  const dots = document.getElementById('q-dots');
+  carousel.innerHTML = ''; dots.innerHTML = '';
+  QUOTES.forEach((q,i) => {
+    const slide = document.createElement('div');
+    slide.className = `q-slide${i===0?' active':''}`;
+    slide.innerHTML = `<div class="q-text">"${q.q}"</div><div class="q-author">— ${q.a}</div>`;
+    carousel.appendChild(slide);
+    const dot = document.createElement('button');
+    dot.className = `q-dot${i===0?' active':''}`;
+    dot.addEventListener('click',()=>goQuote(i));
+    dots.appendChild(dot);
+  });
+}
+function goQuote(i){
+  document.querySelectorAll('.q-slide').forEach((s,idx)=>s.classList.toggle('active',idx===i));
+  document.querySelectorAll('.q-dot').forEach((d,idx)=>d.classList.toggle('active',idx===i));
+  qIndex = i;
+}
+function autoQuote(){
+  qIndex = (qIndex+1) % QUOTES.length;
+  goQuote(qIndex);
+}
+setInterval(autoQuote, 5000);
+buildQuotes();
+
+/* ══════════════════════════════════════════
+   NAV SCROLL
+══════════════════════════════════════════ */
+function scrollTo(id){
+  const el = document.querySelector(id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+renderAll();
+switchSched(0);
+</script>
+</body>
+</html>

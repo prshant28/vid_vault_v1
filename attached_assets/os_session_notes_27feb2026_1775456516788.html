@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operating Systems — Live Doubt Clearing Session Notes · 27 Feb 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── CSS Variables ───────────────────────────────────────────── */
+  :root {
+    --ink:       #0f0e0c;
+    --paper:     #faf8f3;
+    --cream:     #f0ece0;
+    --rule:      #c8bfa8;
+    --accent:    #c0392b;
+    --accent2:   #1a3a5c;
+    --accent3:   #1e6b4a;
+    --gold:      #b8860b;
+    --muted:     #5a5345;
+    --highlight: #fff9e6;
+    --os-orange: #c2410c;
+    --os-light:  #fff7ed;
+
+    --serif:  'DM Serif Display', Georgia, serif;
+    --mono:   'IBM Plex Mono', 'Courier New', monospace;
+    --sans:   'Figtree', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #e8e4d8;
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── A4 page shell ───────────────────────────────────────────── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    background: var(--paper);
+    padding: 16mm 18mm 16mm 18mm;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ── Decorative top bar ──────────────────────────────────────── */
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent)  0,       var(--accent)  40px,
+      var(--accent2) 40px,    var(--accent2) 80px,
+      var(--accent3) 80px,    var(--accent3) 120px,
+      var(--gold)    120px,   var(--gold)    160px
+    );
+  }
+
+  /* ── Corner marks ────────────────────────────────────────────── */
+  .corner { position: absolute; width: 20px; height: 20px; border-color: var(--rule); border-style: solid; }
+  .corner.tl { top: 10mm; left: 10mm;  border-width: 1px 0 0 1px; }
+  .corner.tr { top: 10mm; right: 10mm; border-width: 1px 1px 0 0; }
+  .corner.bl { bottom: 10mm; left: 10mm;  border-width: 0 0 1px 1px; }
+  .corner.br { bottom: 10mm; right: 10mm; border-width: 0 1px 1px 0; }
+
+  /* ── Document header ─────────────────────────────────────────── */
+  .doc-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 12px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .doc-header .meta {
+    font-family: var(--mono);
+    font-size: 7.5pt;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: right;
+  }
+  .doc-header .meta span { display: block; }
+
+  h1.doc-title {
+    font-family: var(--serif);
+    font-size: 22pt;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1.doc-title em { color: var(--os-orange); font-style: italic; }
+
+  .subtitle {
+    font-family: var(--sans);
+    font-size: 8.5pt;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Section heading ─────────────────────────────────────────── */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 8px;
+  }
+  .section-heading .num {
+    font-family: var(--mono);
+    font-size: 7pt;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2px 6px;
+    letter-spacing: 0.08em;
+    border-radius: 2px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .section-heading h2 {
+    font-family: var(--serif);
+    font-size: 13pt;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .section-heading::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+  /* ── Overview / callout box ──────────────────────────────────── */
+  .overview {
+    font-size: 8.8pt;
+    line-height: 1.65;
+    color: #2a2520;
+    background: var(--cream);
+    border-left: 3px solid var(--accent2);
+    padding: 8px 12px;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 14px;
+  }
+
+  /* ── Info grid (2-col) ───────────────────────────────────────── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .info-card {
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 8px 11px;
+  }
+  .info-card .card-title {
+    font-family: var(--mono);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 3px;
+  }
+  .info-card ul {
+    list-style: none;
+    font-size: 8pt;
+    line-height: 1.7;
+  }
+  .info-card ul li::before { content: '▸ '; color: var(--accent); font-size: 7pt; }
+
+  /* ── Tag badges ──────────────────────────────────────────────── */
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 6pt;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin: 1px 1px 1px 0;
+    white-space: nowrap;
+  }
+  .tag-os   { background: #fff7ed; color: #c2410c; border: 1px solid #fb923c; }
+  .tag-tip  { background: #fef9c3; color: #713f12; border: 1px solid #fde047; }
+  .tag-warn { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .tag-new  { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+  .tag-key  { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
+
+  /* ── Highlight note ──────────────────────────────────────────── */
+  .note-box {
+    background: var(--highlight);
+    border: 1px solid var(--gold);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    padding: 7px 11px;
+    font-size: 8pt;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .note-box strong { color: var(--gold); font-family: var(--mono); font-size: 7pt; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Two-column layout ───────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Architecture strip ──────────────────────────────────────── */
+  .arch-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .arch-block {
+    padding: 10px 8px;
+    text-align: center;
+    border-right: 1px solid var(--rule);
+  }
+  .arch-block:last-child { border-right: none; }
+  .arch-num  { font-family: var(--mono); font-size: 6.5pt; font-weight: 700; color: var(--muted); display: block; margin-bottom: 3px; }
+  .arch-lbl  { font-family: var(--mono); font-size: 9pt; font-weight: 700; display: block; margin-bottom: 4px; }
+  .arch-desc { font-size: 7pt; line-height: 1.4; color: var(--muted); }
+  .arch-cpu  { background: #fef3c7; }
+  .arch-mem  { background: #dbeafe; }
+  .arch-io   { background: #f0fdf4; }
+
+  /* ── Mode comparison strip ───────────────────────────────────── */
+  .mode-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .mode-block {
+    padding: 10px 12px;
+    border-right: 1px solid var(--rule);
+  }
+  .mode-block:last-child { border-right: none; }
+  .mode-label { font-family: var(--mono); font-size: 8pt; font-weight: 700; display: block; margin-bottom: 5px; letter-spacing: 0.05em; }
+  .mode-bit   { font-family: var(--mono); font-size: 6.5pt; font-weight: 700; padding: 1px 6px; border-radius: 10px; display: inline-block; margin-bottom: 6px; }
+  .mode-items { font-size: 7.5pt; line-height: 1.7; color: var(--muted); list-style: none; }
+  .mode-items li::before { content: '→ '; color: var(--os-orange); }
+  .mode-user { background: #f0fdf4; }
+  .mode-kern { background: #fff7ed; }
+  .bit-user { background: #dcfce7; color: #14532d; }
+  .bit-kern { background: #fee2e2; color: #991b1b; }
+
+  /* ── OS Roles grid ───────────────────────────────────────────── */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .role-card {
+    border-radius: 4px;
+    padding: 8px 10px;
+    border: 1.5px solid;
+    text-align: center;
+  }
+  .role-card .role-icon { font-size: 14pt; display: block; margin-bottom: 4px; }
+  .role-card .role-name { font-family: var(--mono); font-size: 7.5pt; font-weight: 700; display: block; margin-bottom: 2px; }
+  .role-card .role-desc { font-size: 6.5pt; color: var(--muted); line-height: 1.3; }
+  .rc-1 { background: #fef3c7; border-color: #f59e0b; }
+  .rc-2 { background: #dbeafe; border-color: #60a5fa; }
+  .rc-3 { background: #fce7f3; border-color: #f472b6; }
+  .rc-4 { background: #f0fdf4; border-color: #4ade80; }
+  .rc-5 { background: #fee2e2; border-color: #f87171; }
+  .rc-6 { background: #ede9fe; border-color: #c084fc; }
+
+  /* ── IPC comparison ──────────────────────────────────────────── */
+  .ipc-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .ipc-card {
+    border-radius: 4px;
+    padding: 9px 11px;
+    border: 1.5px solid;
+  }
+  .ipc-title { font-family: var(--mono); font-size: 8pt; font-weight: 700; display: block; margin-bottom: 6px; }
+  .ipc-items { font-size: 7.5pt; line-height: 1.7; list-style: none; }
+  .ipc-items li::before { content: '▸ '; }
+  .ipc-sm { background: #fff7ed; border-color: #fb923c; }
+  .ipc-sm .ipc-title { color: #c2410c; }
+  .ipc-sm .ipc-items li::before { color: #c2410c; }
+  .ipc-mp { background: #dbeafe; border-color: #60a5fa; }
+  .ipc-mp .ipc-title { color: #1e3a8a; }
+  .ipc-mp .ipc-items li::before { color: #1e3a8a; }
+
+  /* ── Memory hierarchy ────────────────────────────────────────── */
+  .mem-hier {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .mem-level {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    font-size: 7.5pt;
+  }
+  .mem-name { font-family: var(--mono); font-weight: 700; font-size: 8pt; }
+  .mem-desc { color: var(--muted); line-height: 1.4; }
+  .mem-speed { font-family: var(--mono); font-size: 6.5pt; padding: 2px 6px; border-radius: 3px; text-align: center; white-space: nowrap; }
+  .ml-cache { background: #fee2e2; }  .sp-cache { background: #fca5a5; color: #7f1d1d; }
+  .ml-ram   { background: #dbeafe; }  .sp-ram   { background: #93c5fd; color: #1e3a8a; }
+  .ml-ssd   { background: #f0fdf4; }  .sp-ssd   { background: #86efac; color: #14532d; }
+
+  /* ── Deadlock conditions ─────────────────────────────────────── */
+  .deadlock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .dl-card {
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    border-radius: 4px;
+    padding: 8px 8px;
+    text-align: center;
+  }
+  .dl-num  { font-family: var(--mono); font-size: 6pt; font-weight: 700; color: #991b1b; display: block; margin-bottom: 3px; }
+  .dl-name { font-family: var(--mono); font-size: 7.5pt; font-weight: 700; display: block; margin-bottom: 3px; color: #7f1d1d; }
+  .dl-desc { font-size: 6.5pt; color: var(--muted); line-height: 1.3; }
+
+  /* ── Main table ──────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-bottom: 14px;
+  }
+  thead tr { background: var(--ink); color: var(--paper); }
+  thead th {
+    font-family: var(--mono);
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 9px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--rule); }
+  tbody tr:last-child { border-bottom: 2px solid var(--ink); }
+  tbody td { padding: 8px 9px; vertical-align: top; line-height: 1.5; color: var(--ink); }
+  .row-syscall { background: #fef3c7; }
+  .row-process { background: #f0fdf4; }
+  .row-ipc     { background: #dbeafe; }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .doc-footer {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: var(--mono);
+    font-size: 6.5pt;
+    color: var(--muted);
+  }
+  .footer-note {
+    font-family: var(--sans);
+    font-size: 7pt;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 70%;
+  }
+
+  /* ── Print ───────────────────────────────────────────────────── */
+  @media print {
+    body { background: none; margin: 0; }
+    .page { margin: 0; box-shadow: none; width: 210mm; min-height: 297mm; padding: 14mm 16mm; }
+    .print-btn { display: none !important; }
+    @page { size: A4; margin: 0; }
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 20px; right: 20px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 9pt;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: background 0.2s;
+  }
+  .print-btn:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">⎙ Print / Save PDF</button>
+
+<!-- ══════════════════════════  PAGE 1  ══════════════════════════ -->
+<div class="page">
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div>
+      <h1 class="doc-title">Operating Systems —<br><em>Live Doubt Clearing</em> Session</h1>
+      <p class="subtitle">Live Q&amp;A Session · Semester 3 · OS Introduction &amp; Core Concepts · Faculty: Prof. Sidharth Sharma</p>
+    </div>
+    <div class="meta">
+      <span>DOC-OS-S3-001</span>
+      <span>REV 1.0</span>
+      <span>A4 · Portrait · 3 Pages</span>
+      <span>Operating Systems</span>
+      <span style="margin-top:6px; padding-top:6px; border-top:1px solid var(--rule); color:var(--ink); font-weight:600;">27 February 2026</span>
+      <span style="color:var(--os-orange); font-weight:700; letter-spacing:0.08em;">2:00 PM – 4:00 PM</span>
+    </div>
+  </div>
+
+  <!-- §01 Session Overview -->
+  <div class="section-heading">
+    <span class="num">§01</span>
+    <h2>Session Overview</h2>
+  </div>
+
+  <p class="overview">
+    This <strong>Live Doubt Clearing Session</strong> is part of <strong>Semester 3 — Operating Systems (OS)</strong>, hosted by IITJBSc Manager <strong>Abraham</strong>, with <strong>Professor Sidharth Sharma</strong> as the main faculty, assisted by TAs <strong>Shasank Dixit</strong> and <strong>Shubham Sharma</strong>. The 2-hour interactive session focused on clarifying doubts from Week 1 video lectures, covering the foundational concepts of OS — its role, Von Neumann Architecture, CPU modes, process vs. program, deadlock, IPC, memory hierarchy, and the kernel. Students engaged in live Q&amp;A throughout.
+  </p>
+
+  <!-- §02 OS Roles -->
+  <div class="section-heading">
+    <span class="num">§02</span>
+    <h2>Introduction — Why Operating Systems?</h2>
+  </div>
+
+  <p style="font-size:8.5pt; line-height:1.6; margin-bottom:10px; color:#2a2520;">
+    Users want applications to run smoothly <em>without worrying about hardware details</em>. If applications accessed hardware directly, it would cause security vulnerabilities and resource management chaos. The OS acts as an <strong>intermediary layer</strong> between user applications and hardware, managing six core responsibilities:
+  </p>
+
+  <div class="roles-grid">
+    <div class="role-card rc-1">
+      <span class="role-icon">⚙️</span>
+      <span class="role-name">Process Management</span>
+      <span class="role-desc">Managing running programs, scheduling CPU time</span>
+    </div>
+    <div class="role-card rc-2">
+      <span class="role-icon">🧠</span>
+      <span class="role-name">Memory Management</span>
+      <span class="role-desc">Allocating &amp; tracking RAM usage across processes</span>
+    </div>
+    <div class="role-card rc-3">
+      <span class="role-icon">🖨️</span>
+      <span class="role-name">I/O Management</span>
+      <span class="role-desc">Handling input/output devices &amp; requests</span>
+    </div>
+    <div class="role-card rc-4">
+      <span class="role-icon">📁</span>
+      <span class="role-name">File Management</span>
+      <span class="role-desc">Organizing &amp; protecting stored data</span>
+    </div>
+    <div class="role-card rc-5">
+      <span class="role-icon">🔒</span>
+      <span class="role-name">Security Management</span>
+      <span class="role-desc">Protecting system resources from unauthorized access</span>
+    </div>
+    <div class="role-card rc-6">
+      <span class="role-icon">🌐</span>
+      <span class="role-name">Network Management</span>
+      <span class="role-desc">Handling network communications &amp; protocols</span>
+    </div>
+  </div>
+
+  <!-- §03 Von Neumann Architecture -->
+  <div class="section-heading">
+    <span class="num">§03</span>
+    <h2>Von Neumann Architecture</h2>
+  </div>
+
+  <div class="arch-strip">
+    <div class="arch-block arch-cpu">
+      <span class="arch-num">COMPONENT 1</span>
+      <span class="arch-lbl">CPU</span>
+      <span class="arch-desc">Executes instructions fetched from memory. Contains cores for parallel processing.</span>
+    </div>
+    <div class="arch-block arch-mem">
+      <span class="arch-num">COMPONENT 2</span>
+      <span class="arch-lbl">Memory (RAM)</span>
+      <span class="arch-desc">Stores active process instructions &amp; data. Managed entirely by the OS.</span>
+    </div>
+    <div class="arch-block arch-io">
+      <span class="arch-num">COMPONENT 3</span>
+      <span class="arch-lbl">I/O Devices</span>
+      <span class="arch-desc">Screen, printer, USB, keyboard — communicate via I/O requests &amp; interrupts.</span>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="card-title">🔑 Key Concept — DMA</div>
+      <ul>
+        <li><strong>DMA (Direct Memory Access)</strong> is a dedicated processor that enables data to transfer directly between I/O devices and memory <em>without CPU involvement</em></li>
+        <li>Frees the CPU from managing every byte of data movement</li>
+        <li>Example: Copying a file from USB drive goes through DMA, not the main CPU</li>
+        <li>Interrupts notify the CPU once DMA transfer is complete</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <div class="card-title">🖥️ CPU vs GPU</div>
+      <ul>
+        <li><strong>CPUs:</strong> 4–16 cores — general purpose workloads</li>
+        <li><strong>GPUs:</strong> Thousands of cores — matrix operations</li>
+        <li>GPUs are optimized for <em>AI/ML matrix multiplication</em> workloads</li>
+        <li>More cores = more complex OS management across memory, processes &amp; I/O</li>
+        <li>CPUs handle sequential logic; GPUs handle massively parallel computation</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer Page 1 -->
+  <div class="doc-footer">
+    <p class="footer-note">
+      Week 1 live doubt clearing session — content follows the video lecture series for Operating Systems, Semester 3. All concepts build toward understanding process scheduling, memory allocation, and file systems in later weeks.
+    </p>
+    <div style="text-align:right; line-height:1.8;">
+      <span>DOC-OS-S3-001 · REV 1.0</span><br>
+      <span>Page 1 of 3</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════  PAGE 2  ══════════════════════════ -->
+<div class="page">
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+
+  <!-- Continuation header -->
+  <div class="doc-header">
+    <div>
+      <h1 class="doc-title">CPU Modes, System Calls<br>&amp; <em>Process Management</em></h1>
+      <p class="subtitle">Live Doubt Clearing · 27 Feb 2026 · 2:00 PM – 4:00 PM · Continued from Page 1</p>
+    </div>
+    <div class="meta">
+      <span>DOC-OS-S3-001</span>
+      <span>REV 1.0 · Page 2</span>
+      <span>Faculty: Prof. Sidharth Sharma</span>
+      <span style="margin-top:6px; padding-top:6px; border-top:1px solid var(--rule); color:var(--ink); font-weight:600;">Sem 3 — OS</span>
+      <span style="color:var(--os-orange); font-weight:700; letter-spacing:0.08em;">Doubt Clearing</span>
+    </div>
+  </div>
+
+  <!-- §04 User Mode vs Kernel Mode -->
+  <div class="section-heading">
+    <span class="num">§04</span>
+    <h2>User Mode vs Kernel Mode</h2>
+  </div>
+
+  <div class="mode-strip">
+    <div class="mode-block mode-user">
+      <span class="mode-label">👤 USER MODE</span>
+      <span class="mode-bit bit-user">MODE BIT = 0</span>
+      <ul class="mode-items">
+        <li>Where regular application code runs</li>
+        <li>No direct access to hardware</li>
+        <li>Limited privileges — cannot write to system memory</li>
+        <li>Examples: web browser, Python script, games</li>
+        <li>Any hardware access triggers a system call</li>
+      </ul>
+    </div>
+    <div class="mode-block mode-kern">
+      <span class="mode-label">🔧 KERNEL MODE</span>
+      <span class="mode-bit bit-kern">MODE BIT = 1</span>
+      <ul class="mode-items">
+        <li>Where OS executes system calls on behalf of apps</li>
+        <li>Full hardware access — trusted execution</li>
+        <li>Transition via <em>trap bit</em> switching 0 → 1</li>
+        <li>Examples: print, file open, memory allocation</li>
+        <li>Returns to user mode after system call completes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>📌 How the Switch Works</strong><br>
+    When an application needs hardware access (e.g., printing to screen), a <strong>system call</strong> is issued. The hardware trap mechanism automatically changes the <strong>mode bit from 0 → 1</strong>, switching execution from user mode to kernel mode. After the OS handles the request, the mode bit returns to 0 and control goes back to the application.
+  </div>
+
+  <!-- §05 System Calls Table -->
+  <div class="section-heading">
+    <span class="num">§05</span>
+    <h2>System Calls — When &amp; Why They Occur</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:20%">System Call</th>
+        <th style="width:30%">When It Triggers</th>
+        <th style="width:30%">What the OS Does</th>
+        <th style="width:20%">Tag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-syscall">
+        <td><strong>read()</strong></td>
+        <td>Reading data from a file or input stream</td>
+        <td>OS fetches data from storage/I/O and copies to process memory</td>
+        <td><span class="tag tag-os">I/O</span></td>
+      </tr>
+      <tr class="row-syscall">
+        <td><strong>write()</strong></td>
+        <td>Writing data to a file or output stream</td>
+        <td>OS sends data to disk or output device via I/O subsystem</td>
+        <td><span class="tag tag-os">I/O</span></td>
+      </tr>
+      <tr class="row-syscall">
+        <td><strong>print()</strong></td>
+        <td>Displaying output on screen</td>
+        <td>OS communicates with display device driver to render output</td>
+        <td><span class="tag tag-os">I/O</span></td>
+      </tr>
+      <tr class="row-syscall">
+        <td><strong>open()</strong></td>
+        <td>Opening a file from disk</td>
+        <td>OS locates file in filesystem, creates file descriptor for process</td>
+        <td><span class="tag tag-key">File</span></td>
+      </tr>
+      <tr class="row-process">
+        <td><strong>fork() / exec()</strong></td>
+        <td>Spawning a new process</td>
+        <td>OS allocates PCB, memory space, and schedules new process</td>
+        <td><span class="tag tag-new">Process</span></td>
+      </tr>
+      <tr class="row-process">
+        <td><strong>malloc()</strong></td>
+        <td>Requesting heap memory allocation</td>
+        <td>OS memory manager assigns a block of RAM to the calling process</td>
+        <td><span class="tag tag-key">Memory</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- §06 Process vs Program -->
+  <div class="section-heading">
+    <span class="num">§06</span>
+    <h2>Program vs Process</h2>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card" style="border-left: 3px solid #4ade80;">
+      <div class="card-title">📄 Program — Passive Entity</div>
+      <ul>
+        <li>A file stored on hard drive or SSD (secondary storage)</li>
+        <li>Examples: <code style="font-family:var(--mono);font-size:7pt;">.py</code>, <code style="font-family:var(--mono);font-size:7pt;">.exe</code>, <code style="font-family:var(--mono);font-size:7pt;">.jar</code> files</li>
+        <li>Does not consume CPU time or RAM on its own</li>
+        <li>Static — just bytes sitting on disk until executed</li>
+        <li>One program can create multiple processes</li>
+      </ul>
+    </div>
+    <div class="info-card" style="border-left: 3px solid var(--os-orange);">
+      <div class="card-title">⚡ Process — Active Entity</div>
+      <ul>
+        <li>A program <em>in execution</em>, loaded into RAM (main memory)</li>
+        <li>Has its own memory space: code, stack, heap, data segments</li>
+        <li>Actively uses CPU time and memory resources</li>
+        <li>OS tracks it via a <strong>Process Control Block (PCB)</strong></li>
+        <li>State can be: Running, Ready, Waiting, Terminated</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer Page 2 -->
+  <div class="doc-footer">
+    <p class="footer-note">
+      System calls are the only safe gateway for applications to interact with hardware. Every print, file read, network request, or memory allocation goes through a system call — this is how the OS maintains control and security.
+    </p>
+    <div style="text-align:right; line-height:1.8;">
+      <span>DOC-OS-S3-001 · REV 1.0</span><br>
+      <span>Page 2 of 3</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════  PAGE 3  ══════════════════════════ -->
+<div class="page">
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+
+  <!-- Continuation header -->
+  <div class="doc-header">
+    <div>
+      <h1 class="doc-title">Deadlock, IPC &amp;<br><em>Memory Hierarchy</em></h1>
+      <p class="subtitle">Live Doubt Clearing · 27 Feb 2026 · 2:00 PM – 4:00 PM · Continued from Page 2</p>
+    </div>
+    <div class="meta">
+      <span>DOC-OS-S3-001</span>
+      <span>REV 1.0 · Page 3</span>
+      <span>Faculty: Prof. Sidharth Sharma</span>
+      <span style="margin-top:6px; padding-top:6px; border-top:1px solid var(--rule); color:var(--ink); font-weight:600;">Sem 3 — OS</span>
+      <span style="color:var(--os-orange); font-weight:700; letter-spacing:0.08em;">Doubt Clearing</span>
+    </div>
+  </div>
+
+  <!-- §07 Deadlock -->
+  <div class="section-heading">
+    <span class="num">§07</span>
+    <h2>Deadlock — Four Necessary Conditions</h2>
+  </div>
+
+  <p style="font-size:8.5pt; line-height:1.6; margin-bottom:10px; color:#2a2520;">
+    A <strong>deadlock</strong> occurs when two or more processes are blocked indefinitely, each waiting for a resource held by the other. All four conditions must hold <em>simultaneously</em> for deadlock to occur.
+  </p>
+
+  <div class="deadlock-grid">
+    <div class="dl-card">
+      <span class="dl-num">CONDITION 1</span>
+      <span class="dl-name">Mutual Exclusion</span>
+      <span class="dl-desc">At least one resource must be non-shareable — only one process can use it at a time</span>
+    </div>
+    <div class="dl-card">
+      <span class="dl-num">CONDITION 2</span>
+      <span class="dl-name">Hold &amp; Wait</span>
+      <span class="dl-desc">A process holds one resource and waits to acquire additional resources held by others</span>
+    </div>
+    <div class="dl-card">
+      <span class="dl-num">CONDITION 3</span>
+      <span class="dl-name">No Preemption</span>
+      <span class="dl-desc">Resources cannot be forcibly taken from a process — only released voluntarily</span>
+    </div>
+    <div class="dl-card">
+      <span class="dl-num">CONDITION 4</span>
+      <span class="dl-name">Circular Wait</span>
+      <span class="dl-desc">A closed chain of processes exists where each waits for a resource held by the next</span>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>💡 Prevention Strategy</strong><br>
+    One technique: require processes to <strong>request all needed resources upfront</strong> before starting. This eliminates the Hold &amp; Wait condition. Breaking any one of the four conditions is sufficient to prevent deadlock.
+  </div>
+
+  <!-- §08 IPC -->
+  <div class="section-heading">
+    <span class="num">§08</span>
+    <h2>Inter-Process Communication (IPC)</h2>
+  </div>
+
+  <div class="ipc-strip">
+    <div class="ipc-card ipc-sm">
+      <span class="ipc-title">📦 Shared Memory</span>
+      <ul class="ipc-items">
+        <li>Processes share a common memory region</li>
+        <li>Works like a "common room" — processes dump and read updated values</li>
+        <li>Faster — no kernel involvement after setup</li>
+        <li>Requires synchronization to avoid race conditions</li>
+        <li>Best for: high-speed, high-volume data exchange</li>
+      </ul>
+    </div>
+    <div class="ipc-card ipc-mp">
+      <span class="ipc-title">📨 Message Passing</span>
+      <ul class="ipc-items">
+        <li>Processes communicate by sending/receiving messages</li>
+        <li>OS kernel mediates every message exchange</li>
+        <li>Safer — no shared memory, no race conditions</li>
+        <li>Slightly slower due to kernel involvement</li>
+        <li>Best for: distributed systems, inter-machine communication</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- §09 Memory Hierarchy -->
+  <div class="section-heading">
+    <span class="num">§09</span>
+    <h2>Memory Hierarchy</h2>
+  </div>
+
+  <div class="mem-hier">
+    <div class="mem-level ml-cache">
+      <span class="mem-name">Cache</span>
+      <span class="mem-desc">Closest to the CPU. Stores <strong>frequently used data</strong> for near-instant access. Automatically managed by hardware. L1/L2/L3 levels exist — L1 fastest, L3 largest.</span>
+      <span class="mem-speed sp-cache">Fastest ⚡⚡⚡</span>
+    </div>
+    <div class="mem-level ml-ram">
+      <span class="mem-name">RAM (Main Memory)</span>
+      <span class="mem-desc">Where active <strong>processes live</strong>. Managed by the OS. Volatile — data lost on power-off. Programs must be loaded here from disk before execution.</span>
+      <span class="mem-speed sp-ram">Fast ⚡⚡</span>
+    </div>
+    <div class="mem-level ml-ssd">
+      <span class="mem-name">Hard Drive / SSD</span>
+      <span class="mem-desc"><strong>Secondary storage</strong> where programs (.py, .exe) are permanently stored. Non-volatile. OS reads from here when launching a program into RAM.</span>
+      <span class="mem-speed sp-ssd">Slower ⚡</span>
+    </div>
+  </div>
+
+  <!-- §10 Kernel -->
+  <div class="section-heading">
+    <span class="num">§10</span>
+    <h2>The Kernel — Heart of the OS</h2>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="card-title">🖥️ What Is the Kernel?</div>
+      <ul>
+        <li>The <strong>main OS file</strong> loaded first when the system starts (boot process)</li>
+        <li>Contains the core OS code: process scheduler, memory manager, device drivers</li>
+        <li>Only kernel files are loaded into RAM initially — to conserve memory</li>
+        <li>Acts as the bridge between hardware and all software</li>
+        <li>Runs permanently in memory while the system is on</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <div class="card-title">📊 Evaluation Structure</div>
+      <ul>
+        <li><strong>50% NSM</strong> — End-semester exam (major assessment)</li>
+        <li><strong>Lab sessions</strong> — Practical hands-on evaluation</li>
+        <li><strong>In-video quizzes</strong> — Weekly video lecture assessments</li>
+        <li>Active participation in live doubt sessions is encouraged</li>
+        <li>Review Week 1 videos before next session — all concepts build on these</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>📢 Session Takeaway</strong><br>
+    Every OS concept covered today is interconnected: the <strong>kernel</strong> manages processes loaded from disk into RAM, coordinates system calls between user and kernel mode, handles I/O via DMA, and prevents chaos through deadlock handling and IPC mechanisms. These foundations are essential for all advanced OS topics ahead.
+  </div>
+
+  <!-- Footer Page 3 -->
+  <div class="doc-footer">
+    <p class="footer-note">
+      Next steps: Review Week 1 video lectures on the IITJBSc platform, attempt all in-video quizzes, and revisit these concepts before Week 2 sessions. Topics like CPU scheduling, paging, and virtual memory build directly on today's foundations.
+    </p>
+    <div style="text-align:right; line-height:1.8;">
+      <span>DOC-OS-S3-001 · REV 1.0</span><br>
+      <span>Page 3 of 3</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
