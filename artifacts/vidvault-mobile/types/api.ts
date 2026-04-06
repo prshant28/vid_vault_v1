@@ -42,14 +42,39 @@ export interface Folder {
   videoCount: number;
 }
 
+export interface RecentAiOutput {
+  id: string;
+  type: string;
+  videoId: string;
+  createdAt: string;
+  videoTitle: string;
+  videoThumbnail: string | null;
+}
+
+export interface AiOutputByType {
+  type: string;
+  count: number;
+}
+
 export interface Stats {
   totalVideos: number;
   totalFolders: number;
   totalTags: number;
   totalFavorites: number;
   totalWatched: number;
+  totalNotes: number;
+  totalAiOutputs: number;
   recentVideos: Video[];
   favoriteVideos: Video[];
+  recentAiOutputs: RecentAiOutput[];
+  aiOutputsByType: AiOutputByType[];
+  level: number;
+  levelTitle: string;
+  levelColor: string;
+  xp: number;
+  nextLevelXP: number;
+  progressPct: number;
+  isMaxLevel: boolean;
 }
 
 export interface ChatMessage {

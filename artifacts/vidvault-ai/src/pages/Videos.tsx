@@ -61,10 +61,9 @@ export default function Videos() {
   const [searchInput, setSearchInput] = useState(urlSearch || "");
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch || "");
 
-  useEffect(() => {
-    setSearchInput(urlSearch || "");
-    setDebouncedSearch(urlSearch || "");
-  }, [urlSearch]);
+  // NOTE: We intentionally do NOT sync searchInput from urlSearch changes.
+  // The input is purely local state; urlSearch only sets the initial value on mount.
+  // Syncing on every location change was clearing the input while the user typed.
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchInput), 400);

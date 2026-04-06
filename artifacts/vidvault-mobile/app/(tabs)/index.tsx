@@ -23,7 +23,7 @@ import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
 import { api } from "@/services/api";
-import type { Video, Stats } from "@/types/api";
+import type { Video, Stats, RecentAiOutput } from "@/types/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { VideoCard } from "@/components/VideoCard";
@@ -35,13 +35,25 @@ const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
 const GREEN  = "#10b981";
 const PINK   = "#ec4899";
+const AMBER  = "#f59e0b";
 
 const STAT_CONFIG = [
-  { label: "Videos",   code: "01", icon: "film"   as FeatherIconName, accent: PURPLE, key: "totalVideos" },
-  { label: "Folders",  code: "02", icon: "folder" as FeatherIconName, accent: CYAN,   key: "totalFolders" },
-  { label: "Tags",     code: "03", icon: "tag"    as FeatherIconName, accent: GREEN,  key: "totalTags" },
-  { label: "Starred",  code: "04", icon: "heart"  as FeatherIconName, accent: PINK,   key: "totalFavorites" },
+  { label: "Videos",   code: "01", icon: "film"    as FeatherIconName, accent: PURPLE, key: "totalVideos" },
+  { label: "Folders",  code: "02", icon: "folder"  as FeatherIconName, accent: CYAN,   key: "totalFolders" },
+  { label: "Notes",    code: "03", icon: "edit-3"  as FeatherIconName, accent: GREEN,  key: "totalNotes" },
+  { label: "AI Outputs",code: "04",icon: "cpu"     as FeatherIconName, accent: PINK,   key: "totalAiOutputs" },
+  { label: "Starred",  code: "05", icon: "heart"   as FeatherIconName, accent: AMBER,  key: "totalFavorites" },
+  { label: "Tags",     code: "06", icon: "tag"     as FeatherIconName, accent: "#8b8bf6", key: "totalTags" },
 ];
+
+const AI_TYPE_META: Record<string, { label: string; icon: FeatherIconName; color: string }> = {
+  summary:    { label: "Summary",     icon: "file-text",  color: PURPLE },
+  flashcards: { label: "Flashcards",  icon: "book-open",  color: CYAN },
+  mcq:        { label: "MCQ",         icon: "help-circle",color: GREEN },
+  studynotes: { label: "Study Notes", icon: "list",       color: AMBER },
+  transcript: { label: "Transcript",  icon: "message-square", color: PINK },
+  chat:       { label: "AI Chat",     icon: "message-circle", color: "#6366f1" },
+};
 
 /* ── Animated number counter ── */
 function AnimatedNumber({ value, color }: { value: number; color: string }) {
@@ -172,6 +184,106 @@ function ActivityNode({ video, index, onPress }: { video: Video; index: number; 
   );
 }
 
+/* ── Level / XP Progress Card ── */
+function LevelCard({ level, levelTitle, levelColor, xp, nextLevelXP, progressPct, isMaxLevel }: {
+  level: number; levelTitle: string; levelColor: string; xp: number;
+  nextLevelXP: number; progressPct: number; isMaxLevel: boolean;
+}) {
+  const colors = useColors();
+  const barW = useRef(new Animated.Value(0)).current;
+  const { width: screenWidth } = useWindowDimensions();
+  const innerWidth = screenWidth - 40 - 32;
+
+  useEffect(() => {
+    Animated.timing(barW, { toValue: (isMaxLevel ? 100 : progressPct) / 100 * innerWidth, duration: 1300, delay: 400, useNativeDriver: false }).start();
+  }, [progressPct, innerWidth, isMaxLevel]);
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: 12 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "timing", duration: 500, delay: 100 }}
+      style={[styles.levelCard, { backgroundColor: colors.card, borderColor: levelColor + "40" }]}
+    >
+      <LinearGradient
+        colors={[levelColor + "0a", "transparent"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+      <View style={styles.levelTop}>
+        <View>
+          <Text style={[styles.levelLabel, { color: colors.mutedForeground }]}>//LEARNER_PROFILE</Text>
+          <View style={styles.levelRow}>
+            <View style={[styles.levelBadge, { backgroundColor: levelColor + "20", borderColor: levelColor + "40" }]}>
+              <Text style={[styles.levelNum, { color: levelColor }]}>{level}</Text>
+            </View>
+            <View>
+              <Text style={[styles.levelTitle, { color: levelColor }]}>{levelTitle}</Text>
+              <Text style={[styles.levelSub, { color: colors.mutedForeground }]}>Level {level} Collector</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.xpBlock}>
+          <Text style={[styles.xpValue, { color: levelColor }]}>{xp}</Text>
+          <Text style={[styles.xpLabel, { color: colors.mutedForeground }]}>XP</Text>
+        </View>
+      </View>
+      <View style={[styles.xpTrack, { backgroundColor: colors.border + "80" }]}>
+        <Animated.View style={[styles.xpFill, { width: barW }]}>
+          <LinearGradient colors={[levelColor + "80", levelColor]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+        </Animated.View>
+      </View>
+      <View style={styles.xpMeta}>
+        <Text style={[styles.xpMetaText, { color: colors.mutedForeground }]}>{xp} XP</Text>
+        <Text style={[styles.xpMetaText, { color: colors.mutedForeground }]}>
+          {isMaxLevel ? "MAX LEVEL" : `${nextLevelXP} XP to next`}
+        </Text>
+      </View>
+    </MotiView>
+  );
+}
+
+/* ── Recent AI Output Card ── */
+function RecentAiItemCard({ output, index }: { output: RecentAiOutput; index: number }) {
+  const colors = useColors();
+  const meta = AI_TYPE_META[output.type] ?? { label: output.type, icon: "cpu" as FeatherIconName, color: PURPLE };
+  const date = new Date(output.createdAt);
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  const timeAgo = mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: 10 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: "timing", duration: 320, delay: 60 * index }}
+    >
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => router.push(`/video/${output.videoId}` as any)}
+        style={[styles.aiCard, { backgroundColor: colors.card, borderColor: meta.color + "25" }]}
+      >
+        {output.videoThumbnail && (
+          <View style={styles.aiCardThumb}>
+            <View style={{ width: 56, height: 38, borderRadius: 6, backgroundColor: colors.secondary, overflow: "hidden" }}>
+              <View style={{ position: "absolute", inset: 0, backgroundColor: meta.color + "08" }} />
+            </View>
+          </View>
+        )}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={styles.aiCardTypeRow}>
+            <Feather name={meta.icon} size={10} color={meta.color} />
+            <Text style={[styles.aiCardType, { color: meta.color }]}>{meta.label.toUpperCase()}</Text>
+          </View>
+          <Text style={[styles.aiCardTitle, { color: colors.foreground }]} numberOfLines={1}>{output.videoTitle}</Text>
+          <Text style={[styles.aiCardTime, { color: colors.mutedForeground }]}>{timeAgo}</Text>
+        </View>
+        <Feather name="chevron-right" size={12} color={colors.mutedForeground + "60"} />
+      </TouchableOpacity>
+    </MotiView>
+  );
+}
+
 /* ── Watch Progress bar ── */
 function WatchProgressBar({ watched, total }: { watched: number; total: number }) {
   const colors = useColors();
@@ -245,8 +357,16 @@ export default function HomeScreen() {
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const recentVideos: Video[] = stats?.recentVideos ?? [];
   const favoriteVideos: Video[] = stats?.favoriteVideos ?? [];
+  const recentAiOutputs: RecentAiOutput[] = (stats as any)?.recentAiOutputs ?? [];
   const totalWatched = stats?.totalWatched ?? 0;
   const totalVideos = stats?.totalVideos ?? 0;
+  const xp = (stats as any)?.xp ?? 0;
+  const level = (stats as any)?.level ?? 1;
+  const levelTitle = (stats as any)?.levelTitle ?? "Novice";
+  const levelColor = (stats as any)?.levelColor ?? "#6b7280";
+  const progressPct = (stats as any)?.progressPct ?? 0;
+  const nextLevelXP = (stats as any)?.nextLevelXP ?? 100;
+  const isMaxLevel = (stats as any)?.isMaxLevel ?? false;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -309,6 +429,18 @@ export default function HomeScreen() {
           </Text>
         </MotiView>
 
+        {/* ── Level / XP Card ── */}
+        <View style={styles.sectionPad}>
+          {isLoading ? (
+            <Skeleton height={120} borderRadius={14} />
+          ) : (
+            <LevelCard
+              level={level} levelTitle={levelTitle} levelColor={levelColor}
+              xp={xp} nextLevelXP={nextLevelXP} progressPct={progressPct} isMaxLevel={isMaxLevel}
+            />
+          )}
+        </View>
+
         {/* ── Quick Actions ── */}
         <View style={styles.quickActions}>
           <QuickAction icon="cpu" label="AI Studio" sublabel="Generate" accent={PURPLE} delay={100} onPress={() => router.push("/(tabs)/ai-studio")} />
@@ -350,6 +482,31 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
+        {/* ── Recent AI Activity ── */}
+        {recentAiOutputs.length > 0 && (
+          <View style={styles.section}>
+            <MotiView
+              from={{ opacity: 0, translateX: -8 }}
+              animate={{ opacity: 1, translateX: 0 }}
+              transition={{ type: "timing", duration: 380, delay: 150 }}
+              style={styles.sectionHeader2}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>//RECENT_INTELLIGENCE</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>AI Activity</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/ai-studio")} activeOpacity={0.7}>
+                <Text style={[styles.viewAll, { color: PURPLE }]}>STUDIO →</Text>
+              </TouchableOpacity>
+            </MotiView>
+            <View style={{ gap: 8 }}>
+              {recentAiOutputs.slice(0, 5).map((output, i) => (
+                <RecentAiItemCard key={output.id} output={output} index={i} />
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* ── Recent Captures — vertical full-width ── */}
         <View style={styles.section}>
@@ -583,4 +740,34 @@ const styles = StyleSheet.create({
 
   tagline: { marginHorizontal: 20, padding: 14, borderRadius: 8, alignItems: "center", overflow: "hidden" },
   taglineText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5 },
+
+  levelCard: {
+    borderRadius: 14, borderWidth: 1, padding: 16, overflow: "hidden",
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 7,
+  },
+  levelTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 },
+  levelLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 8 },
+  levelRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  levelBadge: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  levelNum: { fontSize: 18, fontFamily: "AlegreyaSansSC_800ExtraBold", lineHeight: 22 },
+  levelTitle: { fontSize: 13, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.2 },
+  levelSub: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  xpBlock: { alignItems: "flex-end" },
+  xpValue: { fontSize: 32, fontFamily: "AlegreyaSansSC_800ExtraBold", lineHeight: 36, letterSpacing: -1 },
+  xpLabel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2 },
+  xpTrack: { height: 6, borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  xpFill: { height: "100%", borderRadius: 3, overflow: "hidden" },
+  xpMeta: { flexDirection: "row", justifyContent: "space-between" },
+  xpMetaText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+
+  aiCard: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    borderRadius: 12, borderWidth: 1, padding: 10,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 3,
+  },
+  aiCardThumb: { flexShrink: 0 },
+  aiCardTypeRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 2 },
+  aiCardType: { fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5 },
+  aiCardTitle: { fontSize: 12, fontFamily: "Poppins_500Medium", lineHeight: 17 },
+  aiCardTime: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3, marginTop: 2 },
 });

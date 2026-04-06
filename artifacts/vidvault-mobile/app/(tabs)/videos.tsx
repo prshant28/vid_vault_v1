@@ -315,18 +315,9 @@ export default function VideosScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [videos]);
 
-  /* ── list header ── */
+  /* ── list header (no search bar here — kept outside FlatList to avoid remount on typing) ── */
   const ListHeader = useMemo(() => (
     <View style={styles.headerBlock}>
-      <View style={styles.subHeader}>
-        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//VIDEO_VAULT</Text>
-        <Text style={[styles.subTitle, { color: colors.foreground }]}>Library</Text>
-      </View>
-
-      <View style={styles.searchWrap}>
-        <SearchBar value={search} onChangeText={setSearch} placeholder="Search vault…" />
-      </View>
-
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chipsContent}>
         <FilterChip label="ALL"  active={!showFavorites && !selectedTagId} colors={colors} onPress={() => { setShowFavorites(false); setSelectedTagId(null); }} activeColor={colors.primary} />
         <FilterChip label="FAV"  active={showFavorites}  colors={colors} onPress={() => { setShowFavorites(!showFavorites); setSelectedTagId(null); }} activeColor={RED} icon="heart" />
@@ -415,6 +406,17 @@ export default function VideosScreen() {
           <AppButton label="SAVE" icon="plus" size="sm" variant="primary" onPress={() => setShowSaveModal(true)} />
         }
       />
+
+      {/* Search bar lives OUTSIDE the FlatList to avoid TextInput remounting on every keystroke */}
+      <View style={styles.searchHeader}>
+        <View style={styles.searchTitleRow}>
+          <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//VIDEO_VAULT</Text>
+          <Text style={[styles.subTitle, { color: colors.foreground }]}>Library</Text>
+        </View>
+        <View style={styles.searchWrap}>
+          <SearchBar value={search} onChangeText={setSearch} placeholder="Search vault…" />
+        </View>
+      </View>
 
       {isLoading ? (
         <FlatList
@@ -629,6 +631,8 @@ export default function VideosScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 
+  searchHeader: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4 },
+  searchTitleRow: { paddingBottom: 10 },
   headerBlock: { paddingBottom: 4 },
 
   subHeader: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 14 },
