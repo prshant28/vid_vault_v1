@@ -43,12 +43,17 @@ const BLUE   = "#3b82f6";
 const AI_TOOLS: Array<{
   type: string; label: string; icon: FeatherIconName; color: string; desc: string;
 }> = [
-  { type: "summary",      label: "Summary",      icon: "file-text",    color: CYAN,   desc: "Concise overview of the video content" },
-  { type: "key_insights", label: "Key Insights",  icon: "zap",          color: ORANGE, desc: "Most important takeaways" },
-  { type: "mcq",          label: "Quiz (MCQ)",    icon: "check-circle", color: GREEN,  desc: "Test your knowledge" },
-  { type: "ppt_outline",  label: "PPT Outline",   icon: "monitor",      color: BLUE,   desc: "Slide deck structure for presentation" },
-  { type: "flashcards",   label: "Flashcards",    icon: "layers",       color: PINK,   desc: "Spaced repetition review cards" },
-  { type: "notes",        label: "Study Notes",   icon: "book-open",    color: PURPLE, desc: "Organised bullet study notes" },
+  { type: "summary",        label: "Summary",        icon: "file-text",    color: CYAN,   desc: "Concise overview of the video content" },
+  { type: "key_insights",   label: "Key Insights",   icon: "zap",          color: ORANGE, desc: "Most important takeaways" },
+  { type: "mcq",            label: "Quiz (MCQ)",     icon: "check-circle", color: GREEN,  desc: "Test your knowledge with 10 MCQs" },
+  { type: "flashcards",     label: "Flashcards",     icon: "layers",       color: PINK,   desc: "15 spaced-repetition cards" },
+  { type: "notes",          label: "Study Notes",    icon: "book-open",    color: PURPLE, desc: "Organised bullet study notes" },
+  { type: "action_plan",    label: "Action Plan",    icon: "target",       color: GREEN,  desc: "30-60-90 day implementation plan" },
+  { type: "tweet_thread",   label: "Tweet Thread",   icon: "twitter",      color: BLUE,   desc: "Shareable 10-tweet thread" },
+  { type: "blog_article",   label: "Blog Article",   icon: "edit",         color: ORANGE, desc: "700-900 word blog post" },
+  { type: "vocabulary",     label: "Vocabulary",     icon: "book",         color: CYAN,   desc: "Key terms and definitions" },
+  { type: "executive_brief",label: "Exec Brief",     icon: "briefcase",    color: PINK,   desc: "2-minute executive summary" },
+  { type: "ppt_outline",    label: "PPT Outline",    icon: "monitor",      color: PURPLE, desc: "8-12 slide deck structure" },
 ];
 
 function extractYouTubeId(url: string): string | null {
@@ -325,7 +330,7 @@ export default function VideoDetailScreen() {
   const qc = useQueryClient();
   const colors = useColors();
 
-  const [activeTab, setActiveTab] = useState<"ai" | "notes">("ai");
+  const [activeTab, setActiveTab] = useState<"ai" | "notes" | "chat">("ai");
   const [generatingType, setGeneratingType] = useState<string | null>(null);
   const [viewingOutput, setViewingOutput] = useState<{ output: AiOutput; tool: typeof AI_TOOLS[0] } | null>(null);
   const [newNote, setNewNote] = useState("");
@@ -334,6 +339,10 @@ export default function VideoDetailScreen() {
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
+
+  /* Chat state */
+  const [chatMessages, setChatMessages] = useState<Array<{ role: "user" | "assistant"; content: string; id: string }>>([]);
+  const [chatInput, setChatInput] = useState("");
 
   const { data: video, isLoading, isError, refetch: refetchVideo } = useQuery<Video>({
     queryKey: ["video", id],
@@ -456,6 +465,33 @@ export default function VideoDetailScreen() {
     mutationFn: ({ noteId, content, timestamp }: { noteId: string; content: string; timestamp?: number | null }) =>
       api.updateNote(noteId, content, timestamp),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["video", id] }),
+  });
+
+  const quickAnalyzeMutation = useMutation({
+    mutationFn: () => api.quickAnalyzeVideo(id!),
+    onSuccess: () => {
+      refetchOutputs();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (err: any) => Alert.alert("Analysis Failed", err.message || "Could not analyse video."),
+  });
+
+  const chatMutation = useMutation({
+    mutationFn: (message: string) =>
+      api.videoChat(message, id!, chatMessages.map((m) => ({ role: m.role, content: m.content }))),
+    onMutate: (message: string) => {
+      const userMsg = { role: "user" as const, content: message, id: Date.now().toString() };
+      setChatMessages((prev) => [...prev, userMsg]);
+      setChatInput("");
+    },
+    onSuccess: (data: any) => {
+      const reply = data?.message || "Sorry, I couldn't generate a response.";
+      setChatMessages((prev) => [...prev, { role: "assistant", content: reply, id: Date.now().toString() + "_ai" }]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
+    onError: () => {
+      setChatMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I couldn't connect to AI right now.", id: Date.now().toString() + "_err" }]);
+    },
   });
 
   const handleGenerate = useCallback((type: string) => {
@@ -676,21 +712,27 @@ export default function VideoDetailScreen() {
 
         {/* Tabs */}
         <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
-          {(["ai", "notes"] as const).map((tab) => (
+          {([
+            { key: "ai",    label: `AI TOOLS${aiCount > 0 ? ` (${aiCount})` : ""}`, icon: "cpu"       },
+            { key: "chat",  label: "AI CHAT",    icon: "message-circle" },
+            { key: "notes", label: `NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`, icon: "edit-3" },
+          ] as const).map(({ key, label, icon }) => (
             <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
+              key={key}
+              onPress={() => setActiveTab(key)}
               style={[styles.tabBtn, {
-                backgroundColor: activeTab === tab ? PURPLE + "18" : colors.card,
-                borderColor: activeTab === tab ? PURPLE + "40" : colors.border,
+                backgroundColor: activeTab === key ? PURPLE + "18" : colors.card,
+                borderColor: activeTab === key ? PURPLE + "40" : colors.border,
+                flex: 1,
               }]}
               activeOpacity={0.75}
             >
-              <Text style={[styles.tabBtnText, { color: activeTab === tab ? PURPLE : colors.mutedForeground }]}>
-                {tab === "ai"
-                  ? `AI INSIGHTS${aiCount > 0 ? ` (${aiCount})` : ""}`
-                  : `MY NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <Feather name={icon} size={10} color={activeTab === key ? PURPLE : colors.mutedForeground} />
+                <Text style={[styles.tabBtnText, { color: activeTab === key ? PURPLE : colors.mutedForeground }]}>
+                  {label}
+                </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -707,10 +749,45 @@ export default function VideoDetailScreen() {
               />
             ) : (
               <>
-                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_GENERATE</Text>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Choose a Tool</Text>
+                {/* Quick Analyze Banner */}
+                {aiCount === 0 && (
+                  <TouchableOpacity
+                    onPress={() => quickAnalyzeMutation.mutate()}
+                    disabled={quickAnalyzeMutation.isPending}
+                    activeOpacity={0.85}
+                    style={[styles.quickAnalyzeBtn, { borderColor: CYAN + "45", backgroundColor: CYAN + "0f" }]}
+                  >
+                    <LinearGradient
+                      colors={["rgba(6,182,212,0.08)", "transparent"]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFillObject}
+                      pointerEvents="none"
+                    />
+                    {quickAnalyzeMutation.isPending ? (
+                      <MotiView from={{ rotate: "0deg" }} animate={{ rotate: "360deg" }} transition={{ type: "timing", duration: 1200, loop: true }}>
+                        <Feather name="cpu" size={16} color={CYAN} />
+                      </MotiView>
+                    ) : (
+                      <Feather name="zap" size={16} color={CYAN} />
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.quickAnalyzeTitle, { color: CYAN }]}>
+                        {quickAnalyzeMutation.isPending ? "Analysing with Gemini AI…" : "Quick Analyse"}
+                      </Text>
+                      <Text style={[styles.quickAnalyzeSub, { color: colors.mutedForeground }]}>
+                        Generate Summary + Key Insights instantly
+                      </Text>
+                    </View>
+                    {!quickAnalyzeMutation.isPending && <Feather name="chevron-right" size={14} color={CYAN + "80"} />}
+                  </TouchableOpacity>
+                )}
+
+                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_TOOLS</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                  {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
+                </Text>
                 <View style={styles.toolGrid}>
-                  {[0, 2, 4].map((rowStart) => (
+                  {Array.from({ length: Math.ceil(AI_TOOLS.length / 2) }, (_, rowIdx) => rowIdx * 2).map((rowStart) => (
                     <View key={rowStart} style={styles.toolRow}>
                       {AI_TOOLS.slice(rowStart, rowStart + 2).map((tool, i) => (
                         <View key={tool.type} style={{ flex: 1 }}>
@@ -727,6 +804,7 @@ export default function VideoDetailScreen() {
                           />
                         </View>
                       ))}
+                      {rowStart + 1 >= AI_TOOLS.length && AI_TOOLS.length % 2 !== 0 && <View style={{ flex: 1 }} />}
                     </View>
                   ))}
                 </View>
@@ -749,6 +827,90 @@ export default function VideoDetailScreen() {
                 )}
               </>
             )}
+          </View>
+        )}
+
+        {/* ── Chat Tab ── */}
+        {activeTab === "chat" && (
+          <View style={[styles.section, { minHeight: 400 }]}>
+            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// ASK_GEMINI</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Chat About This Video</Text>
+
+            {/* Chat messages */}
+            <View style={{ gap: 10, marginBottom: 12 }}>
+              {chatMessages.length === 0 && (
+                <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Feather name="message-circle" size={24} color={PURPLE + "60"} />
+                  <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>Ask anything about this video</Text>
+                  <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>Gemini AI has context about the video title, channel, and description</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4, justifyContent: "center" }}>
+                    {["Summarise this video", "What are the key takeaways?", "Who is this video for?"].map((q) => (
+                      <TouchableOpacity
+                        key={q}
+                        onPress={() => { setChatInput(q); }}
+                        style={[styles.chatSuggestion, { backgroundColor: PURPLE + "12", borderColor: PURPLE + "30" }]}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={{ color: PURPLE, fontSize: 11, fontFamily: "Poppins_500Medium" }}>{q}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+              {chatMessages.map((msg) => (
+                <View
+                  key={msg.id}
+                  style={[
+                    styles.chatBubble,
+                    msg.role === "user"
+                      ? { alignSelf: "flex-end", backgroundColor: PURPLE, borderBottomRightRadius: 4 }
+                      : { alignSelf: "flex-start", backgroundColor: colors.card, borderColor: colors.border, borderBottomLeftRadius: 4 },
+                  ]}
+                >
+                  {msg.role === "assistant" && (
+                    <View style={styles.chatAiLabel}>
+                      <Feather name="cpu" size={9} color={CYAN} />
+                      <Text style={{ color: CYAN, fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1 }}>GEMINI</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.chatBubbleText, { color: msg.role === "user" ? "#fff" : colors.foreground }]}>
+                    {msg.content}
+                  </Text>
+                </View>
+              ))}
+              {chatMutation.isPending && (
+                <MotiView
+                  from={{ opacity: 0.4 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ type: "timing", duration: 600, loop: true }}
+                  style={[styles.chatBubble, { alignSelf: "flex-start", backgroundColor: colors.card, borderColor: PURPLE + "30" }]}
+                >
+                  <Feather name="cpu" size={12} color={PURPLE} />
+                  <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Poppins_400Regular" }}>Thinking…</Text>
+                </MotiView>
+              )}
+            </View>
+
+            {/* Input */}
+            <View style={[styles.chatInputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <TextInput
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Ask about this video…"
+                placeholderTextColor={colors.mutedForeground}
+                style={[styles.chatInput, { color: colors.foreground }]}
+                multiline
+                maxLength={500}
+              />
+              <TouchableOpacity
+                onPress={() => { if (chatInput.trim()) chatMutation.mutate(chatInput.trim()); }}
+                disabled={!chatInput.trim() || chatMutation.isPending}
+                style={[styles.chatSendBtn, { backgroundColor: chatInput.trim() ? PURPLE : colors.border }]}
+                activeOpacity={0.8}
+              >
+                <Feather name="send" size={14} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -1159,6 +1321,40 @@ const styles = StyleSheet.create({
   iconActionBtn: {
     width: 34, height: 34, borderRadius: 6,
     borderWidth: 1, alignItems: "center", justifyContent: "center",
+  },
+
+  quickAnalyzeBtn: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    borderWidth: 1, borderRadius: 12, padding: 14,
+    marginBottom: 14, overflow: "hidden",
+  },
+  quickAnalyzeTitle: { fontSize: 13, fontFamily: "Poppins_600SemiBold", letterSpacing: -0.2 },
+  quickAnalyzeSub: { fontSize: 11, fontFamily: "Poppins_400Regular", marginTop: 1 },
+
+  chatEmptyCard: {
+    borderRadius: 14, borderWidth: 1, padding: 24,
+    alignItems: "center", gap: 8,
+  },
+  chatEmptyTitle: { fontSize: 14, fontFamily: "Poppins_600SemiBold", textAlign: "center" },
+  chatEmptySub: { fontSize: 11, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 17 },
+  chatSuggestion: {
+    borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  chatBubble: {
+    maxWidth: "85%", borderRadius: 14, padding: 12, gap: 4,
+    borderWidth: 1, borderColor: "transparent",
+  },
+  chatAiLabel: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 2 },
+  chatBubbleText: { fontSize: 13, fontFamily: "Poppins_400Regular", lineHeight: 20 },
+  chatInputRow: {
+    flexDirection: "row", alignItems: "flex-end", gap: 10,
+    borderRadius: 14, borderWidth: 1, padding: 10,
+  },
+  chatInput: { flex: 1, fontSize: 13, fontFamily: "Poppins_400Regular", maxHeight: 120, lineHeight: 20 },
+  chatSendBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    alignItems: "center", justifyContent: "center",
   },
 
   modalBackdrop: {

@@ -9,6 +9,7 @@ import {
   aiOutputsTable,
 } from "@workspace/db";
 import { eq, and, ilike, inArray, sql } from "drizzle-orm";
+import { autoAnalyzeVideo } from "../lib/gemini";
 
 async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: string; title: string; description?: string}>> {
   const apiKey = process.env.YOUTUBE_API_KEY;
@@ -136,7 +137,7 @@ async function fetchVideoMeta(url: string) {
     }
     const videoId = ytMatch[1];
     const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    const apiKey = process.env.YOUTUBE_API_KEY;
+    const apiKey = process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY;
     if (apiKey) {
       const resp = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails,statistics&key=${apiKey}`,
@@ -344,6 +345,14 @@ router.post("/videos", async (req, res) => {
     .returning();
 
   res.status(201).json({ ...video, tags: [], folderName: null });
+
+  /* Fire-and-forget auto-analysis (summary + key_insights) via Gemini */
+  autoAnalyzeVideo(
+    video.id, userId,
+    video.title, video.description || "",
+    video.channelName || "",
+    db, aiOutputsTable,
+  ).catch(() => { /* ignore failures */ });
 });
 
 router.post("/videos/playlist", async (req, res) => {

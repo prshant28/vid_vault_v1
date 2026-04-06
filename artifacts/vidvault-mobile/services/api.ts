@@ -177,6 +177,29 @@ export const api = {
     });
     return handleRes(res);
   },
+  async quickAnalyzeVideo(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/quick-analyze`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
+  async deleteAiOutput(videoId: string, outputId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/outputs/${outputId}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    if (res.status === 204) return {};
+    return handleRes(res);
+  },
+  async videoChat(message: string, videoId: string, history?: Array<{ role: "user" | "assistant"; content: string }>) {
+    const res = await fetch(`${BASE_URL}/ai/chat`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ message, videoId, history }),
+    });
+    return handleRes(res);
+  },
   async globalChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>) {
     const res = await fetch(`${BASE_URL}/ai/global-chat`, {
       method: "POST",
