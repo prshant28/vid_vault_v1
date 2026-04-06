@@ -6,7 +6,7 @@ import {
   Loader2, Calendar, Folder as FolderIcon, Sparkles, FileText, CheckSquare,
   Presentation, Download, Trash2, Brain, Layers, BookOpen, Twitter, Zap,
   BookMarked, Target, X, StickyNote, ExternalLink, Send, Bot, MessageSquare,
-  Clock,
+  Clock, RefreshCw, ArrowRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -697,6 +697,7 @@ function AiNotesPanel({
 export default function VideoDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: video, isLoading } = useGetVideo(id || "");
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"notes" | "ai" | "chat">("ai");
   const [generatingType, setGeneratingType] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
@@ -813,7 +814,6 @@ export default function VideoDetail() {
               </span>
             )}
           </div>
-          {/* Scrollable on very small screens */}
           <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2">
             {AI_TOOLS.map(tool => {
               const isGenerating = generatingType === tool.type;
@@ -821,16 +821,13 @@ export default function VideoDetail() {
               const Icon = tool.icon;
 
               return (
-                <button
+                <div
                   key={tool.type}
-                  onClick={() => handleGenerate(tool.type)}
-                  disabled={!!generatingType}
-                  className="relative group flex flex-col items-start gap-1.5 p-2.5 sm:p-3 rounded-xl text-left transition-all duration-200 overflow-hidden touch-manipulation"
+                  className="relative group flex flex-col items-start gap-1.5 p-2.5 sm:p-3 rounded-xl overflow-hidden transition-all duration-200"
                   style={{
                     background: hasOutput ? `linear-gradient(135deg, ${tool.accent}12, var(--vv-card-bg))` : "var(--vv-card-bg)",
-                    border: `1px solid ${hasOutput ? tool.border : 'var(--vv-card-border)'}`,
+                    border: `1px solid ${hasOutput ? tool.border : "var(--vv-card-border)"}`,
                     opacity: generatingType && !isGenerating ? 0.45 : 1,
-                    WebkitTapHighlightColor: 'transparent',
                   }}
                   onMouseEnter={e => {
                     if (!generatingType) {
@@ -839,34 +836,71 @@ export default function VideoDetail() {
                     }
                   }}
                   onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = hasOutput ? tool.border : 'var(--vv-card-border)';
-                    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                    (e.currentTarget as HTMLElement).style.borderColor = hasOutput ? tool.border : "var(--vv-card-border)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "none";
                   }}
                 >
+                  {/* Hover glow */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                     style={{ background: `radial-gradient(circle at 30% 50%, ${tool.glow}, transparent 70%)` }} />
 
+                  {/* Icon */}
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center relative z-10 flex-shrink-0"
                     style={{ background: `${tool.accent}18`, border: `1px solid ${tool.border}` }}>
-                    {isGenerating ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: tool.accent }} />
-                    ) : (
-                      <Icon className="w-3.5 h-3.5" style={{ color: tool.accent }} />
-                    )}
+                    {isGenerating
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: tool.accent }} />
+                      : <Icon className="w-3.5 h-3.5" style={{ color: tool.accent }} />}
                   </div>
 
-                  <div className="relative z-10 min-w-0">
+                  {/* Label + sub */}
+                  <div className="relative z-10 min-w-0 flex-1">
                     <div className="text-[11px] sm:text-xs font-semibold text-foreground/90 leading-tight truncate">{tool.label}</div>
                     <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">{tool.sub}</div>
                   </div>
 
-                  {hasOutput && (
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: tool.accent }} />
-                  )}
+                  {/* Action pill — VIEW or GENERATE, always accent-colored */}
+                  <div className="relative z-10 w-full mt-auto">
+                    {isGenerating ? (
+                      <div className="flex items-center gap-1 px-2 py-1 rounded text-[8px] font-mono-ui animate-pulse"
+                        style={{ border: `1px solid ${tool.accent}40`, background: `${tool.accent}12`, color: tool.accent }}>
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> GENERATING…
+                      </div>
+                    ) : hasOutput ? (
+                      <div className="flex items-center gap-1 w-full">
+                        <button
+                          onClick={() => navigate(`/videos/${id}/output/${tool.type}`)}
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[8px] font-mono-ui transition-all touch-manipulation hover:opacity-90 active:scale-95"
+                          style={{ border: `1px solid ${tool.accent}50`, background: `${tool.accent}16`, color: tool.accent }}
+                        >
+                          <ArrowRight className="w-2.5 h-2.5" /> VIEW
+                        </button>
+                        <button
+                          onClick={() => handleGenerate(tool.type)}
+                          disabled={!!generatingType}
+                          className="p-1 rounded transition-all touch-manipulation hover:opacity-80 disabled:opacity-30"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.35)" }}
+                          title="Regenerate"
+                        >
+                          <RefreshCw className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleGenerate(tool.type)}
+                        disabled={!!generatingType}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-[8px] font-mono-ui transition-all touch-manipulation hover:opacity-90 active:scale-95 disabled:opacity-30"
+                        style={{ border: `1px solid ${tool.accent}30`, background: `${tool.accent}08`, color: tool.accent }}
+                      >
+                        <Zap className="w-2.5 h-2.5" /> GENERATE
+                      </button>
+                    )}
+                  </div>
+
                   {isGenerating && (
-                    <div className="absolute inset-0 rounded-xl border animate-pulse" style={{ borderColor: tool.accent, opacity: 0.4 }} />
+                    <div className="absolute inset-0 rounded-xl border animate-pulse pointer-events-none"
+                      style={{ borderColor: tool.accent, opacity: 0.4 }} />
                   )}
-                </button>
+                </div>
               );
             })}
           </div>

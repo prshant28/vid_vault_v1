@@ -130,7 +130,7 @@ function AiToolCard({
         borderColor: isGenerating
           ? tool.color + "55"
           : done
-          ? GREEN + "35"
+          ? tool.color + "45"
           : "rgba(255,255,255,0.04)",
         opacity: 1,
       }}
@@ -197,14 +197,14 @@ function AiToolCard({
               <Text style={[styles.generatingPillText, { color: tool.color }]}>GENERATING…</Text>
             </MotiView>
           ) : done ? (
-            <View style={styles.viewBadge}>
-              <Feather name="arrow-right" size={9} color={PURPLE} />
-              <Text style={[styles.viewBadgeText, { color: PURPLE }]}>VIEW</Text>
+            <View style={[styles.viewBadge, { borderColor: tool.color + "50", backgroundColor: tool.color + "14" }]}>
+              <Feather name="arrow-right" size={9} color={tool.color} />
+              <Text style={[styles.viewBadgeText, { color: tool.color }]}>VIEW</Text>
             </View>
           ) : (
-            <View style={styles.genBadge}>
-              <Feather name="zap" size={9} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.genBadgeText}>GENERATE</Text>
+            <View style={[styles.genBadge, { borderColor: tool.color + "30", backgroundColor: tool.color + "08" }]}>
+              <Feather name="zap" size={9} color={tool.color} />
+              <Text style={[styles.genBadgeText, { color: tool.color }]}>GENERATE</Text>
             </View>
           )}
         </View>
@@ -238,6 +238,17 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
       transition={{ type: "timing", duration: 280 }}
       style={styles.outputPanel}
     >
+      {/* Back button row */}
+      <TouchableOpacity
+        onPress={onClose}
+        activeOpacity={0.75}
+        style={styles.outputPanelBack}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Feather name="arrow-left" size={13} color={tool.color} />
+        <Text style={[styles.outputPanelBackText, { color: tool.color }]}>BACK TO TOOLS</Text>
+      </TouchableOpacity>
+
       <View style={styles.outputPanelHeader}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <View style={[styles.outputPanelIcon, { backgroundColor: tool.color + "22" }]}>
@@ -256,9 +267,6 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
           </TouchableOpacity>
           <TouchableOpacity onPress={onRegenerate} style={styles.regenBtn} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Feather name="refresh-cw" size={13} color={PURPLE} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Feather name="x" size={16} color="rgba(255,255,255,0.5)" />
           </TouchableOpacity>
         </View>
       </View>
@@ -819,7 +827,7 @@ export default function VideoDetailScreen() {
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.quickAnalyzeTitle, { color: CYAN }]}>
-                        {quickAnalyzeMutation.isPending ? "Analysing with Gemini AI…" : "Quick Analyse"}
+                        {quickAnalyzeMutation.isPending ? "Analysing with AI…" : "Quick Analyse"}
                       </Text>
                       <Text style={[styles.quickAnalyzeSub, { color: colors.mutedForeground }]}>
                         Generate Summary + Key Insights instantly
@@ -880,7 +888,7 @@ export default function VideoDetailScreen() {
         {/* ── Chat Tab ── */}
         {activeTab === "chat" && (
           <View style={[styles.section, { minHeight: 400 }]}>
-            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// ASK_GEMINI</Text>
+            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_CHAT</Text>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Chat About This Video</Text>
 
             {/* Chat messages */}
@@ -889,7 +897,7 @@ export default function VideoDetailScreen() {
                 <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <Feather name="message-circle" size={24} color={PURPLE + "60"} />
                   <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>Ask anything about this video</Text>
-                  <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>Gemini AI has context about the video title, channel, and description</Text>
+                  <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>AI has context about the video title, channel, and description</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4, justifyContent: "center" }}>
                     {["Summarise this video", "What are the key takeaways?", "Who is this video for?"].map((q) => (
                       <TouchableOpacity
@@ -1304,7 +1312,15 @@ const styles = StyleSheet.create({
   outputPanel: {
     backgroundColor: "#13131a", borderRadius: 14,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    overflow: "hidden", maxHeight: 480,
+    overflow: "hidden", maxHeight: 520,
+  },
+  outputPanelBack: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)",
+  },
+  outputPanelBackText: {
+    fontSize: 9, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1.5,
   },
   outputPanelHeader: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
