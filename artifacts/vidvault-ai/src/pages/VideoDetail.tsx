@@ -356,6 +356,186 @@ function AiOutputCard({
   );
 }
 
+/* ─── Shared AI Outputs + Notes panel ──────────────────────── */
+function AiNotesPanel({
+  video, activeTab, setActiveTab, generatingType, noteText, setNoteText,
+  handleDelete, handleDownloadNotes, isMobile = false,
+}: {
+  video: any;
+  activeTab: "notes" | "ai";
+  setActiveTab: (t: "notes" | "ai") => void;
+  generatingType: string | null;
+  noteText: string;
+  setNoteText: (t: string) => void;
+  handleDelete: (id: string) => void;
+  handleDownloadNotes: () => void;
+  isMobile?: boolean;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [savingNote, setSavingNote] = useState(false);
+
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) return;
+    setSavingNote(true);
+    try {
+      await fetch(`/api/videos/${video.id}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: noteText.trim(), timestamp: null }),
+      });
+      setNoteText("");
+      queryClient.invalidateQueries({ queryKey: [`/api/videos/${video.id}`] });
+      toast({ title: "Note saved" });
+    } catch {
+      toast({ title: "Failed to save note", variant: "destructive" });
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  return (
+    <div className={`flex flex-col ${isMobile ? "gap-3" : "h-full gap-3"}`}>
+      {/* Tab switcher */}
+      <div className="flex p-1 rounded-xl" style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <button
+          onClick={() => setActiveTab("ai")}
+          className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
+          style={{
+            background: activeTab === "ai" ? "#8b5cf6" : "transparent",
+            color: activeTab === "ai" ? "#fff" : "#555",
+          }}
+        >
+          AI Outputs {(video.aiOutputs?.length ?? 0) > 0 && `(${video.aiOutputs!.length})`}
+        </button>
+        <button
+          onClick={() => setActiveTab("notes")}
+          className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
+          style={{
+            background: activeTab === "notes" ? "#8b5cf6" : "transparent",
+            color: activeTab === "notes" ? "#fff" : "#555",
+          }}
+        >
+          My Notes {(video.notes?.length ?? 0) > 0 && `(${video.notes!.length})`}
+        </button>
+      </div>
+
+      {/* Tab content */}
+      <div
+        className={`rounded-2xl hide-scrollbar ${isMobile ? "max-h-[70vh] overflow-y-auto" : "flex-1 overflow-y-auto"}`}
+        style={{ background: "#08080b", border: "1px solid rgba(255,255,255,0.04)" }}
+      >
+        {/* AI Outputs */}
+        {activeTab === "ai" && (
+          <div className="p-3 space-y-3">
+            {generatingType && (
+              <div className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-foreground">Generating {TYPE_LABELS[generatingType]}…</div>
+                  <div className="text-[10px] text-muted-foreground font-mono-ui">AI is processing your video</div>
+                </div>
+              </div>
+            )}
+            {(video.aiOutputs?.length ?? 0) === 0 && !generatingType ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                  style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-sm font-medium text-foreground/60 mb-1">No AI content yet</p>
+                <p className="text-xs text-muted-foreground">Tap any tool card to generate insights</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(video.aiOutputs || []).map((output: any) => (
+                  <AiOutputCard
+                    key={output.id}
+                    output={output}
+                    tool={AI_TOOLS.find(t => t.type === output.type)}
+                    videoTitle={video.title}
+                    channelName={video.channelName || undefined}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Notes */}
+        {activeTab === "notes" && (
+          <div className={`flex flex-col ${isMobile ? "" : "h-full"} p-3`}>
+            <div className={`space-y-2 overflow-y-auto hide-scrollbar ${isMobile ? "max-h-64" : "flex-1"}`}>
+              {(video.notes || []).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                    style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                    <StickyNote className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground/60 mb-1">No notes yet</p>
+                  <p className="text-xs text-muted-foreground">Jot down ideas below</p>
+                </div>
+              ) : (
+                (video.notes || []).map((note: any) => (
+                  <div key={note.id}
+                    className="rounded-xl p-3 relative"
+                    style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.05)", borderLeft: "3px solid rgba(139,92,246,0.4)" }}>
+                    {note.timestamp !== null && (
+                      <span className="inline-flex items-center text-[10px] font-mono-ui text-primary border border-primary/30 bg-primary/10 px-2 py-0.5 rounded mb-2">
+                        {Math.floor(note.timestamp / 60)}:{(note.timestamp % 60).toString().padStart(2, "0")}
+                      </span>
+                    )}
+                    <p className="text-sm text-foreground/85 leading-relaxed">{note.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Note input */}
+            <div className="pt-3 mt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+              <textarea
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                className="w-full bg-transparent border rounded-xl text-sm resize-none px-3 py-2.5 text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-colors"
+                style={{ borderColor: "rgba(255,255,255,0.07)" }}
+                onFocus={e => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)")}
+                onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
+                placeholder="Take a note…"
+                rows={3}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSaveNote();
+                }}
+              />
+              <div className="flex items-center justify-between mt-2">
+                {(video.notes?.length ?? 0) > 0 && (
+                  <button
+                    onClick={handleDownloadNotes}
+                    className="flex items-center gap-1.5 text-[10px] font-mono-ui uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
+                  >
+                    <Download className="w-3 h-3" /> Export
+                  </button>
+                )}
+                <button
+                  onClick={handleSaveNote}
+                  disabled={!noteText.trim() || savingNote}
+                  className="ml-auto text-xs px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-30 flex items-center gap-1.5"
+                  style={{ background: "#8b5cf6", color: "#fff" }}
+                >
+                  {savingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                  Save Note
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main page ─────────────────────────────────────────────── */
 export default function VideoDetail() {
   const { id } = useParams<{ id: string }>();
@@ -419,11 +599,11 @@ export default function VideoDetail() {
   (video.aiOutputs || []).forEach(o => { aiOutputMap[o.type] = o; });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
-      {/* ── Left column: Player + info ── */}
-      <div className="lg:col-span-2 space-y-5">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 animate-in fade-in duration-500">
+      {/* ── Left column: Player + info + AI tools ── */}
+      <div className="lg:col-span-2 space-y-4">
         {/* Video player */}
-        <div className="rounded-2xl overflow-hidden aspect-video shadow-2xl" style={{ background: "#090910" }}>
+        <div className="rounded-xl overflow-hidden aspect-video shadow-2xl" style={{ background: "#090910" }}>
           {ytId ? (
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=0&rel=0&modestbranding=1`}
@@ -438,25 +618,25 @@ export default function VideoDetail() {
         </div>
 
         {/* Video info */}
-        <div className="space-y-3 px-1">
-          <h1 className="text-xl font-display font-bold text-foreground leading-tight">{video.title}</h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground/80">{video.channelName}</span>
+        <div className="space-y-2.5">
+          <h1 className="text-lg sm:text-xl font-display font-bold text-foreground leading-tight">{video.title}</h1>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground/80 text-sm">{video.channelName}</span>
             {video.publishedAt && (
               <span className="flex items-center gap-1 text-xs">
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3 h-3" />
                 {format(new Date(video.publishedAt), "MMM d, yyyy")}
               </span>
             )}
             {video.folderName && (
-              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-secondary/60">
+              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-secondary/60">
                 <FolderIcon className="w-3 h-3" /> {video.folderName}
               </span>
             )}
           </div>
           {video.description && (
             <div
-              className="rounded-xl p-4 text-xs text-muted-foreground whitespace-pre-wrap max-h-32 overflow-y-auto hide-scrollbar leading-relaxed"
+              className="rounded-xl p-3 text-xs text-muted-foreground whitespace-pre-wrap max-h-24 overflow-y-auto hide-scrollbar leading-relaxed"
               style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.05)" }}
             >
               {video.description}
@@ -466,11 +646,17 @@ export default function VideoDetail() {
 
         {/* ── AI Tool Cards ── */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <div className="text-[9px] font-mono-ui uppercase tracking-[0.3em] text-muted-foreground">//AI_STUDIO</div>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.04)" }} />
+            {generatingType && (
+              <span className="text-[9px] font-mono-ui text-primary animate-pulse flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Generating {TYPE_LABELS[generatingType]}…
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
+          {/* Scrollable on very small screens */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2">
             {AI_TOOLS.map(tool => {
               const isGenerating = generatingType === tool.type;
               const hasOutput = !!aiOutputMap[tool.type];
@@ -481,11 +667,12 @@ export default function VideoDetail() {
                   key={tool.type}
                   onClick={() => handleGenerate(tool.type)}
                   disabled={!!generatingType}
-                  className="relative group flex flex-col items-start gap-2 p-3.5 rounded-xl text-left transition-all duration-200 overflow-hidden"
+                  className="relative group flex flex-col items-start gap-1.5 p-2.5 sm:p-3 rounded-xl text-left transition-all duration-200 overflow-hidden touch-manipulation"
                   style={{
                     background: hasOutput ? `linear-gradient(135deg, ${tool.accent}12, transparent)` : "#0d0d11",
                     border: `1px solid ${hasOutput ? tool.border : 'rgba(255,255,255,0.06)'}`,
-                    opacity: generatingType && !isGenerating ? 0.5 : 1,
+                    opacity: generatingType && !isGenerating ? 0.45 : 1,
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                   onMouseEnter={e => {
                     if (!generatingType) {
@@ -498,26 +685,25 @@ export default function VideoDetail() {
                     (e.currentTarget as HTMLElement).style.boxShadow = 'none';
                   }}
                 >
-                  {/* Glow bg */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                     style={{ background: `radial-gradient(circle at 30% 50%, ${tool.glow}, transparent 70%)` }} />
 
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center relative z-10"
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center relative z-10 flex-shrink-0"
                     style={{ background: `${tool.accent}18`, border: `1px solid ${tool.border}` }}>
                     {isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" style={{ color: tool.accent }} />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: tool.accent }} />
                     ) : (
-                      <Icon className="w-4 h-4" style={{ color: tool.accent }} />
+                      <Icon className="w-3.5 h-3.5" style={{ color: tool.accent }} />
                     )}
                   </div>
 
-                  <div className="relative z-10">
-                    <div className="text-xs font-semibold text-foreground/90 leading-tight">{tool.label}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{tool.sub}</div>
+                  <div className="relative z-10 min-w-0">
+                    <div className="text-[11px] sm:text-xs font-semibold text-foreground/90 leading-tight truncate">{tool.label}</div>
+                    <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">{tool.sub}</div>
                   </div>
 
                   {hasOutput && (
-                    <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full" style={{ background: tool.accent }} />
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: tool.accent }} />
                   )}
                   {isGenerating && (
                     <div className="absolute inset-0 rounded-xl border animate-pulse" style={{ borderColor: tool.accent, opacity: 0.4 }} />
@@ -528,158 +714,34 @@ export default function VideoDetail() {
           </div>
         </div>
 
-        {/* ── Generated outputs (desktop: show below cards on large screens) ── */}
-        {(video.aiOutputs?.length ?? 0) > 0 && (
-          <div className="lg:hidden space-y-3 mt-2">
-            {(video.aiOutputs || []).map(output => (
-              <AiOutputCard
-                key={output.id}
-                output={output}
-                tool={AI_TOOLS.find(t => t.type === output.type)}
-                videoTitle={video.title}
-                channelName={video.channelName || undefined}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        )}
+        {/* ── On mobile: AI outputs + Notes shown inline below tools ── */}
+        <div className="lg:hidden">
+          <AiNotesPanel
+            video={video}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            generatingType={generatingType}
+            noteText={noteText}
+            setNoteText={setNoteText}
+            handleDelete={handleDelete}
+            handleDownloadNotes={handleDownloadNotes}
+            isMobile
+          />
+        </div>
       </div>
 
-      {/* ── Right column: Tabs ── */}
-      <div className="flex flex-col h-[calc(100vh-6rem)] sticky top-24">
-        {/* Tab header */}
-        <div className="flex p-1 rounded-xl mb-3" style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <button
-            onClick={() => setActiveTab("ai")}
-            className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
-            style={{
-              background: activeTab === "ai" ? "#8b5cf6" : "transparent",
-              color: activeTab === "ai" ? "#fff" : "#555",
-            }}
-          >
-            AI Outputs {(video.aiOutputs?.length ?? 0) > 0 && `(${video.aiOutputs!.length})`}
-          </button>
-          <button
-            onClick={() => setActiveTab("notes")}
-            className="flex-1 py-2 text-xs font-mono-ui uppercase tracking-wider rounded-lg transition-all"
-            style={{
-              background: activeTab === "notes" ? "#8b5cf6" : "transparent",
-              color: activeTab === "notes" ? "#fff" : "#555",
-            }}
-          >
-            My Notes {(video.notes?.length ?? 0) > 0 && `(${video.notes!.length})`}
-          </button>
-        </div>
-
-        {/* Tab content */}
-        <div className="flex-1 overflow-y-auto rounded-2xl hide-scrollbar"
-          style={{ background: "#08080b", border: "1px solid rgba(255,255,255,0.04)" }}>
-
-          {/* AI Outputs tab */}
-          {activeTab === "ai" && (
-            <div className="p-3 space-y-3">
-              {generatingType && (
-                <div className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{ background: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.2)" }}>
-                  <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
-                  <div>
-                    <div className="text-xs font-medium text-foreground">Generating {TYPE_LABELS[generatingType]}…</div>
-                    <div className="text-[10px] text-muted-foreground font-mono-ui">AI is processing your video</div>
-                  </div>
-                </div>
-              )}
-
-              {(video.aiOutputs?.length ?? 0) === 0 && !generatingType ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-                    style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground/60 mb-1">No AI content yet</p>
-                  <p className="text-xs text-muted-foreground">Click any tool card on the left to generate insights</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {(video.aiOutputs || []).map(output => (
-                    <AiOutputCard
-                      key={output.id}
-                      output={output}
-                      tool={AI_TOOLS.find(t => t.type === output.type)}
-                      videoTitle={video.title}
-                      channelName={video.channelName || undefined}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Notes tab */}
-          {activeTab === "notes" && (
-            <div className="flex flex-col h-full p-3">
-              <div className="flex-1 space-y-2 overflow-y-auto hide-scrollbar">
-                {(video.notes || []).length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-                      style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
-                      <StickyNote className="w-5 h-5 text-primary" />
-                    </div>
-                    <p className="text-sm font-medium text-foreground/60 mb-1">No notes yet</p>
-                    <p className="text-xs text-muted-foreground">Take notes while watching below</p>
-                  </div>
-                ) : (
-                  <>
-                    {(video.notes || []).map(note => (
-                      <div key={note.id}
-                        className="rounded-xl p-3 relative group"
-                        style={{ background: "#0d0d11", border: "1px solid rgba(255,255,255,0.05)", borderLeft: "3px solid rgba(139,92,246,0.4)" }}>
-                        {note.timestamp !== null && (
-                          <span className="inline-flex items-center text-[10px] font-mono-ui text-primary border border-primary/30 bg-primary/10 px-2 py-0.5 rounded mb-2">
-                            {Math.floor(note.timestamp / 60)}:{(note.timestamp % 60).toString().padStart(2, "0")}
-                          </span>
-                        )}
-                        <p className="text-sm text-foreground/85 leading-relaxed">{note.content}</p>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              {/* Note input */}
-              <div className="pt-3 mt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                <textarea
-                  value={noteText}
-                  onChange={e => setNoteText(e.target.value)}
-                  className="w-full bg-transparent border rounded-xl text-sm resize-none px-3 py-2.5 text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-colors"
-                  style={{ borderColor: "rgba(255,255,255,0.07)" }}
-                  onFocus={e => (e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)")}
-                  onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
-                  placeholder="Take a note…"
-                  rows={3}
-                />
-                <div className="flex items-center justify-between mt-2">
-                  {(video.notes?.length ?? 0) > 0 && (
-                    <button
-                      onClick={handleDownloadNotes}
-                      className="flex items-center gap-1.5 text-[10px] font-mono-ui uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all"
-                      style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)", color: "#a78bfa" }}
-                    >
-                      <Download className="w-3 h-3" /> Export Notes
-                    </button>
-                  )}
-                  <button
-                    disabled={!noteText.trim()}
-                    className="ml-auto text-xs px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-30"
-                    style={{ background: "#8b5cf6", color: "#fff" }}
-                  >
-                    Save Note
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* ── Right column: sticky panel (desktop only) ── */}
+      <div className="hidden lg:flex flex-col lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24">
+        <AiNotesPanel
+          video={video}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          generatingType={generatingType}
+          noteText={noteText}
+          setNoteText={setNoteText}
+          handleDelete={handleDelete}
+          handleDownloadNotes={handleDownloadNotes}
+        />
       </div>
     </div>
   );
