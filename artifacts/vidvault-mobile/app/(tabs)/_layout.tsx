@@ -58,9 +58,9 @@ function NativeTabLayout() {
         <Icon sf={{ default: "sparkles", selected: "sparkles" }} />
         <Label>AI Studio</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="folders">
-        <Icon sf={{ default: "folder", selected: "folder.fill" }} />
-        <Label>Folders</Label>
+      <NativeTabs.Trigger name="discover">
+        <Icon sf={{ default: "compass", selected: "compass.fill" }} />
+        <Label>Discover</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
@@ -87,11 +87,11 @@ function ClassicTabLayout() {
 
   type TabDef = { name: string; title: string; icon: FeatherName; sfDefault: string; sfSelected: string };
   const TABS: TabDef[] = [
-    { name: "index",     title: "Home",      icon: "home",   sfDefault: "house",         sfSelected: "house.fill"         },
-    { name: "videos",    title: "Videos",    icon: "film",   sfDefault: "film",          sfSelected: "film.fill"          },
-    { name: "ai-studio", title: "AI Studio", icon: "cpu",    sfDefault: "sparkles",      sfSelected: "sparkles"           },
-    { name: "folders",   title: "Folders",   icon: "folder", sfDefault: "folder",        sfSelected: "folder.fill"        },
-    { name: "profile",   title: "Profile",   icon: "user",   sfDefault: "person.circle", sfSelected: "person.circle.fill" },
+    { name: "index",     title: "Home",      icon: "home",    sfDefault: "house",            sfSelected: "house.fill"            },
+    { name: "videos",    title: "Videos",    icon: "film",    sfDefault: "film",             sfSelected: "film.fill"             },
+    { name: "ai-studio", title: "AI Studio", icon: "cpu",     sfDefault: "sparkles",         sfSelected: "sparkles"              },
+    { name: "discover",  title: "Discover",  icon: "compass", sfDefault: "compass",          sfSelected: "compass.fill"          },
+    { name: "profile",   title: "Profile",   icon: "user",    sfDefault: "person.circle",    sfSelected: "person.circle.fill"    },
   ];
 
   return (

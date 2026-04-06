@@ -2169,7 +2169,7 @@ export default function Login() {
                   >
                     {[
                       { label: "AI_TOOLS", value: 6, suffix: "+" },
-                      { label: "EXPORT_FMT", value: 5, suffix: "" },
+                      { label: "EXPORT_FMT", value: 8, suffix: "+" },
                       { label: "MAX_VIDEOS", value: 500, suffix: "+" },
                     ].map((s) => (
                       <div key={s.label} className="flex flex-col">

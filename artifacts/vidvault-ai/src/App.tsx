@@ -14,6 +14,8 @@ import VideoDetail from "./pages/VideoDetail";
 import AiOutputView from "./pages/AiOutputView";
 import AIAssistant from "./pages/AIAssistant";
 import Login from "./pages/Login";
+import Templates from "./pages/Templates";
+import KnowledgeGraph from "./pages/KnowledgeGraph";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +47,12 @@ function Router() {
       </Route>
       <Route path="/ai">
         <AppLayout><AIAssistant /></AppLayout>
+      </Route>
+      <Route path="/templates">
+        <AppLayout><Templates /></AppLayout>
+      </Route>
+      <Route path="/knowledge-graph">
+        <AppLayout><KnowledgeGraph /></AppLayout>
       </Route>
       <Route>
         <AppLayout><NotFound /></AppLayout>

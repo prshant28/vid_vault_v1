@@ -1,16 +1,18 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Library, FolderOpen, Star, Bot, Plus, LogOut, Sun, Moon, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Library, FolderOpen, Star, Bot, Plus, LogOut, Sun, Moon, ChevronLeft, ChevronRight, Network, LayoutTemplate } from "lucide-react";
 import { useAuth } from "@workspace/replit-auth-web";
 import { useListFolders } from "@workspace/api-client-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
-  { href: "/",                    label: "DASHBOARD", icon: LayoutDashboard, code: "01" },
-  { href: "/videos",              label: "ALL VIDEOS", icon: Library,         code: "02" },
-  { href: "/folders",             label: "FOLDERS",   icon: FolderOpen,      code: "03" },
-  { href: "/videos?favorites=true", label: "FAVORITES", icon: Star,          code: "04" },
-  { href: "/ai",                  label: "AI STUDIO", icon: Bot,             code: "05" },
+  { href: "/",                      label: "DASHBOARD",  icon: LayoutDashboard, code: "01" },
+  { href: "/videos",                label: "ALL VIDEOS", icon: Library,         code: "02" },
+  { href: "/folders",               label: "FOLDERS",    icon: FolderOpen,      code: "03" },
+  { href: "/videos?favorites=true", label: "FAVORITES",  icon: Star,            code: "04" },
+  { href: "/ai",                    label: "AI STUDIO",  icon: Bot,             code: "05" },
+  { href: "/knowledge-graph",       label: "KNOWLEDGE",  icon: Network,         code: "06" },
+  { href: "/templates",             label: "TEMPLATES",  icon: LayoutTemplate,  code: "07" },
 ];
 
 interface SidebarProps {

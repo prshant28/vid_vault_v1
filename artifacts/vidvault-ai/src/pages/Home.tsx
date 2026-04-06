@@ -4,11 +4,13 @@ import { VideoCard } from "@/components/videos/VideoCard";
 import {
   Library, Folder, Tag, Star, Brain, FileText, Sparkles,
   BookOpen, ListChecks, HelpCircle, MessageSquare, Film,
-  Play, ChevronRight,
+  Play, ChevronRight, Network, LayoutTemplate, Target, TrendingUp,
+  ArrowRight, Zap,
 } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useRef, useEffect } from "react";
+import { useAuth } from "@workspace/replit-auth-web";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
@@ -143,6 +145,97 @@ function AiTypeRow({ type, count, total }: { type: string; count: number; total:
   );
 }
 
+function WelcomeBanner({ name, totalVideos, totalAiOutputs }: { name: string; totalVideos: number; totalAiOutputs: number }) {
+  const featureCards = [
+    { icon: Brain,          label: "Smart Learning",   desc: "AI-powered study tools", color: "#8b5cf6", href: "/ai" },
+    { icon: TrendingUp,     label: "Track Progress",   desc: "Monitor your goals",      color: "#06b6d4", href: "/" },
+    { icon: Network,        label: "Knowledge Graph",  desc: "Map your concepts",       color: "#10b981", href: "/knowledge-graph" },
+    { icon: LayoutTemplate, label: "Template Library", desc: "Export in your style",    color: "#f59e0b", href: "/templates" },
+  ];
+  return (
+    <div className="etched-slab relative overflow-hidden">
+      <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(ellipse at 0% 50%, #8b5cf620, transparent 50%), radial-gradient(ellipse at 100% 50%, #06b6d420, transparent 50%)" }} />
+      <div className="relative z-10 flex flex-col md:flex-row gap-6 p-6">
+        <div className="flex-1 flex flex-col justify-center">
+          <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em] block mb-3" style={{ color: "var(--vv-text-muted)" }}>//KNOWLEDGE_SYSTEM · ACTIVE</span>
+          <h2 className="font-black lp-heading uppercase mb-2" style={{ fontSize: "clamp(1.5rem, 3vw, 2.2rem)", fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em", color: "var(--vv-text)" }}>
+            Welcome back,<br />
+            <span style={{ color: "#8b5cf6" }}>{name}</span>
+          </h2>
+          <p className="font-mono-ui text-[11px] mb-5 max-w-xs" style={{ color: "var(--vv-text-desc)" }}>
+            Continue your learning journey with personalized AI tools and a second brain that grows with you.
+          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link href="/videos">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono-ui text-[10px] uppercase tracking-wider font-bold transition-all cursor-pointer" style={{ background: "#8b5cf6", color: "#fff" }}>
+                <Zap className="w-3.5 h-3.5" />
+                Start Learning
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </Link>
+            <Link href="/ai">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono-ui text-[10px] uppercase tracking-wider transition-all cursor-pointer" style={{ border: "1px solid var(--vv-border)", color: "var(--vv-text-muted)" }}>
+                AI Studio →
+              </div>
+            </Link>
+          </div>
+          {totalVideos > 0 && (
+            <p className="font-mono-ui text-[9px] mt-3" style={{ color: "var(--vv-text-muted)" }}>
+              {totalVideos} video{totalVideos !== 1 ? "s" : ""} saved · {totalAiOutputs} AI output{totalAiOutputs !== 1 ? "s" : ""} generated
+            </p>
+          )}
+        </div>
+        <div className="flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2.5 w-full md:w-[280px]">
+            {featureCards.map((fc) => (
+              <Link key={fc.label} href={fc.href}>
+                <div className="p-3.5 rounded-xl cursor-pointer group transition-all relative overflow-hidden" style={{ background: "var(--vv-bg)", border: "1px solid var(--vv-border)" }}>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(ellipse at 50% 0%, ${fc.color}12, transparent)` }} />
+                  <div className="relative z-10">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2" style={{ background: fc.color + "20" }}>
+                      <fc.icon className="w-3.5 h-3.5" style={{ color: fc.color }} />
+                    </div>
+                    <p className="font-mono-ui text-[9px] font-bold uppercase tracking-wider leading-tight" style={{ color: "var(--vv-text)" }}>{fc.label}</p>
+                    <p className="font-mono-ui text-[8px] mt-0.5" style={{ color: "var(--vv-text-muted)" }}>{fc.desc}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LearningToolCard({ icon: Icon, label, desc, color, href, stat, statLabel }: {
+  icon: React.FC<any>; label: string; desc: string; color: string; href: string; stat?: string | number; statLabel?: string;
+}) {
+  return (
+    <Link href={href}>
+      <div className="etched-slab p-5 cursor-pointer group relative overflow-hidden h-full">
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(ellipse at 70% 0%, ${color}12, transparent 60%)` }} />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color + "18", border: `1px solid ${color}25` }}>
+              <Icon className="w-4.5 h-4.5" style={{ color }} />
+            </div>
+            {stat !== undefined && (
+              <div className="text-right">
+                <p className="font-black lp-heading text-xl leading-none" style={{ color, fontFamily: "'Alegreya Sans SC', serif" }}>{stat}</p>
+                <p className="font-mono-ui text-[8px] uppercase tracking-widest" style={{ color: "var(--vv-text-muted)" }}>{statLabel}</p>
+              </div>
+            )}
+          </div>
+          <p className="font-mono-ui text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: "var(--vv-text)" }}>{label}</p>
+          <p className="font-mono-ui text-[10px] leading-relaxed" style={{ color: "var(--vv-text-desc)" }}>{desc}</p>
+        </div>
+        <ChevronRight className="absolute bottom-4 right-4 w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" style={{ color }} />
+      </div>
+    </Link>
+  );
+}
+
 function RecentAiCard({ output }: { output: DashboardStats["recentAiOutputs"][0] }) {
   const meta = AI_TYPE_META[output.type] ?? { label: output.type, icon: Brain, color: "#8b5cf6" };
   const date = new Date(output.createdAt);
@@ -174,6 +267,8 @@ function RecentAiCard({ output }: { output: DashboardStats["recentAiOutputs"][0]
 
 export default function Home() {
   const { data: stats, isLoading } = useGetStats();
+  const { user } = useAuth();
+  const displayName = user?.firstName || user?.username || "Scholar";
 
   if (isLoading) {
     return (
@@ -222,14 +317,9 @@ export default function Home() {
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-12">
 
-      {/* ── Header ── */}
+      {/* ── Welcome Banner ── */}
       <motion.div variants={item} className="pt-2">
-        <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em] block mb-1" style={{ color: "var(--vv-text-muted)" }}>
-          //SYSTEM_STATUS · KNOWLEDGE_BASE_ACTIVE
-        </span>
-        <h1 className="font-black lp-heading uppercase" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontFamily: "'Alegreya Sans SC', serif", letterSpacing: "-0.01em" }}>
-          Your Vault
-        </h1>
+        <WelcomeBanner name={displayName} totalVideos={totalVideos} totalAiOutputs={totalAiOutputs} />
       </motion.div>
 
       {/* ── Level Card + Side Cards ── */}
@@ -329,6 +419,49 @@ export default function Home() {
               <QuickActionCard {...qa} />
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* ── Learning Tools ── */}
+      <motion.div variants={item}>
+        <span className="font-mono-ui text-[9px] uppercase tracking-[0.3em] block mb-3" style={{ color: "var(--vv-text-muted)" }}>//LEARNING_TOOLS</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <LearningToolCard
+            icon={Network}
+            label="Knowledge Graph"
+            desc="Visualize connections between your videos and topics in an interactive concept map."
+            color="#10b981"
+            href="/knowledge-graph"
+            stat={s.totalTags ?? 0}
+            statLabel="Topics"
+          />
+          <LearningToolCard
+            icon={LayoutTemplate}
+            label="Template Library"
+            desc="Export your AI outputs in 8+ professional formats — Cornell Notes, Mind Maps, and more."
+            color="#f59e0b"
+            href="/templates"
+            stat="8+"
+            statLabel="Templates"
+          />
+          <LearningToolCard
+            icon={Target}
+            label="AI Study Plan"
+            desc="Generate a personalized study plan based on your vault content and learning patterns."
+            color="#6366f1"
+            href="/ai"
+            stat={s.totalAiOutputs ?? 0}
+            statLabel="Generated"
+          />
+          <LearningToolCard
+            icon={Sparkles}
+            label="AI Studio"
+            desc="Create summaries, flashcards, MCQs, study notes, and interactive quizzes from any video."
+            color="#ec4899"
+            href="/ai"
+            stat={s.totalVideos ?? 0}
+            statLabel="Videos"
+          />
         </div>
       </motion.div>
 
