@@ -20,6 +20,7 @@ interface Video {
   channelName?: string | null;
   duration?: string | null;
   isFavorite: boolean;
+  isWatched?: boolean;
   tags?: Tag[];
   notes?: any[];
   aiOutputs?: any[];
@@ -32,11 +33,12 @@ interface VideoListCardProps {
   video: Video;
   onPress: () => void;
   onToggleFavorite?: () => void;
+  onToggleWatched?: () => void;
   onLongPress?: () => void;
   isSelected?: boolean;
 }
 
-export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, isSelected }: VideoListCardProps) {
+export function VideoListCard({ video, onPress, onToggleFavorite, onToggleWatched, onLongPress, isSelected }: VideoListCardProps) {
   const { colors, isDark } = useTheme();
   const noteCount = video.notesCount ?? video.notes?.length ?? 0;
   const aiCount   = video.aiOutputsCount ?? video.aiOutputs?.length ?? 0;
@@ -69,6 +71,11 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
         {video.duration && (
           <View style={styles.durationBadge}>
             <Text style={styles.durationText}>{video.duration}</Text>
+          </View>
+        )}
+        {video.isWatched && !isSelected && (
+          <View style={styles.watchedBadge}>
+            <Feather name="check-circle" size={12} color={GREEN} />
           </View>
         )}
         {isSelected && (
@@ -132,8 +139,20 @@ export function VideoListCard({ video, onPress, onToggleFavorite, onLongPress, i
         )}
       </View>
 
-      {/* Favorite / action column */}
+      {/* Favorite / watched / action column */}
       <View style={styles.actions}>
+        {onToggleWatched && !isSelected && (
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onToggleWatched();
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={[styles.favBtn, video.isWatched && { backgroundColor: GREEN + "18" }]}
+          >
+            <Feather name="check-circle" size={15} color={video.isWatched ? GREEN : colors.mutedForeground} />
+          </TouchableOpacity>
+        )}
         {onToggleFavorite && !isSelected && (
           <TouchableOpacity
             onPress={() => {
@@ -176,6 +195,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4, paddingVertical: 1,
   },
   durationText: { color: "#fff", fontSize: 9, fontFamily: "JetBrainsMono_400Regular" },
+  watchedBadge: {
+    position: "absolute", top: 3, left: 3,
+    backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 10,
+    padding: 2,
+  },
   selectedOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(139,92,246,0.18)",

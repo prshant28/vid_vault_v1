@@ -543,6 +543,31 @@ router.delete("/videos/:videoId", async (req, res) => {
   res.status(204).send();
 });
 
+router.post("/videos/:videoId/watch", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const { videoId } = req.params;
+  const [video] = await db
+    .select({ isWatched: videosTable.isWatched })
+    .from(videosTable)
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.user.id)));
+
+  if (!video) {
+    res.status(404).json({ error: "Video not found" });
+    return;
+  }
+
+  const newWatched = !video.isWatched;
+  await db
+    .update(videosTable)
+    .set({ isWatched: newWatched, updatedAt: new Date() })
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.user.id)));
+
+  res.json({ isWatched: newWatched });
+});
+
 router.post("/videos/:videoId/favorite", async (req, res) => {
   if (!req.isAuthenticated()) {
     res.status(401).json({ error: "Unauthorized" });

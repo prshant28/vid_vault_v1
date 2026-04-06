@@ -83,6 +83,7 @@ export default function FoldersScreen() {
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const { width } = useWindowDimensions();
+  const dialogBtnWidth = Math.min(width - 88, 432);
 
   const [showModal, setShowModal]         = useState(false);
   const [folderName, setFolderName]       = useState("");
@@ -307,7 +308,7 @@ export default function FoldersScreen() {
               icon="folder-plus"
               size="md"
               variant="primary"
-              fullWidth
+              width={dialogBtnWidth}
               loading={createMutation.isPending}
               disabled={createMutation.isPending || !folderName.trim()}
               onPress={() => {

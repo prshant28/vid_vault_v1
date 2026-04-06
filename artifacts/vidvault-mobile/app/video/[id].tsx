@@ -453,6 +453,16 @@ export default function VideoDetailScreen() {
     },
   });
 
+  const watchMutation = useMutation({
+    mutationFn: () => api.toggleWatched(id!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["video", id] });
+      qc.invalidateQueries({ queryKey: ["videos"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
+  });
+
   const generateMutation = useMutation({
     mutationFn: (type: string) => api.generateAiContent(id!, type),
     onSuccess: (data, type) => {
@@ -685,6 +695,12 @@ export default function VideoDetailScreen() {
         title={video.title}
         rightAction={
           <View style={{ flexDirection: "row", gap: 8 }}>
+            <AppButton
+              icon="check-circle"
+              size="xs"
+              variant={(video as any).isWatched ? "white" : "ghost"}
+              onPress={() => watchMutation.mutate()}
+            />
             <AppButton
               icon="heart"
               size="xs"

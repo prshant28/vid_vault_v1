@@ -81,6 +81,13 @@ export const api = {
     });
     return handleRes(res);
   },
+  async toggleWatched(videoId: string) {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/watch`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    return handleRes(res);
+  },
   async listFolders() {
     const res = await fetch(`${BASE_URL}/folders`, { headers: authHeaders() });
     return handleRes(res);

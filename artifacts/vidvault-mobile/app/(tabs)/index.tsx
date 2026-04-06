@@ -172,23 +172,25 @@ function ActivityNode({ video, index, onPress }: { video: Video; index: number; 
   );
 }
 
-/* ── Intelligence status bar ── */
-function IntelligenceBar({ aiCount }: { aiCount: number }) {
+/* ── Watch Progress bar ── */
+function WatchProgressBar({ watched, total }: { watched: number; total: number }) {
   const colors = useColors();
   const width = useWindowDimensions().width - 40;
-  const pct = Math.min(aiCount / 20, 1);
+  const pct = total > 0 ? Math.min(watched / total, 1) : 0;
   const barW = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(barW, { toValue: pct * (width - 32), duration: 1200, delay: 600, useNativeDriver: false }).start();
-  }, [aiCount]);
+  }, [pct, width]);
+
+  const pctLabel = total > 0 ? `${Math.round(pct * 100)}%` : "0%";
 
   return (
     <MotiView
       from={{ opacity: 0, translateY: 10 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 400, delay: 500 }}
-      style={[styles.intelBar, { backgroundColor: colors.card, borderColor: PURPLE + "22" }]}
+      style={[styles.intelBar, { backgroundColor: colors.card, borderColor: GREEN + "22" }]}
     >
       <View style={styles.intelTop}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -197,21 +199,21 @@ function IntelligenceBar({ aiCount }: { aiCount: number }) {
             transition={{ type: "timing", duration: 800, loop: true }}
             style={[styles.intelDot, { backgroundColor: GREEN }]}
           />
-          <Text style={[styles.intelLabel, { color: colors.mutedForeground }]}>INTELLIGENCE CORE</Text>
+          <Text style={[styles.intelLabel, { color: colors.mutedForeground }]}>WATCH PROGRESS</Text>
         </View>
-        <Text style={[styles.intelCount, { color: PURPLE }]}>{aiCount} insights</Text>
+        <Text style={[styles.intelCount, { color: GREEN }]}>{watched}/{total} watched</Text>
       </View>
       <View style={[styles.intelTrack, { backgroundColor: colors.border + "80" }]}>
         <Animated.View style={[styles.intelFill, { width: barW }]}>
           <LinearGradient
-            colors={[PURPLE, CYAN]}
+            colors={[GREEN, CYAN]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFill}
           />
         </Animated.View>
       </View>
       <Text style={[styles.intelSub, { color: colors.mutedForeground }]}>
-        AI-generated insights stored in your vault
+        {pctLabel} of your vault watched · keep going!
       </Text>
     </MotiView>
   );
@@ -243,7 +245,8 @@ export default function HomeScreen() {
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const recentVideos: Video[] = stats?.recentVideos ?? [];
   const favoriteVideos: Video[] = stats?.favoriteVideos ?? [];
-  const totalAi = 0;
+  const totalWatched = stats?.totalWatched ?? 0;
+  const totalVideos = stats?.totalVideos ?? 0;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -313,9 +316,9 @@ export default function HomeScreen() {
           <QuickAction icon="heart" label="Favorites" sublabel="Starred" accent={PINK} delay={220} onPress={() => router.push("/(tabs)/videos")} />
         </View>
 
-        {/* ── Intelligence bar ── */}
+        {/* ── Watch Progress bar ── */}
         <View style={styles.sectionPad}>
-          <IntelligenceBar aiCount={totalAi} />
+          <WatchProgressBar watched={totalWatched} total={totalVideos} />
         </View>
 
         {/* ── Stats 2×2 grid ── */}

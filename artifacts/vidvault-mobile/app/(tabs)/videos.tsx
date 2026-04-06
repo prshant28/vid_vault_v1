@@ -219,6 +219,11 @@ export default function VideosScreen() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["videos"] }); qc.invalidateQueries({ queryKey: ["stats"] }); },
   });
 
+  const watchMutation = useMutation({
+    mutationFn: (id: string) => api.toggleWatched(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["videos"] }); qc.invalidateQueries({ queryKey: ["stats"] }); },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (ids: string[]) => Promise.all(ids.map(id => api.deleteVideo(id))),
     onSuccess: () => {
@@ -391,6 +396,7 @@ export default function VideosScreen() {
           onPress={() => isSelectMode ? toggleSelection(item.video.id) : router.push(`/video/${item.video.id}`)}
           onLongPress={() => isSelectMode ? toggleSelection(item.video.id) : enterSelection(item.video.id)}
           onToggleFavorite={() => isSelectMode ? undefined : favMutation.mutate(item.video.id)}
+          onToggleWatched={() => isSelectMode ? undefined : watchMutation.mutate(item.video.id)}
         />
       );
     }

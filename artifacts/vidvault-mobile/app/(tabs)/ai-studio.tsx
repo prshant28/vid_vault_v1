@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,10 @@ import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
+  ScrollView,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { MotiView } from "moti";
 import { Feather } from "@expo/vector-icons";
@@ -53,6 +56,16 @@ interface LibraryVideo {
   url: string;
   duration?: number | null;
   createdAt?: string | null;
+}
+
+const HISTORY_KEY = "ai-studio-history-v1";
+const MAX_HISTORY = 20;
+
+interface ChatSession {
+  id: string;
+  ts: number;
+  preview: string;
+  messages: Message[];
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -338,6 +351,16 @@ export default function AIStudioScreen() {
   const [isSending, setIsSending] = useState(false);
   const [showPrompts, setShowPrompts] = useState(true);
   const [atBottom, setAtBottom] = useState(true);
+  const [savedSessions, setSavedSessions] = useState<ChatSession[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(HISTORY_KEY).then((raw) => {
+      if (raw) {
+        try { setSavedSessions(JSON.parse(raw)); } catch {}
+      }
+    });
+  }, []);
 
   const { data: statsData } = useQuery({
     queryKey: ["stats"],
@@ -405,11 +428,34 @@ export default function AIStudioScreen() {
     }
   }, [input, isSending, messages, scrollToBottom]);
 
+  const saveToHistory = useCallback(async (msgs: Message[]) => {
+    const userMsgs = msgs.filter((m) => m.role === "user");
+    if (userMsgs.length === 0) return;
+    const preview = userMsgs[0].content.slice(0, 80);
+    const session: ChatSession = { id: Date.now().toString(), ts: Date.now(), preview, messages: msgs };
+    const updated = [session, ...savedSessions].slice(0, MAX_HISTORY);
+    setSavedSessions(updated);
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  }, [savedSessions]);
+
   const clearChat = useCallback(() => {
+    saveToHistory(messages);
     setMessages([WELCOME_MESSAGE]);
     setShowPrompts(true);
     setInput("");
+  }, [messages, saveToHistory]);
+
+  const restoreSession = useCallback((session: ChatSession) => {
+    setMessages(session.messages);
+    setShowPrompts(false);
+    setShowHistory(false);
   }, []);
+
+  const deleteSession = useCallback(async (id: string) => {
+    const updated = savedSessions.filter((s) => s.id !== id);
+    setSavedSessions(updated);
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  }, [savedSessions]);
 
   const botInset = insets.bottom + (Platform.OS === "web" ? TAB_BAR_H_WEB : Platform.OS === "ios" ? 60 : 56);
   const userMsgCount = messages.filter((m) => m.role === "user").length;
@@ -452,6 +498,16 @@ export default function AIStudioScreen() {
             <Text style={[styles.msgCount, { color: colors.mutedForeground }]}>
               {userMsgCount} MSG{userMsgCount !== 1 ? "S" : ""}
             </Text>
+          )}
+          {savedSessions.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setShowHistory(true)}
+              style={[styles.clearBtn, { borderColor: colors.border, backgroundColor: colors.card }]}
+              activeOpacity={0.75}
+            >
+              <Feather name="clock" size={11} color={colors.mutedForeground} />
+              <Text style={[styles.clearText, { color: colors.mutedForeground }]}>{savedSessions.length}</Text>
+            </TouchableOpacity>
           )}
           <TouchableOpacity
             onPress={clearChat}
@@ -595,6 +651,71 @@ export default function AIStudioScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {/* ── Chat History Modal ── */}
+      <Modal
+        visible={showHistory}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowHistory(false)}
+        statusBarTranslucent
+      >
+        <View style={histStyles.backdrop}>
+          <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowHistory(false)} />
+          <MotiView
+            from={{ translateY: 100, opacity: 0 }}
+            animate={{ translateY: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 20, stiffness: 200 }}
+            style={[histStyles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            {/* Header */}
+            <View style={histStyles.panelHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={[histStyles.panelEye, { color: colors.mutedForeground }]}>//HISTORY</Text>
+                <Text style={[histStyles.panelTitle, { color: colors.foreground }]}>Past Sessions</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowHistory(false)} style={histStyles.panelClose}>
+                <Feather name="x" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <View style={[histStyles.divider, { backgroundColor: colors.border }]} />
+
+            {savedSessions.length === 0 ? (
+              <View style={histStyles.empty}>
+                <Feather name="clock" size={28} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                <Text style={[histStyles.emptyText, { color: colors.mutedForeground }]}>No saved sessions yet</Text>
+              </View>
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                {savedSessions.map((session) => (
+                  <TouchableOpacity
+                    key={session.id}
+                    onPress={() => restoreSession(session)}
+                    style={[histStyles.sessionRow, { borderBottomColor: colors.border + "50" }]}
+                    activeOpacity={0.75}
+                  >
+                    <View style={[histStyles.sessionIcon, { backgroundColor: PURPLE + "12", borderColor: PURPLE + "25" }]}>
+                      <Feather name="message-circle" size={14} color={PURPLE} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[histStyles.sessionPreview, { color: colors.foreground }]} numberOfLines={2}>
+                        {session.preview}
+                      </Text>
+                      <Text style={[histStyles.sessionDate, { color: colors.mutedForeground }]}>
+                        {new Date(session.ts).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {" · "}{session.messages.filter(m => m.role === "user").length} msgs
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => deleteSession(session.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <Feather name="trash-2" size={13} color={colors.mutedForeground} style={{ opacity: 0.4 }} />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </MotiView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -791,4 +912,38 @@ const styles = StyleSheet.create({
     borderRadius: 4, borderWidth: 1,
   },
   libraryBadgeText: { fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1 },
+});
+
+const histStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1, backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "flex-end",
+  },
+  panel: {
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    borderWidth: 1, borderBottomWidth: 0,
+    padding: 20, paddingBottom: 40,
+    maxHeight: "75%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.5, shadowRadius: 24, elevation: 20,
+  },
+  panelHeader: { flexDirection: "row", alignItems: "flex-start", marginBottom: 12 },
+  panelEye: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2, marginBottom: 3 },
+  panelTitle: { fontSize: 24, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.5 },
+  panelClose: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: -20, marginBottom: 12 },
+
+  empty: { alignItems: "center", gap: 10, paddingVertical: 40 },
+  emptyText: { fontSize: 13, fontFamily: "Poppins_400Regular" },
+
+  sessionRow: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sessionIcon: {
+    width: 36, height: 36, borderRadius: 10, borderWidth: 1,
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
+  },
+  sessionPreview: { fontSize: 13, fontFamily: "Poppins_500Medium", lineHeight: 18 },
+  sessionDate: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3, marginTop: 3 },
 });

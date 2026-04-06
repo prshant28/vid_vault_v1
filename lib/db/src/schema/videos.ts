@@ -38,6 +38,7 @@ export const videosTable = pgTable("videos", {
   description: text("description"),
   folderId: text("folder_id").references(() => foldersTable.id, { onDelete: "set null" }),
   isFavorite: boolean("is_favorite").notNull().default(false),
+  isWatched: boolean("is_watched").notNull().default(false),
   viewCount: integer("view_count"),
   publishedAt: text("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

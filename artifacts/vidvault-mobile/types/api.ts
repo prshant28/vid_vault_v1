@@ -12,6 +12,7 @@ export interface Video {
   channelName: string | null;
   duration: string | null;
   isFavorite: boolean;
+  isWatched: boolean;
   tags: Tag[];
   notes: Note[];
   aiOutputs: AiOutput[];
@@ -45,6 +46,8 @@ export interface Stats {
   totalVideos: number;
   totalFolders: number;
   totalTags: number;
+  totalFavorites: number;
+  totalWatched: number;
   recentVideos: Video[];
   favoriteVideos: Video[];
 }

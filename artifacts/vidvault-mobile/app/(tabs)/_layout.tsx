@@ -96,14 +96,12 @@ function ClassicTabLayout() {
 
   return (
     <>
-      {/* Premium Android StatusBar — transparent + dark icons on light, light icons on dark */}
-      {isAndroid && (
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle={isDark ? "light-content" : "dark-content"}
-        />
-      )}
+      {/* StatusBar — configured for all platforms */}
+      <StatusBar
+        translucent={isAndroid}
+        backgroundColor={isAndroid ? "transparent" : undefined}
+        barStyle={isDark ? "light-content" : "dark-content"}
+      />
 
       <Tabs
         screenOptions={{
