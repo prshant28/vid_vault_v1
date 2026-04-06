@@ -9,6 +9,7 @@ import {
   Platform,
   useWindowDimensions,
   Animated,
+  Image,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -252,6 +253,9 @@ function RecentAiItemCard({ output, index }: { output: RecentAiOutput; index: nu
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
   const timeAgo = mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
+
+  const thumbUri = output.videoThumbnail || null;
+
   return (
     <MotiView
       from={{ opacity: 0, translateX: 10 }}
@@ -263,22 +267,56 @@ function RecentAiItemCard({ output, index }: { output: RecentAiOutput; index: nu
         onPress={() => router.push(`/video/${output.videoId}` as any)}
         style={[styles.aiCard, { backgroundColor: colors.card, borderColor: meta.color + "25" }]}
       >
-        {output.videoThumbnail && (
-          <View style={styles.aiCardThumb}>
-            <View style={{ width: 56, height: 38, borderRadius: 6, backgroundColor: colors.secondary, overflow: "hidden" }}>
-              <View style={{ position: "absolute", inset: 0, backgroundColor: meta.color + "08" }} />
+        {/* Thumbnail */}
+        <View style={styles.aiCardThumb}>
+          <View style={{ width: 72, height: 50, borderRadius: 6, backgroundColor: colors.secondary, overflow: "hidden" }}>
+            {thumbUri ? (
+              <Image
+                source={{ uri: thumbUri }}
+                style={{ width: 72, height: 50 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: meta.color + "15" }}>
+                <Feather name={meta.icon} size={18} color={meta.color + "80"} />
+              </View>
+            )}
+            {/* Tool badge overlay */}
+            <View style={{ position: "absolute", bottom: 3, right: 3, backgroundColor: "rgba(0,0,0,0.75)", borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1 }}>
+              <Text style={{ fontSize: 7, fontFamily: "JetBrainsMono_600SemiBold", color: meta.color, letterSpacing: 0.5 }}>
+                {meta.label.split(" ")[0].toUpperCase()}
+              </Text>
             </View>
           </View>
-        )}
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={styles.aiCardTypeRow}>
-            <Feather name={meta.icon} size={10} color={meta.color} />
-            <Text style={[styles.aiCardType, { color: meta.color }]}>{meta.label.toUpperCase()}</Text>
-          </View>
-          <Text style={[styles.aiCardTitle, { color: colors.foreground }]} numberOfLines={1}>{output.videoTitle}</Text>
-          <Text style={[styles.aiCardTime, { color: colors.mutedForeground }]}>{timeAgo}</Text>
         </View>
-        <Feather name="chevron-right" size={12} color={colors.mutedForeground + "60"} />
+
+        {/* Info */}
+        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <Text numberOfLines={2} style={{ fontSize: 12, fontFamily: "Poppins_500Medium", lineHeight: 16, color: colors.foreground }}>
+            {output.videoTitle}
+          </Text>
+          {/* YouTube-style channel row */}
+          {output.channelName && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 1 }}>
+              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: meta.color + "30", alignItems: "center", justifyContent: "center" }}>
+                <Feather name="user" size={7} color={meta.color} />
+              </View>
+              <Text style={{ fontSize: 9, fontFamily: "Poppins_400Regular", color: colors.mutedForeground }} numberOfLines={1}>
+                {output.channelName}
+              </Text>
+            </View>
+          )}
+          {/* Type pill + time */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: 2 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: meta.color + "12", borderRadius: 4, paddingHorizontal: 5, paddingVertical: 2, borderWidth: 1, borderColor: meta.color + "30" }}>
+              <Feather name={meta.icon} size={8} color={meta.color} />
+              <Text style={{ fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", color: meta.color, letterSpacing: 0.8 }}>{meta.label.toUpperCase()}</Text>
+            </View>
+            <Text style={{ fontSize: 9, fontFamily: "JetBrainsMono_400Regular", color: colors.mutedForeground + "80", letterSpacing: 0.3 }}>{timeAgo}</Text>
+          </View>
+        </View>
+
+        <Feather name="chevron-right" size={12} color={colors.mutedForeground + "50"} />
       </TouchableOpacity>
     </MotiView>
   );

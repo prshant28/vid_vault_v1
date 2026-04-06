@@ -337,16 +337,22 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
 
       {/* Bottom bar: language toggle + regenerate hint */}
       <View style={[styles.outputBottomBar, { paddingBottom: insets.bottom + 12 }]}>
-        <Text style={styles.outputBottomLabel}>Next generation:</Text>
-        <View style={styles.langToggleRow}>
+        <Feather name="globe" size={10} color="rgba(255,255,255,0.3)" />
+        <Text style={styles.outputBottomLabel}>Generate in:</Text>
+        <View style={{ flexDirection: "row", gap: 5 }}>
           {(["en", "hi"] as const).map(l => (
             <TouchableOpacity
               key={l}
               onPress={() => onLangChange(l)}
-              activeOpacity={0.8}
-              style={[styles.langBtn, lang === l && styles.langBtnActive]}
+              activeOpacity={0.75}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 4,
+                paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
+                borderColor: lang === l ? tool.color + "88" : "rgba(255,255,255,0.14)",
+                backgroundColor: lang === l ? tool.color + "18" : "rgba(255,255,255,0.04)",
+              }}
             >
-              <Text style={[styles.langBtnText, lang === l && styles.langBtnTextActive]}>
+              <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : "rgba(255,255,255,0.4)" }}>
                 {l === "en" ? "EN" : "हिं"}
               </Text>
             </TouchableOpacity>
@@ -953,11 +959,22 @@ export default function VideoDetailScreen() {
                       {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
                     </Text>
                   </View>
-                  {/* Language toggle */}
-                  <View style={{ flexDirection: "row", gap: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 7, padding: 2, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" }}>
+                  {/* Language toggle — matches QuickPill style */}
+                  <View style={{ flexDirection: "row", gap: 5 }}>
                     {(["en", "hi"] as const).map(l => (
-                      <TouchableOpacity key={l} onPress={() => changeLang(l)} activeOpacity={0.8} style={[{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5 }, lang === l ? { backgroundColor: "#6366f1" } : {}]}>
-                        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 0.3, color: lang === l ? "#fff" : "rgba(255,255,255,0.4)" }}>
+                      <TouchableOpacity
+                        key={l}
+                        onPress={() => changeLang(l)}
+                        activeOpacity={0.75}
+                        style={{
+                          flexDirection: "row", alignItems: "center", gap: 4,
+                          paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
+                          borderColor: lang === l ? PURPLE + "88" : "rgba(255,255,255,0.14)",
+                          backgroundColor: lang === l ? PURPLE + "18" : "rgba(255,255,255,0.04)",
+                        }}
+                      >
+                        <Feather name="globe" size={8} color={lang === l ? PURPLE : "rgba(255,255,255,0.35)"} />
+                        <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : "rgba(255,255,255,0.4)" }}>
                           {l === "en" ? "EN" : "हिं"}
                         </Text>
                       </TouchableOpacity>

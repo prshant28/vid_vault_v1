@@ -374,7 +374,7 @@ interface ChatMsg { role: "user" | "assistant"; content: string; ts: Date; }
 
 function AiNotesPanel({
   video, activeTab, setActiveTab, generatingType, noteText, setNoteText,
-  handleDelete, handleDownloadNotes, isMobile = false,
+  handleDelete, handleDownloadNotes, isMobile = false, aiLang, setAiLang,
 }: {
   video: any;
   activeTab: "notes" | "ai" | "chat";
@@ -385,6 +385,8 @@ function AiNotesPanel({
   handleDelete: (id: string) => void;
   handleDownloadNotes: () => void;
   isMobile?: boolean;
+  aiLang: string;
+  setAiLang: (l: string) => void;
 }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -953,6 +955,8 @@ export default function VideoDetail() {
             setNoteText={setNoteText}
             handleDelete={handleDelete}
             handleDownloadNotes={handleDownloadNotes}
+            aiLang={aiLang}
+            setAiLang={setAiLang}
             isMobile
           />
         </div>
@@ -969,6 +973,8 @@ export default function VideoDetail() {
           setNoteText={setNoteText}
           handleDelete={handleDelete}
           handleDownloadNotes={handleDownloadNotes}
+          aiLang={aiLang}
+          setAiLang={setAiLang}
         />
       </div>
     </div>

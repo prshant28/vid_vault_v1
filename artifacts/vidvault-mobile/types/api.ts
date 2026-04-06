@@ -49,6 +49,7 @@ export interface RecentAiOutput {
   createdAt: string;
   videoTitle: string;
   videoThumbnail: string | null;
+  channelName: string | null;
 }
 
 export interface AiOutputByType {

@@ -77,6 +77,7 @@ router.get("/stats", async (req, res) => {
       createdAt: aiOutputsTable.createdAt,
       videoTitle: videosTable.title,
       videoThumbnail: videosTable.thumbnail,
+      channelName: videosTable.channelName,
     }).from(aiOutputsTable)
       .innerJoin(videosTable, eq(aiOutputsTable.videoId, videosTable.id))
       .where(eq(aiOutputsTable.userId, userId))
