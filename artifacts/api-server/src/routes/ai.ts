@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { videosTable, aiOutputsTable } from "@workspace/db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, ilike, or } from "drizzle-orm";
 import { generateAiText, AI_PROMPTS, autoAnalyzeVideo } from "../lib/gemini";
 
 const router = Router();
@@ -234,7 +234,56 @@ router.get("/ai/health", async (req, res) => {
   res.json(status);
 });
 
-/* ── Global AI chat (with library context + YouTube search) ── */
+/* ── helpers ── */
+function isRecallQuery(msg: string) {
+  const lower = msg.toLowerCase();
+  return /\b(which|what|show|find|recall|remember|list|have i|did i|i watched|i saved|my library|in my vault|from my|about)\b/.test(lower)
+    && /\b(watched|saved|library|vault|videos?|seen|have)\b/.test(lower);
+}
+
+function isFindQuery(msg: string) {
+  const lower = msg.toLowerCase();
+  return /\b(find|search|get|show me|recommend|trending|discover|look for|fetch)\b/.test(lower)
+    && /\b(videos?|youtube|tutorials?|lectures?|courses?|content)\b/.test(lower);
+}
+
+function extractSearchTopic(msg: string): string {
+  return msg
+    .replace(/\b(find|search|get|show me|recommend|trending|discover|look for|fetch)\s*(me)?\s*(videos?|youtube videos?|tutorials?)?\s*(about|on|for|related to)?\s*/i, "")
+    .replace(/\b(on youtube|from youtube)\b/i, "")
+    .trim() || msg.trim();
+}
+
+function formatDuration(seconds: number | null | undefined): string {
+  if (!seconds) return "";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+async function searchYouTube(query: string, maxResults = 5) {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) return [];
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${maxResults}&key=${apiKey}`;
+    const resp = await fetch(url);
+    if (!resp.ok) return [];
+    const data = await resp.json() as { items?: any[] };
+    return (data.items || []).map((item: any) => ({
+      youtubeId: item.id?.videoId,
+      title: item.snippet?.title || "Unknown",
+      channel: item.snippet?.channelTitle || "",
+      thumbnail: item.snippet?.thumbnails?.medium?.url || `https://img.youtube.com/vi/${item.id?.videoId}/mqdefault.jpg`,
+      url: `https://www.youtube.com/watch?v=${item.id?.videoId}`,
+    })).filter((v: any) => v.youtubeId);
+  } catch {
+    return [];
+  }
+}
+
+/* ── Global AI chat (Recall + YouTube search) ── */
 router.post("/ai/global-chat", async (req, res) => {
   if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
   const { message, history } = req.body as {
@@ -243,24 +292,90 @@ router.post("/ai/global-chat", async (req, res) => {
   if (!message) { res.status(400).json({ error: "Message is required" }); return; }
 
   const userId = req.user.id;
-  const libraryVideos = await db
-    .select({ id: videosTable.id, title: videosTable.title, channelName: videosTable.channelName })
+
+  /* Fetch full library with metadata for context + recall */
+  const allLibrary = await db
+    .select({
+      id: videosTable.id,
+      title: videosTable.title,
+      channelName: videosTable.channelName,
+      thumbnail: videosTable.thumbnail,
+      duration: videosTable.duration,
+      url: videosTable.url,
+      createdAt: videosTable.createdAt,
+    })
     .from(videosTable)
     .where(eq(videosTable.userId, userId))
-    .orderBy(sql`created_at DESC`)
-    .limit(100);
+    .orderBy(sql`${videosTable.createdAt} DESC`)
+    .limit(200);
 
-  const libraryContext = libraryVideos.length > 0
-    ? `\n\nUser's video library (${libraryVideos.length} saved videos):\n${libraryVideos.map((v) => `- "${v.title}" by ${v.channelName || "Unknown"}`).join("\n")}`
+  /* ── Recall: search the library for matching videos ── */
+  let matchedLibraryVideos: typeof allLibrary = [];
+  if (isRecallQuery(message)) {
+    const topic = message
+      .toLowerCase()
+      .replace(/\b(which|what|show|find|recall|remember|list|have i|did i|i watched|i saved|my library|in my vault|from my|about|videos?|watched|saved|the|a|an)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (topic.length >= 2) {
+      const words = topic.split(/\s+/).filter((w) => w.length >= 3).slice(0, 5);
+      if (words.length > 0) {
+        const searchConditions = words.map((w) =>
+          or(ilike(videosTable.title, `%${w}%`), ilike(videosTable.channelName, `%${w}%`))
+        );
+        const filtered = allLibrary.filter((v) =>
+          words.some((w) =>
+            (v.title || "").toLowerCase().includes(w) ||
+            (v.channelName || "").toLowerCase().includes(w)
+          )
+        );
+        matchedLibraryVideos = filtered.slice(0, 8);
+      }
+    }
+
+    /* Fall back to showing recent videos if no topic match */
+    if (matchedLibraryVideos.length === 0 && allLibrary.length > 0) {
+      matchedLibraryVideos = allLibrary.slice(0, 5);
+    }
+  }
+
+  /* ── YouTube search: fetch real results when user asks to find videos ── */
+  let youtubeVideos: { youtubeId: string; title: string; channel: string; thumbnail: string; url: string }[] = [];
+  if (isFindQuery(message)) {
+    const topic = extractSearchTopic(message);
+    youtubeVideos = await searchYouTube(topic, 5);
+  }
+
+  /* Build library context for the AI prompt */
+  const libraryContext = allLibrary.length > 0
+    ? `\n\nUser's video library (${allLibrary.length} saved videos, newest first):\n${allLibrary.slice(0, 60).map((v) => `- "${v.title}" by ${v.channelName || "Unknown"} (saved ${new Date(v.createdAt || "").toLocaleDateString()})`).join("\n")}`
     : "\n\nThe user has no saved videos yet.";
+
+  const recallContext = matchedLibraryVideos.length > 0
+    ? `\n\nVideos matching the user's recall query:\n${matchedLibraryVideos.map((v) => `- "${v.title}" by ${v.channelName || "Unknown"}${v.duration ? ` (${formatDuration(v.duration)})` : ""}, saved ${new Date(v.createdAt || "").toLocaleDateString()}`).join("\n")}`
+    : "";
 
   const historyText = (history || []).map((h) => `${h.role === "user" ? "User" : "Assistant"}: ${h.content}`).join("\n");
 
-  const prompt = `You are VidVault AI — an intelligent assistant that helps users explore their video knowledge library and discover new content. Be helpful, concise, and insightful. When asked about their library, reference actual video titles. When asked to find videos, give useful topic guidance.${libraryContext}\n\n${historyText ? `Conversation history:\n${historyText}\n\n` : ""}User: ${message}\nAssistant:`;
+  const prompt = `You are VidVault AI — an intelligent assistant that helps users explore their video knowledge library and discover new content on YouTube. Be helpful, concise, and insightful. When asked about their library or what they have watched, reference specific video titles and provide a clear summary of what those videos cover. When asked to find videos, give useful context about the results.${libraryContext}${recallContext}\n\n${historyText ? `Conversation history:\n${historyText}\n\n` : ""}User: ${message}\nAssistant:`;
 
   try {
     const reply = await generateAiText(prompt);
-    res.json({ message: reply, libraryVideos: [], youtubeVideos: [], action: null });
+    res.json({
+      message: reply,
+      libraryVideos: matchedLibraryVideos.map((v) => ({
+        id: v.id,
+        title: v.title,
+        channelName: v.channelName,
+        thumbnail: v.thumbnail,
+        duration: v.duration,
+        url: v.url,
+        createdAt: v.createdAt,
+      })),
+      youtubeVideos,
+      action: null,
+    });
   } catch (err: any) {
     res.status(503).json({ error: err.message || "AI service not available" });
   }

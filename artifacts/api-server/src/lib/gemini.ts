@@ -70,12 +70,24 @@ async function tryGemini(prompt: string, key: string): Promise<string | null> {
 }
 
 export async function generateAiText(prompt: string): Promise<string> {
-  /* 1️⃣  Google Gemini — preferred when GOOGLE_API_KEY is set */
-  const googleKey = process.env.GOOGLE_API_KEY;
-  if (googleKey) {
-    const text = await tryGemini(prompt, googleKey);
-    if (text) return text;
-    console.warn("[AI] All Gemini models failed — trying fallback providers");
+  /* 1️⃣  User-supplied OpenAI key — first priority */
+  const ownKey = process.env.OPENAI_API_KEY;
+  if (ownKey) {
+    try {
+      const openai = new OpenAI({ apiKey: ownKey });
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 2000,
+      });
+      const text = completion.choices[0]?.message?.content;
+      if (text) {
+        console.info("[AI] Success via primary provider");
+        return text.trim();
+      }
+    } catch (err: any) {
+      console.warn(`[AI] Primary provider failed: ${err.message}`);
+    }
   }
 
   /* 2️⃣  Replit AI Integration proxy (OpenAI-compatible) */
@@ -91,42 +103,27 @@ export async function generateAiText(prompt: string): Promise<string> {
       });
       const text = completion.choices[0]?.message?.content;
       if (text) {
-        console.info("[AI] Success via Replit Integration proxy");
+        console.info("[AI] Success via integration proxy");
         return text.trim();
       }
     } catch (err: any) {
-      console.warn(`[AI] Replit proxy failed: ${err.message}`);
+      console.warn(`[AI] Integration proxy failed: ${err.message}`);
     }
   }
 
-  /* 3️⃣  User-supplied OpenAI key */
-  const ownKey = process.env.OPENAI_API_KEY;
-  if (ownKey) {
-    try {
-      const openai = new OpenAI({ apiKey: ownKey });
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 2000,
-      });
-      const text = completion.choices[0]?.message?.content;
-      if (text) {
-        console.info("[AI] Success via user OpenAI key");
-        return text.trim();
-      }
-    } catch (err: any) {
-      console.warn(`[AI] OpenAI failed: ${err.message}`);
-    }
+  /* 3️⃣  Google Gemini — fallback */
+  const googleKey = process.env.GOOGLE_API_KEY;
+  if (googleKey) {
+    const text = await tryGemini(prompt, googleKey);
+    if (text) return text;
+    console.warn("[AI] All Gemini models failed");
   }
 
-  const configuredKeys = [
-    googleKey && "GOOGLE_API_KEY",
-    integrationBase && "AI_INTEGRATIONS_OPENAI",
-    ownKey && "OPENAI_API_KEY",
-  ].filter(Boolean).join(", ") || "none";
-
+  const hasProviders = ownKey || (integrationBase && integrationKey) || googleKey;
   throw new Error(
-    `AI generation failed. Configured providers: ${configuredKeys}. Check server logs for details.`,
+    hasProviders
+      ? "AI generation failed — all configured providers returned errors. Check server logs for details."
+      : "No AI provider configured. Please add an API key in the environment settings.",
   );
 }
 

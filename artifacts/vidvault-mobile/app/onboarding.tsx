@@ -127,44 +127,44 @@ export default function OnboardingScreen() {
   };
 
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+  const botPad = Math.max(insets.bottom, Platform.OS === "android" ? 16 : 0) + (Platform.OS === "web" ? 34 : 0);
 
   return (
     <View style={[styles.container, { paddingTop: topPad, paddingBottom: botPad }]}>
       <GridBg />
 
-      {/* Corner brackets */}
-      <View style={[styles.bracketTL, { borderColor: PURPLE + "30" }]} />
-      <View style={[styles.bracketBR, { borderColor: slide.accent + "25" }]} />
+      {/* Corner accents */}
+      <View style={[styles.bracketTL, { borderColor: PURPLE + "40" }]} />
+      <View style={[styles.bracketBR, { borderColor: slide.accent + "30" }]} />
 
       {/* ── Top bar ── */}
       <View style={styles.topBar}>
-        {/* Logo wordmark */}
         <View style={styles.logoRow}>
-          <View style={[styles.logoBox, { borderColor: PURPLE + "35", backgroundColor: PURPLE + "0d" }]}>
+          <View style={[styles.logoBox, { borderColor: PURPLE + "40", backgroundColor: PURPLE + "12" }]}>
             <Image source={require("@/assets/images/logo.png")} style={styles.logoImg} resizeMode="contain" />
           </View>
           <Text style={styles.logoName}>VidVault</Text>
         </View>
-
-        {/* Skip */}
-        <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}>
           <Text style={styles.skipText}>SKIP</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Slide body ── */}
       <View style={styles.body}>
-        {/* Large faded code number — decorative */}
+        {/* Decorative large number — top-right */}
         <Text style={[styles.bigCode, { color: slide.accent }]}>{slide.code}</Text>
 
-        {/* Icon in sharp bordered box */}
+        {/* Accent line */}
+        <View style={[styles.accentLine, { backgroundColor: slide.accent }]} />
+
+        {/* Icon box */}
         <View style={[styles.iconBox, { backgroundColor: slide.accentGlow, borderColor: slide.accentBorder }]}>
-          <Feather name={slide.icon} size={44} color={slide.accent} />
+          <Feather name={slide.icon} size={48} color={slide.accent} />
         </View>
 
         {/* Badge */}
-        <View style={[styles.badge, { borderColor: slide.accent + "50" }]}>
+        <View style={[styles.badge, { borderColor: slide.accent + "55" }]}>
           <View style={[styles.badgeDot, { backgroundColor: slide.accent }]} />
           <Text style={[styles.badgeText, { color: slide.accent }]}>{slide.badge}</Text>
         </View>
@@ -178,17 +178,15 @@ export default function OnboardingScreen() {
 
       {/* ── Footer ── */}
       <View style={styles.footer}>
-        {/* Step counter */}
+        {/* Step dots */}
         <View style={styles.stepRow}>
           {SLIDES.map((_, i) => (
             <View key={i} style={[styles.stepDot, {
               backgroundColor: i === current ? WHITE : MUTED2,
-              width: i === current ? 24 : 6,
+              width: i === current ? 28 : 6,
             }]} />
           ))}
-          <Text style={styles.stepLabel}>
-            {current + 1} / {SLIDES.length}
-          </Text>
+          <Text style={styles.stepLabel}>{current + 1} / {SLIDES.length}</Text>
         </View>
 
         {/* CTA */}
@@ -271,25 +269,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     justifyContent: "center",
-    gap: 16,
+    gap: 18,
+    paddingBottom: 16,
   },
   bigCode: {
     fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 80,
-    lineHeight: 80,
-    opacity: 0.08,
+    fontSize: 96,
+    lineHeight: 96,
+    opacity: 0.06,
     position: "absolute",
-    top: 0,
-    right: 0,
+    top: -8,
+    right: -4,
     letterSpacing: -4,
   },
+  accentLine: {
+    width: 36,
+    height: 2,
+    borderRadius: 1,
+    opacity: 0.7,
+  },
   iconBox: {
-    width: 88,
-    height: 88,
+    width: 100,
+    height: 100,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 4,
+    borderRadius: 6,
   },
   badge: {
     flexDirection: "row",
@@ -311,24 +316,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 34,
+    fontSize: Platform.OS === "android" ? 36 : 34,
     color: WHITE,
     letterSpacing: -0.8,
-    lineHeight: 40,
+    lineHeight: Platform.OS === "android" ? 44 : 40,
   },
   subtitle: {
     fontFamily: "Poppins_400Regular",
     fontSize: 14,
     color: MUTED,
     lineHeight: 22,
-    maxWidth: 320,
+    maxWidth: 300,
   },
 
   /* Footer */
   footer: {
-    paddingBottom: 12,
+    paddingBottom: Platform.OS === "android" ? 8 : 12,
     alignItems: "center",
-    gap: 18,
+    gap: 16,
   },
   stepRow: {
     flexDirection: "row",

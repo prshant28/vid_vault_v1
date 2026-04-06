@@ -46,8 +46,13 @@ interface VideoResult {
 }
 
 interface LibraryVideo {
-  id: string; title: string;
-  thumbnail?: string | null; channelName?: string | null; url: string;
+  id: string;
+  title: string;
+  thumbnail?: string | null;
+  channelName?: string | null;
+  url: string;
+  duration?: number | null;
+  createdAt?: string | null;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -117,25 +122,54 @@ function VideoResultCard({ video, onImport }: { video: VideoResult; onImport: ()
   );
 }
 
-/* ── Library video card ── */
+/* ── Library video card (Recall) ── */
 function LibraryVideoCard({ video }: { video: LibraryVideo }) {
   const colors = useColors();
+
+  const durationLabel = (() => {
+    if (!video.duration) return null;
+    const h = Math.floor(video.duration / 3600);
+    const m = Math.floor((video.duration % 3600) / 60);
+    const s = video.duration % 60;
+    return h > 0
+      ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      : `${m}:${String(s).padStart(2, "0")}`;
+  })();
+
+  const dateLabel = video.createdAt
+    ? new Date(video.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+    : null;
+
   return (
     <TouchableOpacity
       onPress={() => router.push(`/video/${video.id}`)}
-      style={[styles.videoCard, { backgroundColor: colors.card, borderColor: CYAN + "30" }]}
+      style={[styles.videoCard, { backgroundColor: colors.card, borderColor: CYAN + "35" }]}
       activeOpacity={0.8}
     >
-      {video.thumbnail ? (
-        <Image source={{ uri: video.thumbnail }} style={styles.videoThumb} resizeMode="cover" />
-      ) : (
-        <View style={[styles.videoThumb, { backgroundColor: CYAN + "12", alignItems: "center", justifyContent: "center" }]}>
-          <Feather name="film" size={18} color={CYAN} />
-        </View>
-      )}
+      {/* Thumbnail */}
+      <View style={styles.videoThumbWrap}>
+        {video.thumbnail ? (
+          <Image source={{ uri: video.thumbnail }} style={styles.videoThumb} resizeMode="cover" />
+        ) : (
+          <View style={[styles.videoThumb, { backgroundColor: CYAN + "12", alignItems: "center", justifyContent: "center" }]}>
+            <Feather name="film" size={18} color={CYAN} />
+          </View>
+        )}
+        {durationLabel && (
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationText}>{durationLabel}</Text>
+          </View>
+        )}
+      </View>
+
       <View style={styles.videoInfo}>
-        <View style={[styles.libraryBadge, { backgroundColor: CYAN + "12", borderColor: CYAN + "25" }]}>
-          <Text style={[styles.libraryBadgeText, { color: CYAN }]}>LIBRARY</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+          <View style={[styles.libraryBadge, { backgroundColor: CYAN + "12", borderColor: CYAN + "25" }]}>
+            <Text style={[styles.libraryBadgeText, { color: CYAN }]}>SAVED</Text>
+          </View>
+          {dateLabel && (
+            <Text style={[styles.dateSaved, { color: colors.mutedForeground }]}>{dateLabel}</Text>
+          )}
         </View>
         <Text style={[styles.videoTitle, { color: colors.foreground }]} numberOfLines={2}>
           {video.title}
@@ -411,7 +445,7 @@ export default function AIStudioScreen() {
       <View style={styles.modelRow}>
         <View style={[styles.modelBadge, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "25" }]}>
           <Feather name="zap" size={9} color={PURPLE} />
-          <Text style={[styles.modelText, { color: PURPLE }]}>VidVault AI  ·  Gemini Pro</Text>
+          <Text style={[styles.modelText, { color: PURPLE }]}>VidVault AI  ·  Powered by AI</Text>
         </View>
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           {userMsgCount > 0 && (
@@ -738,15 +772,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#111115", borderColor: "#ffffff12",
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
+  videoThumbWrap: { position: "relative" },
   videoThumb: { width: 72, height: 44, borderRadius: 6 },
+  durationBadge: {
+    position: "absolute", bottom: 3, right: 3,
+    backgroundColor: "rgba(0,0,0,0.75)", borderRadius: 3,
+    paddingHorizontal: 4, paddingVertical: 1,
+  },
+  durationText: { fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", color: "#fff", letterSpacing: 0.3 },
   videoInfo: { flex: 1, gap: 3 },
   videoMeta: { flexDirection: "row", alignItems: "center", gap: 4 },
   videoTitle: { fontSize: 12, lineHeight: 17, fontFamily: "Poppins_600SemiBold" },
   videoChannel: { fontSize: 10, fontFamily: "Poppins_400Regular" },
+  dateSaved: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3 },
   importBtn: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
   libraryBadge: {
     alignSelf: "flex-start", paddingHorizontal: 6, paddingVertical: 2,
-    borderRadius: 4, borderWidth: 1, marginBottom: 2,
+    borderRadius: 4, borderWidth: 1,
   },
   libraryBadgeText: { fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1 },
 });
