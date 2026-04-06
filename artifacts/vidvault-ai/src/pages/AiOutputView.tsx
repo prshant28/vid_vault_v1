@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { contentExportTemplate, QUIZ_TEMPLATES } from "@/lib/html-templates";
+import { QUIZ_TEMPLATES } from "@/lib/html-templates";
+import { CONTENT_TEMPLATES } from "@/lib/content-templates";
 import { parseQuizContent } from "@/lib/quiz-parser";
 import { InteractiveQuiz } from "@/components/ai/InteractiveQuiz";
 import { AnimatePresence } from "framer-motion";
@@ -76,39 +77,45 @@ function openPrintWindow(html: string) {
   }
 }
 
-function QuizTemplatePicker({ onSelect, onClose }: { onSelect: (id: number) => void; onClose: () => void }) {
+function TemplatePicker({ title, templates, onSelect, onClose }: {
+  title: string;
+  templates: { id: number; name: string }[];
+  onSelect: (id: number) => void;
+  onClose: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+      style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }}
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
         className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
         style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)" }}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <div className="text-[9px] font-mono-ui uppercase tracking-widest text-muted-foreground mb-1">// EXPORT</div>
-            <h3 className="font-display font-bold text-lg text-foreground">Choose Quiz Template</h3>
+            <div className="text-[9px] font-mono-ui uppercase tracking-widest text-muted-foreground mb-1">// EXPORT THEME</div>
+            <h3 className="font-display font-bold text-lg text-foreground">{title}</h3>
+            <p className="text-xs text-muted-foreground mt-1">Pick a visual theme for your HTML report</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1.5 transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1.5 transition-colors rounded-lg hover:bg-white/5">
             <X className="w-4 h-4" />
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {QUIZ_TEMPLATES.map(tpl => (
+          {templates.map(tpl => (
             <button
               key={tpl.id}
               onClick={() => onSelect(tpl.id)}
-              className="text-left p-3 rounded-xl border transition-all hover:border-primary/40 hover:bg-primary/5 group"
+              className="text-left p-3.5 rounded-xl border transition-all hover:border-primary/50 hover:bg-primary/5 group"
               style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
             >
-              <div className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mb-1">Template {tpl.id}</div>
-              <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{tpl.name}</div>
+              <div className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mb-1.5">Theme {tpl.id}</div>
+              <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{tpl.name}</div>
             </button>
           ))}
         </div>
@@ -146,6 +153,7 @@ export default function AiOutputView() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"quiz" | "content">("content");
   const [lang, setLang] = useState<string>(() => {
     try { return localStorage.getItem(LANG_KEY) || "en"; } catch { return "en"; }
   });
@@ -193,34 +201,39 @@ export default function AiOutputView() {
     if (!output) return;
     if (isQuiz && parsedQuiz && parsedQuiz.questions.length > 0) {
       const tpl = QUIZ_TEMPLATES.find(t => t.id === (tplId ?? 4)) ?? QUIZ_TEMPLATES[3];
-      const html = tpl.fn({ title: videoTitle, videoTitle, channelName, questions: parsedQuiz.questions, generatedAt: now });
-      downloadHtml(html, `${safeFilename}_quiz_${tpl.name.replace(/ /g, "_")}.html`);
-      toast({ title: `Downloaded: ${tpl.name}` });
-      setShowTemplatePicker(false);
+      const htmlStr = tpl.fn({ title: videoTitle, videoTitle, channelName, questions: parsedQuiz.questions, generatedAt: now });
+      downloadHtml(htmlStr, `${safeFilename}_quiz_${tpl.name.replace(/ /g, "_")}.html`);
+      toast({ title: `Downloaded: ${tpl.name}`, description: "Quiz is fully interactive in the browser" });
     } else {
-      const html = contentExportTemplate({ title: videoTitle, videoTitle, channelName, content: output.content, contentHtml, type: output.type, generatedAt: now });
-      downloadHtml(html, `${safeFilename}_${type}.html`);
-      toast({ title: "Downloaded as HTML Report" });
+      const tpl = CONTENT_TEMPLATES.find(t => t.id === (tplId ?? 4)) ?? CONTENT_TEMPLATES[3];
+      const htmlStr = tpl.fn({ title: videoTitle, videoTitle, channelName, content: output.content, contentHtml, type: output.type, generatedAt: now });
+      downloadHtml(htmlStr, `${safeFilename}_${type}_${tpl.name.replace(/ /g, "_")}.html`);
+      toast({ title: `Downloaded: ${tpl.name}`, description: "Open the file in any browser to view or print" });
     }
+    setShowTemplatePicker(false);
   };
 
   const handleHtmlClick = () => {
     if (!output) return;
     if (isQuiz && parsedQuiz && parsedQuiz.questions.length > 0) {
-      setShowTemplatePicker(true);
+      setPickerMode("quiz");
     } else {
-      handleDownloadHtml();
+      setPickerMode("content");
     }
+    setShowTemplatePicker(true);
   };
 
-  const handlePrint = () => {
+  const handlePrint = (tplId?: number) => {
     if (!output) return;
-    const html = contentExportTemplate({
-      title: videoTitle, videoTitle, channelName,
-      content: output.content, contentHtml,
-      type: output.type, generatedAt: now,
-    });
-    openPrintWindow(html);
+    if (isQuiz && parsedQuiz && parsedQuiz.questions.length > 0) {
+      const tpl = QUIZ_TEMPLATES.find(t => t.id === (tplId ?? 4)) ?? QUIZ_TEMPLATES[3];
+      const htmlStr = tpl.fn({ title: videoTitle, videoTitle, channelName, questions: parsedQuiz.questions, generatedAt: now });
+      openPrintWindow(htmlStr);
+    } else {
+      const tpl = CONTENT_TEMPLATES.find(t => t.id === (tplId ?? 4)) ?? CONTENT_TEMPLATES[3];
+      const htmlStr = tpl.fn({ title: videoTitle, videoTitle, channelName, content: output.content, contentHtml, type: output.type, generatedAt: now });
+      openPrintWindow(htmlStr);
+    }
   };
 
   const handleRegenerate = async () => {
@@ -249,7 +262,9 @@ export default function AiOutputView() {
     <>
     <AnimatePresence>
       {showTemplatePicker && (
-        <QuizTemplatePicker
+        <TemplatePicker
+          title={pickerMode === "quiz" ? "Choose Quiz Template" : "Choose Export Theme"}
+          templates={pickerMode === "quiz" ? QUIZ_TEMPLATES : CONTENT_TEMPLATES}
           onSelect={id => handleDownloadHtml(id)}
           onClose={() => setShowTemplatePicker(false)}
         />
@@ -438,28 +453,37 @@ export default function AiOutputView() {
             {/* Bottom export bar */}
             <div
               className="rounded-xl p-4 flex flex-wrap items-center gap-2"
-              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
+              style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)", borderLeft: "3px solid #8b5cf6" }}
             >
-              <span className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mr-1">Export:</span>
-              <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
-                {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />} Copy Text
+              <div className="flex items-center gap-1 mr-1">
+                <Download className="w-3 h-3 text-primary" />
+                <span className="text-[9px] font-mono-ui uppercase tracking-wider text-primary font-semibold">Export:</span>
+              </div>
+              <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
+                {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />} {copied ? "Copied!" : "Copy Text"}
               </button>
-              <button onClick={handleDownloadMd} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
-                <Download className="w-3 h-3" /> Markdown
+              <button onClick={handleDownloadMd} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
+                <Download className="w-3 h-3" /> .md
               </button>
-              <button onClick={handleHtmlClick} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
-                <Download className="w-3 h-3" /> {isQuiz ? "HTML Quiz" : "HTML Report"}
+              <button
+                onClick={handleHtmlClick}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+                style={{ background: "#8b5cf620", border: "1px solid #8b5cf650", color: "#a78bfa" }}
+                title="Choose from 10 HTML export themes"
+              >
+                <Download className="w-3 h-3" />
+                {isQuiz ? "HTML Quiz (10 themes)" : "HTML Report (10 themes)"}
               </button>
-              <button onClick={handlePrint} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
+              <button onClick={() => handlePrint()} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all hover:border-primary/40 hover:text-foreground text-muted-foreground" style={{ borderColor: "var(--vv-card-border)" }}>
                 <Printer className="w-3 h-3" /> Print / PDF
               </button>
-              <div className="ml-auto flex items-center gap-1.5">
-                <span className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground">Regenerate in:</span>
+              <div className="ml-auto flex items-center gap-1.5 flex-wrap">
+                <span className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground">Language:</span>
                 <LangToggle lang={lang} onChange={setLang} />
                 <button
                   onClick={handleRegenerate}
                   disabled={regenerating}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all"
+                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all"
                   style={{ borderColor: regenerating ? "rgba(139,92,246,0.4)" : "var(--vv-card-border)", color: regenerating ? "#a78bfa" : "var(--vv-text-muted)" }}
                 >
                   <RefreshCw className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />

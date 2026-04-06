@@ -134,11 +134,11 @@ export const api = {
     });
     return handleRes(res);
   },
-  async generateAiContent(videoId: string, type: string) {
+  async generateAiContent(videoId: string, type: string, language?: string) {
     const res = await fetch(`${BASE_URL}/videos/${videoId}/ai/generate`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ type }),
+      body: JSON.stringify({ type, ...(language ? { language } : {}) }),
     });
     return handleRes(res);
   },

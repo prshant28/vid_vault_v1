@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
   Image,
   Share,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
@@ -242,14 +244,25 @@ function ToolBadge({ label, icon, color, dimmed }: { label: string; icon: Feathe
 }
 
 /* ── AI Output Panel (full-screen) ── */
-function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
+function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, onLangChange }: {
   output: AiOutput; tool: typeof AI_TOOLS[0];
   videoTitle?: string; onClose: () => void; onRegenerate: () => void;
+  lang: "en" | "hi"; onLangChange: (l: "en" | "hi") => void;
 }) {
   const insets = useSafeAreaInsets();
+  const [copied, setCopied] = useState(false);
   const wordCount = output.content.trim().split(/\s+/).filter(Boolean).length;
   const readMins = Math.max(1, Math.round(wordCount / 200));
   const generatedDate = new Date(output.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  const handleCopy = async () => {
+    try {
+      await Clipboard.setStringAsync(output.content);
+      setCopied(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { }
+  };
 
   const handleShare = async () => {
     try {
@@ -274,6 +287,9 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
           <Text style={[styles.outputBackLabel, { color: tool.color }]}>TOOLS</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: "row", gap: 8 }}>
+          <TouchableOpacity onPress={handleCopy} style={[styles.outputIconBtn, copied ? { backgroundColor: "#22c55e18", borderColor: "#22c55e40" } : {}]} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Feather name={copied ? "check" : "copy"} size={14} color={copied ? "#22c55e" : "rgba(255,255,255,0.45)"} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={onRegenerate} style={styles.outputIconBtn} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Feather name="refresh-cw" size={14} color="rgba(255,255,255,0.45)" />
           </TouchableOpacity>
@@ -313,11 +329,34 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate }: {
       {/* Content */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 80 }}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.outputFullText}>{output.content}</Text>
       </ScrollView>
+
+      {/* Bottom bar: language toggle + regenerate hint */}
+      <View style={[styles.outputBottomBar, { paddingBottom: insets.bottom + 12 }]}>
+        <Text style={styles.outputBottomLabel}>Next generation:</Text>
+        <View style={styles.langToggleRow}>
+          {(["en", "hi"] as const).map(l => (
+            <TouchableOpacity
+              key={l}
+              onPress={() => onLangChange(l)}
+              activeOpacity={0.8}
+              style={[styles.langBtn, lang === l && styles.langBtnActive]}
+            >
+              <Text style={[styles.langBtnText, lang === l && styles.langBtnTextActive]}>
+                {l === "en" ? "EN" : "हिं"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <TouchableOpacity onPress={onRegenerate} activeOpacity={0.8} style={styles.regenBottomBtn}>
+          <Feather name="refresh-cw" size={12} color="#a78bfa" />
+          <Text style={styles.regenBottomText}>Regenerate</Text>
+        </TouchableOpacity>
+      </View>
     </MotiView>
   );
 }
@@ -408,6 +447,15 @@ export default function VideoDetailScreen() {
   const [activeTab, setActiveTab] = useState<"ai" | "notes" | "chat">("ai");
   const [generatingType, setGeneratingType] = useState<string | null>(null);
   const [viewingOutput, setViewingOutput] = useState<{ output: AiOutput; tool: typeof AI_TOOLS[0] } | null>(null);
+  const [lang, setLang] = useState<"en" | "hi">("en");
+
+  useEffect(() => {
+    AsyncStorage.getItem("vv_ai_language").then(v => { if (v === "hi" || v === "en") setLang(v); }).catch(() => {});
+  }, []);
+  const changeLang = (l: "en" | "hi") => {
+    setLang(l);
+    AsyncStorage.setItem("vv_ai_language", l).catch(() => {});
+  };
   const [newNote, setNewNote] = useState("");
   const [noteTs, setNoteTs] = useState("");
   const [showFolderPicker, setShowFolderPicker] = useState(false);
@@ -464,7 +512,7 @@ export default function VideoDetailScreen() {
   });
 
   const generateMutation = useMutation({
-    mutationFn: (type: string) => api.generateAiContent(id!, type),
+    mutationFn: (type: string) => api.generateAiContent(id!, type, lang),
     onSuccess: (data, type) => {
       refetchOutputs();
       setGeneratingType(null);
@@ -685,6 +733,8 @@ export default function VideoDetailScreen() {
           videoTitle={video?.title}
           onClose={() => setViewingOutput(null)}
           onRegenerate={() => { setViewingOutput(null); handleGenerate(viewingOutput.tool.type); }}
+          lang={lang}
+          onLangChange={changeLang}
         />
       ) : (
         <>
@@ -896,10 +946,24 @@ export default function VideoDetailScreen() {
                   </TouchableOpacity>
                 )}
 
-                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_TOOLS</Text>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                  {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                  <View>
+                    <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_TOOLS</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                      {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
+                    </Text>
+                  </View>
+                  {/* Language toggle */}
+                  <View style={{ flexDirection: "row", gap: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 7, padding: 2, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" }}>
+                    {(["en", "hi"] as const).map(l => (
+                      <TouchableOpacity key={l} onPress={() => changeLang(l)} activeOpacity={0.8} style={[{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5 }, lang === l ? { backgroundColor: "#6366f1" } : {}]}>
+                        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 0.3, color: lang === l ? "#fff" : "rgba(255,255,255,0.4)" }}>
+                          {l === "en" ? "EN" : "हिं"}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
                 <View style={styles.toolGrid}>
                   {Array.from({ length: Math.ceil(AI_TOOLS.length / 2) }, (_, rowIdx) => rowIdx * 2).map((rowStart) => (
                     <View key={rowStart} style={styles.toolRow}>
@@ -1389,6 +1453,20 @@ const styles = StyleSheet.create({
   },
   outputDateText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", color: "rgba(255,255,255,0.22)", letterSpacing: 0.4 },
   outputFullText: { fontSize: 13.5, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.84)", lineHeight: 23, letterSpacing: 0.2 },
+
+  outputBottomBar: {
+    borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "#0d0d12", paddingHorizontal: 16, paddingTop: 12,
+    flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap",
+  },
+  outputBottomLabel: { fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.3)", textTransform: "uppercase" },
+  langToggleRow: { flexDirection: "row", gap: 2, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 6, padding: 2, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" },
+  langBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  langBtnActive: { backgroundColor: "#6366f1" },
+  langBtnText: { fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.4)" },
+  langBtnTextActive: { color: "#fff" },
+  regenBottomBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, backgroundColor: "rgba(167,139,250,0.08)", borderWidth: 1, borderColor: "rgba(167,139,250,0.2)", marginLeft: "auto" as any },
+  regenBottomText: { fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 0.3, color: "#a78bfa", textTransform: "uppercase" as any },
 
   /* Notes */
   noteInputCard: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
