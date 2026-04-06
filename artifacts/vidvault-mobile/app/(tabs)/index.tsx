@@ -281,23 +281,17 @@ function RecentAiItemCard({ output, index }: { output: RecentAiOutput; index: nu
                 <Feather name={meta.icon} size={18} color={meta.color + "80"} />
               </View>
             )}
-            {/* Tool badge overlay */}
-            <View style={{ position: "absolute", bottom: 3, right: 3, backgroundColor: "rgba(0,0,0,0.75)", borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1 }}>
-              <Text style={{ fontSize: 7, fontFamily: "JetBrainsMono_600SemiBold", color: meta.color, letterSpacing: 0.5 }}>
-                {meta.label.split(" ")[0].toUpperCase()}
-              </Text>
-            </View>
           </View>
         </View>
 
         {/* Info */}
-        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
           <Text numberOfLines={2} style={{ fontSize: 12, fontFamily: "Poppins_500Medium", lineHeight: 16, color: colors.foreground }}>
             {output.videoTitle}
           </Text>
           {/* YouTube-style channel row */}
           {output.channelName && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
               <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: meta.color + "30", alignItems: "center", justifyContent: "center" }}>
                 <Feather name="user" size={7} color={meta.color} />
               </View>
@@ -306,14 +300,7 @@ function RecentAiItemCard({ output, index }: { output: RecentAiOutput; index: nu
               </Text>
             </View>
           )}
-          {/* Type pill + time */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: 2 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: meta.color + "12", borderRadius: 4, paddingHorizontal: 5, paddingVertical: 2, borderWidth: 1, borderColor: meta.color + "30" }}>
-              <Feather name={meta.icon} size={8} color={meta.color} />
-              <Text style={{ fontSize: 8, fontFamily: "JetBrainsMono_600SemiBold", color: meta.color, letterSpacing: 0.8 }}>{meta.label.toUpperCase()}</Text>
-            </View>
-            <Text style={{ fontSize: 9, fontFamily: "JetBrainsMono_400Regular", color: colors.mutedForeground + "80", letterSpacing: 0.3 }}>{timeAgo}</Text>
-          </View>
+          <Text style={{ fontSize: 9, fontFamily: "JetBrainsMono_400Regular", color: colors.mutedForeground + "70", letterSpacing: 0.3 }}>{timeAgo}</Text>
         </View>
 
         <Feather name="chevron-right" size={12} color={colors.mutedForeground + "50"} />
@@ -486,10 +473,78 @@ export default function HomeScreen() {
           <QuickAction icon="heart" label="Favorites" sublabel="Starred" accent={PINK} delay={220} onPress={() => router.push("/(tabs)/videos")} />
         </View>
 
+        {/* ── Welcome Banner (first-time / empty vault) ── */}
+        {!isLoading && totalVideos === 0 && (
+          <MotiView
+            from={{ opacity: 0, translateY: 16 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 600, delay: 200 }}
+            style={{ marginHorizontal: 20, marginBottom: 20 }}
+          >
+            <View style={{
+              borderRadius: 18, borderWidth: 1,
+              borderColor: PURPLE + "35", overflow: "hidden",
+              backgroundColor: PURPLE + "0a",
+            }}>
+              <LinearGradient
+                colors={[PURPLE + "22", "transparent", CYAN + "14"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              {/* Top accent line */}
+              <View style={{ height: 2, backgroundColor: PURPLE, width: "40%", borderBottomRightRadius: 2 }} />
+              <View style={{ padding: 22, gap: 16 }}>
+                {/* Header */}
+                <View style={{ gap: 4 }}>
+                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 2, color: PURPLE }}>
+                    // SYSTEM_INIT · v2.0
+                  </Text>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 26, color: "#ffffff", letterSpacing: 0.5, lineHeight: 30 }}>
+                    Welcome to{"\n"}VidVault AI
+                  </Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 18, marginTop: 2 }}>
+                    Your AI-powered video knowledge base. Save YouTube videos, generate summaries, flashcards & more.
+                  </Text>
+                </View>
+                {/* Feature list */}
+                <View style={{ gap: 10 }}>
+                  {[
+                    { icon: "youtube" as FeatherIconName,    color: PINK,   text: "Save any YouTube video instantly" },
+                    { icon: "cpu"     as FeatherIconName,    color: PURPLE, text: "AI summaries, MCQs & flashcards" },
+                    { icon: "edit-3"  as FeatherIconName,    color: CYAN,   text: "Timestamped notes & AI chat" },
+                    { icon: "folder"  as FeatherIconName,    color: AMBER,  text: "Organize with folders & tags" },
+                  ].map(({ icon, color, text }) => (
+                    <View key={text} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                      <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: color + "18", borderWidth: 1, borderColor: color + "35", alignItems: "center", justifyContent: "center" }}>
+                        <Feather name={icon} size={13} color={color} />
+                      </View>
+                      <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 12, color: "rgba(255,255,255,0.7)", flex: 1 }}>
+                        {text}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                {/* CTA */}
+                <View style={{ alignItems: "flex-start", marginTop: 4 }}>
+                  <AppButton
+                    label="SAVE FIRST VIDEO"
+                    icon="plus"
+                    size="sm"
+                    variant="primary"
+                    onPress={() => setShowSaveModal(true)}
+                  />
+                </View>
+              </View>
+            </View>
+          </MotiView>
+        )}
+
         {/* ── Watch Progress bar ── */}
-        <View style={styles.sectionPad}>
-          <WatchProgressBar watched={totalWatched} total={totalVideos} />
-        </View>
+        {totalVideos > 0 && (
+          <View style={styles.sectionPad}>
+            <WatchProgressBar watched={totalWatched} total={totalVideos} />
+          </View>
+        )}
 
         {/* ── Stats 2×2 grid ── */}
         <View style={styles.section}>

@@ -104,14 +104,24 @@ function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: stri
 
 /* ── Quick Action Pill ── */
 function QuickPill({ label, icon, color, onPress }: { label: string; icon: FeatherIconName; color: string; onPress: () => void }) {
+  const h = 34;
+  const cut = 7;
+  const px = 12;
+  const iconW = 13;
+  const charW = 9 * 0.60;
+  const btnW = Math.ceil(px * 2 + iconW + label.length * charW);
+  const points = `${cut},0 ${btnW},0 ${btnW},${h - cut} ${btnW - cut},${h} 0,${h} 0,${cut}`;
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={[styles.quickPill, { borderColor: color + "55", backgroundColor: color + "12" }]}
-    >
-      <Feather name={icon} size={10} color={color} />
-      <Text style={[styles.quickPillText, { color }]}>{label}</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={{ width: btnW, height: h }}>
+        <Svg width={btnW} height={h} style={StyleSheet.absoluteFillObject}>
+          <Polygon points={points} fill={color} />
+        </Svg>
+        <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 }]}>
+          <Feather name={icon} size={10} color="#fff" />
+          <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.2, color: "#fff" }}>{label}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -809,13 +819,19 @@ export default function VideoDetailScreen() {
             </TouchableOpacity>
           )}
 
-          <View style={styles.metaRow}>
-            {video.channelName && (
-              <View style={[styles.metaChip, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "25" }]}>
-                <Feather name="music" size={10} color={PURPLE} />
-                <Text style={[styles.metaChipText, { color: PURPLE }]}>{video.channelName.toUpperCase()}</Text>
+          {/* Channel name — YouTube style below title */}
+          {video.channelName && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 2 }}>
+              <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: PURPLE + "30", alignItems: "center", justifyContent: "center" }}>
+                <Feather name="youtube" size={9} color={PURPLE} />
               </View>
-            )}
+              <Text style={{ fontSize: 11, fontFamily: "Poppins_400Regular", color: colors.mutedForeground }} numberOfLines={1}>
+                {video.channelName}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.metaRow}>
             {video.duration && (
               <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Feather name="clock" size={10} color={colors.mutedForeground} />
