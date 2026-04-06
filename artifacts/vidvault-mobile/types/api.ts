@@ -16,6 +16,7 @@ export interface Video {
   notes: Note[];
   aiOutputs: AiOutput[];
   folderId: string | null;
+  folderName: string | null;
   createdAt: string;
 }
 
