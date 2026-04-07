@@ -261,15 +261,16 @@ function StreakCard({ streak, goal, done }: { streak: number; goal: number; done
             <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>DAY STREAK</Text>
           </View>
         </View>
-        {/* Day dots */}
+        {/* Day dots — only filled for actual streak days */}
         <View style={styles.streakDays}>
           {days.map((d, i) => {
-            const isPast   = i < todayIdx;
-            const isToday  = i === todayIdx;
+            const isToday    = i === todayIdx;
+            const startIdx   = Math.max(0, todayIdx - streak + 1);
+            const isStreakDay = streak > 0 && i >= startIdx && i <= todayIdx;
             return (
               <View key={i} style={styles.streakDayWrap}>
                 <View style={[styles.streakDayDot, {
-                  backgroundColor: isPast || isToday
+                  backgroundColor: isStreakDay
                     ? ORANGE + (isToday ? "ff" : "cc")
                     : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"),
                   borderWidth: isToday ? 2 : 0,
@@ -279,7 +280,7 @@ function StreakCard({ streak, goal, done }: { streak: number; goal: number; done
                   shadowRadius: isToday ? 4 : 0,
                   elevation: isToday ? 3 : 0,
                 }]}>
-                  {(isPast || isToday) && <Feather name="check" size={7} color="#fff" />}
+                  {isStreakDay && <Feather name="check" size={7} color="#fff" />}
                 </View>
                 <Text style={[styles.streakDayLabel, { color: isToday ? ORANGE : colors.mutedForeground }]}>{d}</Text>
               </View>

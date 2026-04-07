@@ -1413,24 +1413,43 @@ export default function VideoDetailScreen() {
         </>
       )}
 
-      {/* ── Tag Picker Modal ── */}
+      {/* ── Manage Tags — premium centered modal ── */}
       <Modal visible={showTagPicker} transparent animationType="fade" onRequestClose={() => setShowTagPicker(false)}>
-        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowTagPicker(false)}>
-          <View style={[styles.folderPickerBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.folderPickerHeader, { borderBottomColor: colors.border }]}>
+        <View style={styles.modalBackdrop}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowTagPicker(false)} />
+          <MotiView
+            from={{ scale: 0.93, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.93, opacity: 0 }}
+            transition={{ type: "timing", duration: 220 }}
+            style={[styles.premiumModal, { backgroundColor: colors.background, borderColor: PURPLE + "35" }]}
+          >
+            <LinearGradient colors={[PURPLE + "16", "transparent"]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            {/* Accent bar */}
+            <View style={{ height: 3, backgroundColor: PURPLE, width: "22%", borderRadius: 2, alignSelf: "center", marginTop: 16, marginBottom: 18 }} />
+            {/* Header */}
+            <View style={styles.premiumModalHeader}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.folderPickerIcon, { backgroundColor: PURPLE + "15", borderColor: PURPLE + "30" }]}>
-                  <Feather name="tag" size={15} color={PURPLE} />
+                <View style={[styles.premiumModalIcon, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "35" }]}>
+                  <Feather name="tag" size={16} color={PURPLE} />
                 </View>
-                <Text style={[styles.folderPickerTitle, { color: colors.foreground }]}>Manage Tags</Text>
+                <View>
+                  <Text style={[styles.premiumModalMicro, { color: colors.mutedForeground }]}>VIDEO</Text>
+                  <Text style={[styles.premiumModalTitle, { color: colors.foreground }]}>Manage Tags</Text>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => setShowTagPicker(false)}>
-                <Feather name="x" size={18} color={colors.mutedForeground} />
+              <TouchableOpacity
+                onPress={() => setShowTagPicker(false)}
+                style={[styles.premiumModalClose, { backgroundColor: colors.card, borderColor: colors.border }]}
+              >
+                <Feather name="x" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
+            <View style={[styles.premiumModalDivider, { backgroundColor: colors.border }]} />
+            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
               {allTags.length === 0 ? (
-                <View style={{ padding: 24, alignItems: "center" }}>
+                <View style={{ padding: 28, alignItems: "center", gap: 8 }}>
+                  <Feather name="tag" size={28} color={colors.mutedForeground + "50"} />
                   <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No tags yet. Create tags in the Profile tab.</Text>
                 </View>
               ) : (
@@ -1442,78 +1461,103 @@ export default function VideoDetailScreen() {
                     <TouchableOpacity
                       key={tag.id}
                       onPress={() => isAttached ? removeTagMutation.mutate(tag.id) : addTagMutation.mutate(tag.id)}
-                      style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                      style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
                       activeOpacity={0.75}
                     >
-                      <View style={[styles.folderColorDot, { backgroundColor: dotColor }]} />
-                      <Text style={[styles.folderPickerItemText, { color: colors.foreground }]}>{tag.name}</Text>
-                      {isAttached
-                        ? <Feather name="check-circle" size={16} color={PURPLE} style={{ marginLeft: "auto" as any }} />
-                        : <Feather name="circle" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" as any }} />
-                      }
+                      <View style={[styles.premiumColorDot, { backgroundColor: dotColor }]} />
+                      <Text style={[styles.premiumPickerItemText, { color: colors.foreground }]}>{tag.name}</Text>
+                      <View style={[styles.premiumPickerCheck, {
+                        backgroundColor: isAttached ? PURPLE + "18" : "transparent",
+                        borderColor: isAttached ? PURPLE + "50" : colors.border,
+                      }]}>
+                        <Feather name={isAttached ? "check" : "plus"} size={13} color={isAttached ? PURPLE : colors.mutedForeground} />
+                      </View>
                     </TouchableOpacity>
                   );
                 })
               )}
             </ScrollView>
-          </View>
-        </TouchableOpacity>
+          </MotiView>
+        </View>
       </Modal>
 
-      {/* ── Move to Folder Modal ── */}
+      {/* ── Move to Folder — premium centered modal ── */}
       <Modal visible={showFolderPicker} transparent animationType="fade" onRequestClose={() => setShowFolderPicker(false)}>
-        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowFolderPicker(false)}>
-          <View style={[styles.folderPickerBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.folderPickerHeader, { borderBottomColor: colors.border }]}>
+        <View style={styles.modalBackdrop}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowFolderPicker(false)} />
+          <MotiView
+            from={{ scale: 0.93, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.93, opacity: 0 }}
+            transition={{ type: "timing", duration: 220 }}
+            style={[styles.premiumModal, { backgroundColor: colors.background, borderColor: ORANGE + "35" }]}
+          >
+            <LinearGradient colors={[ORANGE + "16", "transparent"]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            {/* Accent bar */}
+            <View style={{ height: 3, backgroundColor: ORANGE, width: "22%", borderRadius: 2, alignSelf: "center", marginTop: 16, marginBottom: 18 }} />
+            {/* Header */}
+            <View style={styles.premiumModalHeader}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.folderPickerIcon, { backgroundColor: PURPLE + "15", borderColor: PURPLE + "30" }]}>
-                  <Feather name="folder" size={15} color={PURPLE} />
+                <View style={[styles.premiumModalIcon, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "35" }]}>
+                  <Feather name="folder" size={16} color={ORANGE} />
                 </View>
-                <Text style={[styles.folderPickerTitle, { color: colors.foreground }]}>Move to Folder</Text>
+                <View>
+                  <Text style={[styles.premiumModalMicro, { color: colors.mutedForeground }]}>VIDEO</Text>
+                  <Text style={[styles.premiumModalTitle, { color: colors.foreground }]}>Move to Folder</Text>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => setShowFolderPicker(false)}>
-                <Feather name="x" size={18} color={colors.mutedForeground} />
+              <TouchableOpacity
+                onPress={() => setShowFolderPicker(false)}
+                style={[styles.premiumModalClose, { backgroundColor: colors.card, borderColor: colors.border }]}
+              >
+                <Feather name="x" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
-              {/* No folder option */}
+            <View style={[styles.premiumModalDivider, { backgroundColor: colors.border }]} />
+            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+              {/* Remove from folder option */}
               <TouchableOpacity
                 onPress={() => updateVideoMutation.mutate({ folderId: null })}
-                style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
                 activeOpacity={0.75}
               >
                 <Feather name="x-circle" size={16} color={colors.mutedForeground} />
-                <Text style={[styles.folderPickerItemText, { color: colors.mutedForeground }]}>Remove from folder</Text>
+                <Text style={[styles.premiumPickerItemText, { color: colors.mutedForeground }]}>Remove from folder</Text>
                 {!video.folderName && (
-                  <Feather name="check" size={14} color={PURPLE} style={{ marginLeft: "auto" }} />
+                  <View style={[styles.premiumPickerCheck, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "50" }]}>
+                    <Feather name="check" size={13} color={ORANGE} />
+                  </View>
                 )}
               </TouchableOpacity>
               {folders.map((f) => {
-                const dotColor = f.color || PURPLE;
+                const dotColor = f.color || ORANGE;
                 const isCurrent = video.folderId === f.id;
                 return (
                   <TouchableOpacity
                     key={f.id}
                     onPress={() => updateVideoMutation.mutate({ folderId: f.id })}
-                    style={[styles.folderPickerItem, { borderBottomColor: colors.border }]}
+                    style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
                     activeOpacity={0.75}
                   >
-                    <View style={[styles.folderColorDot, { backgroundColor: dotColor }]} />
-                    <Text style={[styles.folderPickerItemText, { color: colors.foreground }]}>{f.name}</Text>
+                    <View style={[styles.premiumColorDot, { backgroundColor: dotColor }]} />
+                    <Text style={[styles.premiumPickerItemText, { color: colors.foreground }]}>{f.name}</Text>
                     {isCurrent && (
-                      <Feather name="check" size={14} color={PURPLE} style={{ marginLeft: "auto" }} />
+                      <View style={[styles.premiumPickerCheck, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "50" }]}>
+                        <Feather name="check" size={13} color={ORANGE} />
+                      </View>
                     )}
                   </TouchableOpacity>
                 );
               })}
               {folders.length === 0 && (
-                <View style={{ padding: 24, alignItems: "center" }}>
+                <View style={{ padding: 28, alignItems: "center", gap: 8 }}>
+                  <Feather name="folder" size={28} color={colors.mutedForeground + "50"} />
                   <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No folders yet. Create one in the Folders tab.</Text>
                 </View>
               )}
             </ScrollView>
-          </View>
-        </TouchableOpacity>
+          </MotiView>
+        </View>
       </Modal>
     </View>
   );
@@ -1832,10 +1876,41 @@ const styles = StyleSheet.create({
   folderColorDot: { width: 10, height: 10, borderRadius: 5 },
   folderPickerEmpty: { fontSize: 13, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 20 },
 
+  /* Premium centered modals (folder + tag) */
+  premiumModal: {
+    width: "100%", maxWidth: 420, borderRadius: 20,
+    borderWidth: 1.5, overflow: "hidden",
+  },
+  premiumModalHeader: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, paddingBottom: 14,
+  },
+  premiumModalIcon: {
+    width: 38, height: 38, borderRadius: 11, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  premiumModalMicro: { fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, marginBottom: 1 },
+  premiumModalTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 18, letterSpacing: -0.3 },
+  premiumModalClose: {
+    width: 30, height: 30, borderRadius: 8, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  premiumModalDivider: { height: StyleSheet.hairlineWidth, marginHorizontal: 0, marginBottom: 4 },
+  premiumPickerItem: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  premiumPickerItemText: { fontSize: 14, fontFamily: "Poppins_500Medium", flex: 1 },
+  premiumColorDot: { width: 11, height: 11, borderRadius: 6 },
+  premiumPickerCheck: {
+    width: 26, height: 26, borderRadius: 8, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+
   /* Stats strip */
   statsStrip: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    marginHorizontal: 16, marginBottom: 4, borderRadius: 14, borderWidth: 1,
+    marginHorizontal: 16, marginTop: 18, marginBottom: 4, borderRadius: 14, borderWidth: 1,
     paddingVertical: 12, paddingHorizontal: 8,
   },
   statItem:     { flex: 1, alignItems: "center", gap: 4 },
