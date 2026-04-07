@@ -12,6 +12,11 @@ import {
   AlegreyaSansSC_900Black,
 } from "@expo-google-fonts/alegreya-sans-sc";
 import {
+  Raleway_700Bold,
+  Raleway_800ExtraBold,
+  Raleway_900Black,
+} from "@expo-google-fonts/raleway";
+import {
   JetBrainsMono_400Regular,
   JetBrainsMono_600SemiBold,
 } from "@expo-google-fonts/jetbrains-mono";
@@ -138,12 +143,24 @@ export default function RootLayout() {
     Poppins_500Medium,
     Poppins_600SemiBold,
     Poppins_700Bold,
-    AlegreyaSansSC_400Regular,
-    AlegreyaSansSC_700Bold,
-    AlegreyaSansSC_800ExtraBold,
-    AlegreyaSansSC_900Black,
     JetBrainsMono_400Regular,
     JetBrainsMono_600SemiBold,
+    // On Android, Raleway renders cleanly for display headings;
+    // on iOS/web AlegreyaSansSC looks elegant. Both are registered
+    // under the same font family names so no other file needs changing.
+    ...(Platform.OS === "android"
+      ? {
+          AlegreyaSansSC_400Regular: Raleway_700Bold,
+          AlegreyaSansSC_700Bold:    Raleway_700Bold,
+          AlegreyaSansSC_800ExtraBold: Raleway_800ExtraBold,
+          AlegreyaSansSC_900Black:   Raleway_900Black,
+        }
+      : {
+          AlegreyaSansSC_400Regular,
+          AlegreyaSansSC_700Bold,
+          AlegreyaSansSC_800ExtraBold,
+          AlegreyaSansSC_900Black,
+        }),
   });
 
   const [fontTimeout, setFontTimeout] = useState(false);
