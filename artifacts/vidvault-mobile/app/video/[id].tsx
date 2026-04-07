@@ -17,6 +17,8 @@ import * as Clipboard from "expo-clipboard";
 import * as Print from "expo-print";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import HtmlTemplatePicker from "@/components/HtmlTemplatePicker";
+import type { TemplateOpts } from "@/lib/html-export-templates";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -265,6 +267,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   const insets = useSafeAreaInsets();
   const [copied, setCopied] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const wordCount = output.content.trim().split(/\s+/).filter(Boolean).length;
   const readMins = Math.max(1, Math.round(wordCount / 200));
   const generatedDate = new Date(output.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -309,67 +312,50 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
     } catch { }
   };
 
-  const buildHtml = () => {
-    const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const lines = output.content.split("\n").map(l => `<p style="margin:0 0 10px 0">${esc(l) || "&nbsp;"}</p>`).join("");
-    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(tool.label)} — ${esc(videoTitle || "Video")}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0b;color:#e8e4d8;padding:0}
-.banner{background:${tool.color}18;border-bottom:1px solid ${tool.color}30;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
-.banner-l{font-family:monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tool.color}}
-.banner-r{font-family:monospace;font-size:10px;color:rgba(255,255,255,0.35)}
-.page{max-width:800px;margin:0 auto;padding:2rem 1.5rem 4rem}
-.header{border-left:3px solid ${tool.color};padding-left:1rem;margin-bottom:2rem}
-.eyebrow{font-family:monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${tool.color};margin-bottom:6px}
-h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:6px}
-.meta{font-family:monospace;font-size:11px;color:rgba(255,255,255,0.35)}
-.content{background:#111;border-radius:12px;padding:1.5rem 1.75rem;border:1px solid #222;border-left:3px solid ${tool.color};font-size:14px;line-height:1.8;color:#d8d4c8}
-.footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid #222;display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase}
-@media print{.banner{display:none}body{background:#fff;color:#111}.content{background:#f9f9f9;border-color:#ddd;color:#222}.header{border-color:#888}}
-</style></head>
-<body>
-<div class="banner"><span class="banner-l">VidVault AI · ${esc(tool.label)}</span><span class="banner-r">Generated ${generatedDate}</span></div>
-<div class="page">
-  <div class="header">
-    <div class="eyebrow">VidVault AI · ${esc(tool.label)}</div>
-    <h1>${esc(videoTitle || "Video")}</h1>
-    <div class="meta">${generatedDate} · ${wordCount} words · ${readMins} min read</div>
-  </div>
-  <div class="content">${lines}</div>
-  <div class="footer"><span>VidVault AI</span><span>${generatedDate}</span></div>
-</div></body></html>`;
+  const templateOpts: TemplateOpts = {
+    title: videoTitle || "Video",
+    toolLabel: tool.label,
+    toolColor: tool.color,
+    content: output.content,
+    date: generatedDate,
+    wordCount,
+    readMins,
   };
 
-  const handleSaveHtml = async () => {
-    setShowExportSheet(false);
+  const doSaveHtml = async (html: string, templateName: string) => {
     try {
-      const html = buildHtml();
       const filename = `${(videoTitle || "export").replace(/[^a-z0-9]/gi, "_").slice(0, 30)}_${tool.type}.html`;
-      const path = (FileSystem.documentDirectory || FileSystem.cacheDirectory || "") + filename;
-      await FileSystem.writeAsStringAsync(path, html, { encoding: FileSystem.EncodingType.UTF8 });
+      const dir = FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "";
+      const path = dir + filename;
+      await FileSystem.writeAsStringAsync(path, html, { encoding: "utf8" });
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(path, { mimeType: "text/html", dialogTitle: `Save ${tool.label} as HTML`, UTI: "public.html" });
+        await Sharing.shareAsync(path, { mimeType: "text/html", dialogTitle: `Save as HTML · ${templateName}`, UTI: "public.html" });
       } else {
-        Alert.alert("Saved", `File saved to: ${path}`);
+        Alert.alert("Saved", `HTML file saved to:\n${path}`);
       }
     } catch (e: any) {
       Alert.alert("Error", e?.message || "Could not save HTML file");
     }
   };
 
+  const handleSaveHtml = () => {
+    setShowExportSheet(false);
+    setTimeout(() => setShowTemplatePicker(true), 300);
+  };
+
   const handleSavePdf = async () => {
     setShowExportSheet(false);
     try {
-      const html = buildHtml();
+      const { EXPORT_TEMPLATES } = await import("@/lib/html-export-templates");
+      const defaultTemplate = EXPORT_TEMPLATES[0];
+      const html = defaultTemplate.generate(templateOpts);
       const { uri } = await Print.printToFileAsync({ html, base64: false });
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
         await Sharing.shareAsync(uri, { mimeType: "application/pdf", dialogTitle: `Save ${tool.label} as PDF`, UTI: "com.adobe.pdf" });
       } else {
-        Alert.alert("PDF Saved", `File saved to: ${uri}`);
+        Alert.alert("PDF Saved", `File saved to:\n${uri}`);
       }
     } catch (e: any) {
       Alert.alert("Error", e?.message || "Could not generate PDF");
@@ -380,7 +366,7 @@ h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:6px}
     { icon: "copy" as FeatherIconName,      label: "Copy to Clipboard",  desc: "Paste anywhere instantly",         color: "#22c55e", action: handleCopy },
     { icon: "share-2" as FeatherIconName,   label: "Share as Text",      desc: "Send via WhatsApp, Messages…",     color: tool.color, action: handleShareText },
     { icon: "file-text" as FeatherIconName, label: "Share as Markdown",  desc: "Export formatted .md content",     color: "#06b6d4", action: handleShareMarkdown },
-    { icon: "code" as FeatherIconName,      label: "Save as HTML",       desc: "Styled web page, open in browser", color: "#8b5cf6", action: handleSaveHtml },
+    { icon: "code" as FeatherIconName,      label: "Save as HTML",       desc: "Pick a template, then export",     color: "#8b5cf6", action: handleSaveHtml },
     { icon: "file" as FeatherIconName,      label: "Save as PDF",        desc: "Print-ready PDF document",         color: "#ec4899", action: handleSavePdf },
     { icon: "mail" as FeatherIconName,      label: "Send via Email",     desc: "Open mail app with content",       color: "#f59e0b", action: handleEmail },
   ];
@@ -540,6 +526,17 @@ h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:6px}
           <Text style={styles.regenBottomText}>Regenerate</Text>
         </TouchableOpacity>
       </View>
+
+      {/* HTML Template Picker */}
+      <HtmlTemplatePicker
+        visible={showTemplatePicker}
+        opts={templateOpts}
+        onClose={() => setShowTemplatePicker(false)}
+        onExport={async (html, templateName) => {
+          setShowTemplatePicker(false);
+          await doSaveHtml(html, templateName);
+        }}
+      />
     </MotiView>
   );
 }

@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecallSense AI — Interactive Product Blueprint v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Newsreader:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root {
+  --bg: #04060f;
+  --s1: #080d1a;
+  --s2: #0d1526;
+  --s3: #111e33;
+  --border: #1a2540;
+  --border2: #243050;
+  --c0: #00e5ff;
+  --c1: #4f8fff;
+  --c2: #a855f7;
+  --c3: #f59e0b;
+  --c4: #10b981;
+  --c5: #f43f5e;
+  --c6: #ec4899;
+  --text: #dce4f5;
+  --muted: #5a6a8a;
+  --muted2: #8a9ab8;
+  --white: #ffffff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+#cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--c0);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+  mix-blend-mode: screen;
+}
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+}
+body:hover #cursor { opacity: 1; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  height: 60px;
+  background: rgba(4,6,15,0.85);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 48px;
+  justify-content: space-between;
+}
+.nav-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 17px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-brand em { color: var(--c0); font-style: normal; }
+.nav-links { display: flex; gap: 0; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+.nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-badge {
+  background: var(--c0);
+  color: var(--bg);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 12px; border-radius: 100px;
+  letter-spacing: 1px;
+}
+
+/* ═══ HERO ═══ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 40px 80px;
+  position: relative; overflow: hidden;
+}
+
+canvas#hero-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+.hero-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--c0);
+  border: 1px solid rgba(0,229,255,0.25);
+  background: rgba(0,229,255,0.06);
+  padding: 6px 20px; border-radius: 100px;
+  margin-bottom: 36px;
+  position: relative; z-index: 2;
+  animation: fadeUp 1s ease both;
+}
+
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(56px, 9vw, 110px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -4px;
+  position: relative; z-index: 2;
+  animation: fadeUp 1s 0.1s ease both;
+}
+.hero h1 .line1 { display: block; color: var(--text); }
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(90deg, var(--c0), var(--c1), var(--c2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 18px; color: var(--muted2);
+  max-width: 560px; margin: 28px auto 0;
+  font-style: italic;
+  position: relative; z-index: 2;
+  animation: fadeUp 1s 0.2s ease both;
+}
+
+.hero-ctas {
+  display: flex; gap: 16px; margin-top: 48px;
+  justify-content: center;
+  position: relative; z-index: 2;
+  animation: fadeUp 1s 0.3s ease both;
+}
+
+.btn-primary {
+  background: var(--c0); color: var(--bg);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 14px 32px; border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none; cursor: none;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,229,255,0.3); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 13px 32px; border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid var(--border2);
+  transition: border-color 0.2s, background 0.2s;
+  cursor: none;
+}
+.btn-ghost:hover { border-color: var(--c0); background: rgba(0,229,255,0.04); }
+
+.hero-scroll {
+  position: absolute; bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: var(--muted); font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  z-index: 2; animation: fadeUp 1s 0.5s ease both;
+}
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--c0), transparent);
+  animation: scrollAnim 2s ease-in-out infinite;
+}
+@keyframes scrollAnim {
+  0%,100%{transform:scaleY(1);opacity:1}
+  50%{transform:scaleY(0.5);opacity:0.4}
+}
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ═══ LIVE STATS TICKER ═══ */
+.stats-bar {
+  background: var(--s1);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  overflow: hidden;
+  position: relative;
+}
+.stats-bar::before,.stats-bar::after {
+  content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;
+}
+.stats-bar::before{left:0;background:linear-gradient(to right,var(--s1),transparent)}
+.stats-bar::after{right:0;background:linear-gradient(to left,var(--s1),transparent)}
+
+.stats-track {
+  display: flex; gap: 80px;
+  animation: marquee 30s linear infinite;
+  width: max-content;
+}
+.stat-chip {
+  display: flex; align-items: center; gap: 12px;
+  white-space: nowrap;
+}
+.stat-chip-val {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 22px;
+  letter-spacing: -0.5px;
+}
+.stat-chip-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+}
+.stat-chip-dot { width: 6px; height: 6px; border-radius: 50%; }
+@keyframes marquee {
+  0%{transform:translateX(0)} 100%{transform:translateX(-50%)}
+}
+
+/* ═══ SECTION SCAFFOLDING ═══ */
+section { padding: 120px 0; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
+.divider { height: 1px; background: var(--border); }
+
+.sec-eyebrow {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+.sec-eyebrow-line { width: 32px; height: 1px; background: var(--c0); }
+.sec-eyebrow-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--c0);
+}
+
+.sec-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 800;
+  letter-spacing: -2px; line-height: 1.05;
+  margin-bottom: 20px;
+}
+.sec-desc { color: var(--muted2); font-size: 16px; max-width: 580px; font-style: italic; }
+
+/* ═══ KNOWLEDGE GRAPH VIZ ═══ */
+#graph-section { background: var(--s1); }
+#graph-wrapper {
+  width: 100%; height: 560px;
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  position: relative;
+  background: radial-gradient(ellipse at center, rgba(0,229,255,0.03) 0%, transparent 70%);
+}
+#graph-svg { width: 100%; height: 100%; }
+
+.graph-controls {
+  position: absolute; bottom: 20px; right: 20px;
+  display: flex; gap: 8px; z-index: 10;
+}
+.graph-btn {
+  background: rgba(13,21,38,0.9);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 1px;
+  padding: 8px 16px; border-radius: 8px;
+  cursor: none; transition: all 0.2s;
+}
+.graph-btn:hover,.graph-btn.active { color: var(--c0); border-color: var(--c0); }
+
+#graph-tooltip {
+  position: absolute;
+  background: rgba(8,13,26,0.95);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; color: var(--text);
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.2s;
+  z-index: 20; max-width: 200px;
+  backdrop-filter: blur(12px);
+}
+
+/* legend */
+.graph-legend {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Space Mono', monospace; font-size: 11px;
+  color: var(--muted);
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ═══ ARCHITECTURE DIAGRAM ═══ */
+#arch-diagram {
+  width: 100%; height: 500px;
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  position: relative;
+}
+#arch-svg { width: 100%; height: 100%; }
+
+/* ═══ GANTT CHART ═══ */
+#gantt-wrapper {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.gantt-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.gantt-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 16px;
+}
+.gantt-months {
+  display: flex; gap: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--muted);
+}
+.gantt-month-label { padding: 0 8px; text-align: center; flex: 1; }
+
+.gantt-body { padding: 0 32px 32px; }
+.gantt-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px; padding: 10px 0;
+  border-bottom: 1px solid rgba(26,37,64,0.5);
+  align-items: center;
+}
+.gantt-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; color: var(--muted2);
+  letter-spacing: 0.5px;
+}
+.gantt-track { position: relative; height: 28px; }
+.gantt-bar {
+  position: absolute; height: 100%; border-radius: 6px;
+  display: flex; align-items: center; padding: 0 12px;
+  font-family: 'Space Mono', monospace; font-size: 10px;
+  color: var(--bg); font-weight: 700; letter-spacing: 1px;
+  transition: opacity 0.3s;
+  cursor: none;
+}
+.gantt-bar:hover { opacity: 0.85; }
+
+/* ═══ COGNITIVE DASHBOARD ═══ */
+#cog-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+.cog-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative; overflow: hidden;
+}
+.cog-card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 16px;
+}
+.cog-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 48px; font-weight: 800;
+  line-height: 1; letter-spacing: -2px;
+}
+.cog-sub {
+  font-size: 12px; color: var(--muted);
+  margin-top: 6px; font-family: 'Space Mono', monospace;
+}
+
+canvas.mini-chart { width: 100%; height: 60px; margin-top: 12px; }
+
+#focus-ring-container { display: flex; justify-content: center; margin-top: 8px; }
+canvas#focus-ring { width: 120px; height: 120px; }
+
+#intake-bar-container { margin-top: 8px; }
+.intake-bar-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.intake-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); width:60px; }
+.intake-track { flex: 1; height: 6px; background: var(--s2); border-radius: 100px; overflow: hidden; }
+.intake-fill { height: 100%; border-radius: 100px; transition: width 1.5s ease; }
+.intake-count { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted2); width:28px; text-align:right; }
+
+/* ═══ DATA FLOW DIAGRAM ═══ */
+#dataflow-wrapper {
+  width: 100%; background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  padding: 40px;
+}
+#dataflow-svg { width: 100%; }
+
+/* ═══ FEATURE MATRIX ═══ */
+.matrix-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.matrix-table th {
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:1.5px; text-transform:uppercase;
+  color: var(--muted); padding: 12px 16px;
+  text-align: center; border-bottom: 1px solid var(--border);
+  position: sticky; top: 60px;
+  background: var(--bg); z-index: 10;
+}
+.matrix-table th:first-child { text-align: left; }
+.matrix-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(26,37,64,0.4);
+  text-align: center; font-size: 14px;
+  vertical-align: middle;
+  transition: background 0.15s;
+}
+.matrix-table tr:hover td { background: rgba(255,255,255,0.015); }
+.matrix-table td:first-child {
+  text-align: left;
+  font-size: 13px; color: var(--text);
+  font-style: italic;
+}
+.m-yes { color: var(--c4); font-size: 16px; }
+.m-no { color: var(--border2); font-size: 16px; }
+.m-partial { color: var(--c3); font-size: 12px; font-family:'Space Mono',monospace; }
+.m-us { color: var(--c0); font-size: 16px; font-weight: 900; }
+
+.matrix-header-recall { color: var(--c0) !important; }
+
+/* Phase badge in matrix */
+.phase-pill {
+  display: inline-block;
+  font-family:'Space Mono',monospace; font-size:9px;
+  padding: 2px 8px; border-radius: 100px;
+  margin-left: 8px; letter-spacing: 1px;
+}
+
+/* ═══ TECH TOPOLOGY ═══ */
+#topology-wrapper {
+  width: 100%; height: 440px;
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  position: relative;
+  background: radial-gradient(ellipse at 40% 50%, rgba(79,143,255,0.04) 0%, transparent 60%);
+}
+#topology-svg { width: 100%; height: 100%; }
+
+/* ═══ ROADMAP VISUAL ═══ */
+.roadmap-visual {
+  display: grid; grid-template-columns: 1fr; gap: 0;
+  position: relative;
+}
+.roadmap-visual::before {
+  content: '';
+  position: absolute;
+  left: 48px; top: 60px; bottom: 60px; width: 2px;
+  background: linear-gradient(to bottom,
+    var(--c0), var(--c1), var(--c2), var(--c3), var(--c4), var(--c5), var(--c6));
+  opacity: 0.35;
+}
+
+.rv-phase {
+  display: grid; grid-template-columns: 96px 1fr;
+  gap: 32px; padding: 40px 0;
+  border-bottom: 1px solid rgba(26,37,64,0.6);
+}
+.rv-node-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+}
+.rv-node {
+  width: 64px; height: 64px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family:'Syne',sans-serif; font-weight:800; font-size:20px;
+  border: 2px solid; position: relative; z-index: 2;
+  background: var(--bg);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: none;
+}
+.rv-node:hover { transform: scale(1.08); }
+.rv-duration {
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:1px; color:var(--muted);
+  text-align:center; text-transform:uppercase;
+}
+
+.rv-content { padding: 8px 0; }
+.rv-header { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:10px; }
+.rv-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.rv-status {
+  font-family:'Space Mono',monospace; font-size:9px;
+  letter-spacing:2px; text-transform:uppercase;
+  padding:4px 12px; border-radius:100px; border:1px solid;
+}
+.rv-desc { color:var(--muted2); font-size:14px; margin-bottom:20px; font-style:italic; }
+
+.rv-tasks {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.rv-task {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: none;
+}
+.rv-task:hover { border-color: var(--border2); transform: translateX(3px); }
+.rv-task-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px; }
+.rv-task-text { font-size:13px; line-height:1.4; }
+.rv-task-sub { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-top:3px; }
+
+.rv-deliverable {
+  margin-top:16px; padding:14px 16px;
+  background: rgba(0,229,255,0.04);
+  border:1px solid rgba(0,229,255,0.15);
+  border-radius:10px;
+  display:flex; align-items:center; gap:12px;
+  font-family:'Space Mono',monospace; font-size:11px;
+  color: var(--c0); letter-spacing:1px;
+}
+
+/* ═══ INTEGRATIONS ═══ */
+.int-canvas-wrapper {
+  width: 100%; height: 500px;
+  border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+  position: relative;
+}
+#int-svg { width: 100%; height: 100%; }
+
+/* ═══ RISK RADAR ═══ */
+#risk-radar-wrap {
+  display: grid; grid-template-columns: 420px 1fr; gap: 40px;
+  align-items: start;
+}
+canvas#risk-radar { width: 100%; height: auto; }
+.risk-list { display:flex;flex-direction:column;gap:16px; }
+.risk-item {
+  background:var(--s1); border:1px solid var(--border);
+  border-radius:12px; padding:20px;
+  transition: border-color 0.2s; cursor:none;
+}
+.risk-item:hover { border-color: var(--border2); }
+.risk-item-header { display:flex;align-items:center;gap:12px;margin-bottom:8px; }
+.risk-badge {
+  font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;
+  padding:3px 10px;border-radius:100px;border:1px solid;
+}
+.risk-h { color:var(--c5);border-color:rgba(244,63,94,0.3);background:rgba(244,63,94,0.08); }
+.risk-m { color:var(--c3);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.08); }
+.risk-l { color:var(--c4);border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.08); }
+.risk-name { font-weight:600;font-size:14px; }
+.risk-desc { font-size:13px;color:var(--muted2);font-style:italic;margin-bottom:8px; }
+.risk-mit { font-size:12px;color:var(--text); }
+.risk-mit strong { color:var(--c4); }
+
+/* ═══ MONETIZATION FUNNEL ═══ */
+#funnel-wrapper {
+  display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start;
+}
+#funnel-svg-wrap { }
+.pricing-grid-v2 {
+  display:flex;flex-direction:column;gap:16px;
+}
+.price-card {
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  transition:border-color 0.2s, transform 0.2s;
+  cursor:none;
+}
+.price-card:hover { border-color:var(--border2);transform:translateX(4px); }
+.price-card.featured { border-color:rgba(0,229,255,0.3);background:linear-gradient(135deg,rgba(0,229,255,0.04),var(--s1)); }
+.price-tier { font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px; }
+.price-row { display:flex;align-items:baseline;gap:8px;margin-bottom:12px; }
+.price-num { font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-1px; }
+.price-per { font-family:'Space Mono',monospace;font-size:11px;color:var(--muted); }
+.price-features { display:flex;flex-direction:column;gap:7px; }
+.price-features li { font-size:12px;display:flex;align-items:center;gap:8px;list-style:none; }
+.price-features li::before { content:'→';font-family:'Space Mono',monospace;font-size:10px;color:var(--c4); }
+
+/* ═══ API FLOW ═══ */
+#api-section { background: var(--s1); }
+.api-grid { display:grid;grid-template-columns:1fr 1fr;gap:24px; }
+.api-card {
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+}
+.api-card-header {
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.api-method {
+  font-family:'Space Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1px;padding:3px 10px;border-radius:5px;
+}
+.get { background:rgba(16,185,129,0.15);color:var(--c4); }
+.post { background:rgba(79,143,255,0.15);color:var(--c1); }
+.api-endpoint { font-family:'Space Mono',monospace;font-size:12px;color:var(--muted2); }
+.api-body { padding:16px 20px; }
+.code-block {
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  border-radius:8px;padding:16px;
+  font-family:'Space Mono',monospace;font-size:11px;line-height:1.8;
+  color:var(--muted2); overflow-x:auto;
+}
+.code-key { color:var(--c1); }
+.code-str { color:var(--c4); }
+.code-num { color:var(--c3); }
+.code-bool { color:var(--c2); }
+.code-comment { color:var(--muted);font-style:italic; }
+
+/* ═══ FOOTER ═══ */
+footer {
+  padding:80px 48px 40px;
+  border-top:1px solid var(--border);
+  text-align:center;
+}
+.footer-logo {
+  font-family:'Syne',sans-serif;font-size:40px;font-weight:800;
+  letter-spacing:-2px;margin-bottom:12px;
+}
+.footer-logo em { color:var(--c0);font-style:normal; }
+.footer-pills { display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px; }
+.footer-pill {
+  font-family:'Space Mono',monospace;font-size:10px;
+  padding:6px 18px;border-radius:100px;letter-spacing:2px;
+  border:1px solid;
+}
+.footer-copy { font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px; }
+
+/* SCROLL REVEAL */
+.reveal { opacity:0; transform:translateY(24px); transition:opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.reveal-delay-1 { transition-delay:0.1s; }
+.reveal-delay-2 { transition-delay:0.2s; }
+.reveal-delay-3 { transition-delay:0.3s; }
+
+/* COLOR HELPERS */
+.c0{color:var(--c0)}.c1{color:var(--c1)}.c2{color:var(--c2)}.c3{color:var(--c3)}.c4{color:var(--c4)}.c5{color:var(--c5)}.c6{color:var(--c6)}
+.bg0::before{background:var(--c0)}.bg1::before{background:var(--c1)}.bg2::before{background:var(--c2)}
+.bg3::before{background:var(--c3)}.bg4::before{background:var(--c4)}.bg5::before{background:var(--c5)}
+
+@media(max-width:900px){
+  .cog-card:nth-child(3){display:none}
+  #cog-dashboard{grid-template-columns:1fr 1fr}
+  #risk-radar-wrap{grid-template-columns:1fr}
+  #funnel-wrapper{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .api-grid{grid-template-columns:1fr}
+  .rv-phase{grid-template-columns:1fr;padding-left:80px}
+  .roadmap-visual::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#top" class="nav-brand">Recall<em>Sense</em> AI</a>
+  <ul class="nav-links">
+    <li><a href="#graph-section">Graph</a></li>
+    <li><a href="#architecture">Arch</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#cognitive">Cognitive</a></li>
+    <li><a href="#tech">Stack</a></li>
+    <li><a href="#api-section">API</a></li>
+    <li><a href="#monetization">Pricing</a></li>
+  </ul>
+  <div class="nav-badge">Blueprint v2.0</div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-label">Complete Interactive Product Blueprint</div>
+  <h1>
+    <span class="line1">Recall</span>
+    <span class="line2">Sense AI</span>
+  </h1>
+  <p class="hero-sub">"A second brain that captures, understands, and navigates your entire digital life."</p>
+  <div class="hero-ctas">
+    <a href="#roadmap" class="btn-primary">Explore Roadmap</a>
+    <a href="#graph-section" class="btn-ghost">Live Knowledge Graph</a>
+  </div>
+  <div class="hero-scroll">scroll <div class="scroll-line"></div></div>
+</section>
+
+<!-- STATS TICKER -->
+<div class="stats-bar">
+  <div class="stats-track" id="stats-track">
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c0)"></div><div><div class="stat-chip-val c0">6</div><div class="stat-chip-label">Dev Phases</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c1)"></div><div><div class="stat-chip-val c1">5</div><div class="stat-chip-label">Core Engines</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c2)"></div><div><div class="stat-chip-val c2">40+</div><div class="stat-chip-label">Features</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c3)"></div><div><div class="stat-chip-val c3">30+</div><div class="stat-chip-label">Integrations</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c4)"></div><div><div class="stat-chip-val c4">12mo</div><div class="stat-chip-label">To Launch</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c5)"></div><div><div class="stat-chip-val c5">$15</div><div class="stat-chip-label">Pro/month</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c6)"></div><div><div class="stat-chip-val c6">∞</div><div class="stat-chip-label">Memory Capacity</div></div></div>
+    <!-- duplicate for seamless loop -->
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c0)"></div><div><div class="stat-chip-val c0">6</div><div class="stat-chip-label">Dev Phases</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c1)"></div><div><div class="stat-chip-val c1">5</div><div class="stat-chip-label">Core Engines</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c2)"></div><div><div class="stat-chip-val c2">40+</div><div class="stat-chip-label">Features</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c3)"></div><div><div class="stat-chip-val c3">30+</div><div class="stat-chip-label">Integrations</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c4)"></div><div><div class="stat-chip-val c4">12mo</div><div class="stat-chip-label">To Launch</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c5)"></div><div><div class="stat-chip-val c5">$15</div><div class="stat-chip-label">Pro/month</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--c6)"></div><div><div class="stat-chip-val c6">∞</div><div class="stat-chip-label">Memory Capacity</div></div></div>
+  </div>
+</div>
+
+<!-- ═══ LIVE KNOWLEDGE GRAPH ═══ -->
+<div class="divider"></div>
+<section id="graph-section">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Interactive Demo</div></div>
+    <h2 class="sec-title reveal">Live Knowledge Graph</h2>
+    <p class="sec-desc reveal">This is what RecallSense builds automatically — a living map of your knowledge. Drag nodes, hover for details, click to explore connections.</p>
+    <div style="height:32px"></div>
+    <div id="graph-wrapper" class="reveal">
+      <svg id="graph-svg"></svg>
+      <div id="graph-tooltip"></div>
+      <div class="graph-controls">
+        <button class="graph-btn active" id="btn-all">All</button>
+        <button class="graph-btn" id="btn-ai">AI/ML</button>
+        <button class="graph-btn" id="btn-design">Design</button>
+        <button class="graph-btn" id="btn-dev">Dev</button>
+        <button class="graph-btn" id="btn-reset">Reset</button>
+      </div>
+    </div>
+    <div class="graph-legend reveal" style="margin-top:20px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c0)"></div> Browser Capture</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div> Video / YouTube</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div> Research Paper</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div> Note / Idea</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c4)"></div> Project Node</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c5)"></div> Social Post</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ARCHITECTURE DIAGRAM ═══ -->
+<div class="divider"></div>
+<section id="architecture">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">System Design</div></div>
+    <h2 class="sec-title reveal">5-Engine Architecture</h2>
+    <p class="sec-desc reveal">Every engine has a defined responsibility. Data flows from capture → knowledge → AI → analytics → workflow. Hover each engine to inspect its data contracts.</p>
+    <div style="height:32px"></div>
+    <div id="arch-diagram" class="reveal">
+      <svg id="arch-svg"></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COGNITIVE ANALYTICS DASHBOARD ═══ -->
+<div class="divider"></div>
+<section id="cognitive" style="background:var(--s1)">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Cognitive Analytics Engine</div></div>
+    <h2 class="sec-title reveal">Real-Time Brain Dashboard</h2>
+    <p class="sec-desc reveal">The unique differentiator. RecallSense tracks your cognitive load, focus score, and information intake in real time — live demo below.</p>
+    <div style="height:40px"></div>
+    <div id="cog-dashboard" class="reveal">
+
+      <div class="cog-card">
+        <div class="cog-card-title">Focus Score — Live</div>
+        <div id="focus-ring-container"><canvas id="focus-ring" width="160" height="160"></canvas></div>
+        <div style="text-align:center;margin-top:12px">
+          <div class="cog-value c0" id="focus-val">71</div>
+          <div class="cog-sub" id="focus-label">GOOD FOCUS</div>
+        </div>
+      </div>
+
+      <div class="cog-card">
+        <div class="cog-card-title">Attention Wave — Last 24h</div>
+        <canvas class="mini-chart" id="wave-chart" width="400" height="100"></canvas>
+        <div style="margin-top:12px">
+          <div class="cog-value c1" id="wave-val">84</div>
+          <div class="cog-sub">Sources captured today</div>
+        </div>
+      </div>
+
+      <div class="cog-card">
+        <div class="cog-card-title">Information Intake Breakdown</div>
+        <div id="intake-bar-container">
+          <div class="intake-bar-row"><div class="intake-label">Browser</div><div class="intake-track"><div class="intake-fill" style="width:0%;background:var(--c0)" data-target="72"></div></div><div class="intake-count">36</div></div>
+          <div class="intake-bar-row"><div class="intake-label">YouTube</div><div class="intake-track"><div class="intake-fill" style="width:0%;background:var(--c1)" data-target="44"></div></div><div class="intake-count">22</div></div>
+          <div class="intake-bar-row"><div class="intake-label">Papers</div><div class="intake-track"><div class="intake-fill" style="width:0%;background:var(--c2)" data-target="30"></div></div><div class="intake-count">15</div></div>
+          <div class="intake-bar-row"><div class="intake-label">Notes</div><div class="intake-track"><div class="intake-fill" style="width:0%;background:var(--c3)" data-target="22"></div></div><div class="intake-count">11</div></div>
+          <div class="intake-bar-row"><div class="intake-label">Social</div><div class="intake-track"><div class="intake-fill" style="width:0%;background:var(--c5)" data-target="14"></div></div><div class="intake-count">7</div></div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="cog-value c3" id="overload-val">Med</div>
+          <div class="cog-sub">Cognitive overload risk</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Heatmap -->
+    <div style="margin-top:32px" class="reveal">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px">Productivity Heatmap — Last 7 Days</div>
+        <div id="heatmap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ROADMAP ═══ -->
+<div class="divider"></div>
+<section id="roadmap">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Development Roadmap</div></div>
+    <h2 class="sec-title reveal">6-Phase Build Plan</h2>
+    <p class="sec-desc reveal reveal-delay-1">From first commit to enterprise launch — a detailed, task-level blueprint for every phase.</p>
+    <div style="height:40px"></div>
+
+    <!-- GANTT -->
+    <div id="gantt-wrapper" class="reveal reveal-delay-2" style="margin-bottom:60px">
+      <div class="gantt-header">
+        <div class="gantt-title">Timeline Gantt View</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">12 months → Launch</div>
+      </div>
+      <div class="gantt-body">
+        <div style="height:16px"></div>
+        <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px">
+          <div></div>
+          <div id="gantt-month-row" style="display:flex;"></div>
+        </div>
+        <div id="gantt-rows"></div>
+      </div>
+    </div>
+
+    <!-- Phase detail cards -->
+    <div class="roadmap-visual">
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c0" style="border-color:var(--c0)" onmouseover="this.style.boxShadow='0 0 30px rgba(0,229,255,0.3)'" onmouseout="this.style.boxShadow=''">01</div>
+          <div class="rv-duration">Mo 1–2</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">Foundation & Capture Core</div>
+            <div class="rv-status c0" style="border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.08)">Foundation</div>
+          </div>
+          <div class="rv-desc">Build the skeleton: browser extension, data ingestion pipeline, offline-first local DB, authentication system, and the React dashboard shell. Close first 10 alpha testers.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Browser Extension MVP</div><div class="rv-task-sub">Chrome + Brave + Edge · Plasmo framework</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Passive Web Capture Pipeline</div><div class="rv-task-sub">URL · title · timestamp · content snapshot</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Offline-First Storage</div><div class="rv-task-sub">SQLite + IndexedDB · sync queue</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Auth System</div><div class="rv-task-sub">Email + Google OAuth · JWT · Supabase</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Dashboard Shell (React 18)</div><div class="rv-task-sub">Routing · sidebar · layout · dark theme</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Data Model Design</div><div class="rv-task-sub">Source · Node · Tag · Project · Session</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">API Gateway (Fastify)</div><div class="rv-task-sub">REST endpoints · rate limiting · validation</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c0)"></div><div><div class="rv-task-text">Manual Capture Widget</div><div class="rv-task-sub">Right-click → save · URL · selection · note</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — Working extension + dashboard with 10 alpha users capturing live data</div>
+        </div>
+      </div>
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c1" style="border-color:var(--c1)" onmouseover="this.style.boxShadow='0 0 30px rgba(79,143,255,0.3)'" onmouseout="this.style.boxShadow=''">02</div>
+          <div class="rv-duration">Mo 3–4</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">AI & Knowledge Engine</div>
+            <div class="rv-status c1" style="border-color:rgba(79,143,255,0.4);background:rgba(79,143,255,0.08)">AI Core</div>
+          </div>
+          <div class="rv-desc">Plug in LLMs and vector search. Transform raw captures into structured, searchable knowledge. Launch private beta with 200 target users — this is when the product feels magical.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">LLM Integration (Claude 3.5)</div><div class="rv-task-sub">Auto-summarization · classification · tagging</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">Embedding Pipeline</div><div class="rv-task-sub">Cohere Embed v3 · batch processing · versioning</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">Vector DB (Pinecone)</div><div class="rv-task-sub">Semantic search · ANN · namespace isolation</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">RAG Search System</div><div class="rv-task-sub">LangChain · chunking · re-ranking · citations</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">Knowledge Graph (D3.js)</div><div class="rv-task-sub">Neo4j/PostgreSQL · relationship edges · viz</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">AI Chat Interface v1</div><div class="rv-task-sub">"Ask your brain" panel · streaming · history</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">Content Deduplication</div><div class="rv-task-sub">Hash + semantic similarity · merge UI</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c1)"></div><div><div class="rv-task-text">Auto-Tagging System</div><div class="rv-task-sub">Topic · domain · project · entity extraction</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — Private beta · 200 users · semantic search live · AI chat responding accurately</div>
+        </div>
+      </div>
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c2" style="border-color:var(--c2)" onmouseover="this.style.boxShadow='0 0 30px rgba(168,85,247,0.3)'" onmouseout="this.style.boxShadow=''">03</div>
+          <div class="rv-duration">Mo 5–6</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">Cognitive Analytics Engine</div>
+            <div class="rv-status c2" style="border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.08)">Unique Differentiator</div>
+          </div>
+          <div class="rv-desc">The feature no competitor has. Real-time cognitive load monitoring, focus scoring, attention wave visualization, and overload alerts. This is your "wow demo" for investors and hackathons.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Focus Score Algorithm</div><div class="rv-task-sub">Session pattern · dwell time · switch rate</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Cognitive Load Meter</div><div class="rv-task-sub">Real-time intake tracking · source velocity</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Attention Wave Charts</div><div class="rv-task-sub">24h canvas chart · hour-by-hour intensity</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Knowledge Cluster Viz</div><div class="rv-task-sub">Force-directed graph · zoom · filter</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Overload Alerts</div><div class="rv-task-sub">Push notifications · email digest · in-app</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Weekly Brain Reports</div><div class="rv-task-sub">AI-generated cognitive health summary PDF</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Productivity Heatmap</div><div class="rv-task-sub">Calendar-view · hour × day density grid</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c2)"></div><div><div class="rv-task-text">Topic Drift Detection</div><div class="rv-task-sub">Alert when research scope expands too wide</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — Cognitive dashboard live · 500 users · hackathon demo-ready · investor pitch deck built</div>
+        </div>
+      </div>
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c3" style="border-color:var(--c3)" onmouseover="this.style.boxShadow='0 0 30px rgba(245,158,11,0.3)'" onmouseout="this.style.boxShadow=''">04</div>
+          <div class="rv-duration">Mo 7–8</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">Integrations & Multi-Platform</div>
+            <div class="rv-status c3" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08)">Ecosystem</div>
+          </div>
+          <div class="rv-desc">Connect RecallSense to the entire productivity stack. YouTube transcripts, PDF ingestion, Notion sync, Obsidian, GitHub, mobile app. Start charging — target first $1k MRR.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">YouTube Transcript Capture</div><div class="rv-task-sub">Auto-extract · timestamp links · chapter nav</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">PDF Upload + OCR</div><div class="rv-task-sub">Extract text · highlights · figures · citations</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">Notion Bi-directional Sync</div><div class="rv-task-sub">Import pages · export knowledge back · webhooks</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">Obsidian Vault Sync</div><div class="rv-task-sub">Markdown export · backlink mapping · watcher</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">GitHub Integration</div><div class="rv-task-sub">Repos · PRs · issues · README auto-import</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">Mobile App (React Native)</div><div class="rv-task-sub">iOS + Android · share sheet · offline sync</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">Email Digest Capture</div><div class="rv-task-sub">Gmail + Outlook · Substack · key insight extract</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c3)"></div><div><div class="rv-task-text">Stripe Billing v1</div><div class="rv-task-sub">Free → Pro upgrade · webhook events · seats</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — Public beta · 1k+ users · first paying customers · $1k MRR milestone</div>
+        </div>
+      </div>
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c4" style="border-color:var(--c4)" onmouseover="this.style.boxShadow='0 0 30px rgba(16,185,129,0.3)'" onmouseout="this.style.boxShadow=''">05</div>
+          <div class="rv-duration">Mo 9–10</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">Advanced AI Features</div>
+            <div class="rv-status c4" style="border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)">Intelligence+</div>
+          </div>
+          <div class="rv-desc">Ship the most powerful features that make RecallSense irreplaceable: autonomous research agents, memory flashback, AI brainstorm mode, spaced repetition, and multi-agent reasoning.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Autonomous Research Agent</div><div class="rv-task-sub">Web search + your notes → structured research</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Memory Flashback Engine</div><div class="rv-task-sub">Find exact moment from any past session</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Smart Workflow Resume</div><div class="rv-task-sub">One-click context restore · project snapshot</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">AI Brainstorm Mode</div><div class="rv-task-sub">Ideas from your saved research · mind map export</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Spaced Repetition (SRS)</div><div class="rv-task-sub">SM-2 algorithm · flashcard auto-generation</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Report Auto-Generator</div><div class="rv-task-sub">Notes → structured report → PDF / slide export</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Multi-Agent Debate Mode</div><div class="rv-task-sub">AI argues multiple perspectives · evidence scoring</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c4)"></div><div><div class="rv-task-text">Knowledge Compression</div><div class="rv-task-sub">Auto-summarize aged content · storage optimizer</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — 3k users · $5k MRR · agent demo viral on X/Twitter · YC application submitted</div>
+        </div>
+      </div>
+
+      <div class="rv-phase reveal">
+        <div class="rv-node-wrap">
+          <div class="rv-node c6" style="border-color:var(--c6)" onmouseover="this.style.boxShadow='0 0 30px rgba(236,72,153,0.3)'" onmouseout="this.style.boxShadow=''">06</div>
+          <div class="rv-duration">Mo 11–12</div>
+        </div>
+        <div class="rv-content">
+          <div class="rv-header">
+            <div class="rv-title">Enterprise, Scale & Launch</div>
+            <div class="rv-status c6" style="border-color:rgba(236,72,153,0.4);background:rgba(236,72,153,0.08)">🚀 Launch</div>
+          </div>
+          <div class="rv-desc">Team features, enterprise SSO, compliance, public API, and the ProductHunt launch. This is the phase where you go from product to company. Targeting 5k users and Series A story.</div>
+          <div class="rv-tasks">
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">Team Workspaces</div><div class="rv-task-sub">Shared knowledge · roles · permissions · audit</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">Public REST API v1</div><div class="rv-task-sub">Rate limited · OAuth · SDK (JS, Python)</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">SSO / SAML</div><div class="rv-task-sub">Okta · Azure AD · Google Workspace</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">GDPR / SOC2 Compliance</div><div class="rv-task-sub">Data residency · right to delete · audit logs</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">Local-First / Self-Hosted</div><div class="rv-task-sub">Docker deploy · on-device LLM (Llama 3)</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">ProductHunt Launch</div><div class="rv-task-sub">Waitlist activation · press kit · hunt day ops</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">Admin Analytics Dashboard</div><div class="rv-task-sub">User mgmt · usage analytics · billing portal</div></div></div>
+            <div class="rv-task"><div class="rv-task-dot" style="background:var(--c6)"></div><div><div class="rv-task-text">Investor Deck + Data Room</div><div class="rv-task-sub">MRR · retention · TAM · roadmap narrative</div></div></div>
+          </div>
+          <div class="rv-deliverable">🎯 DELIVERABLE — ProductHunt launch · 5k users · $15k MRR · Series A pitch ready</div>
+        </div>
+      </div>
+
+    </div><!-- roadmap-visual -->
+  </div>
+</section>
+
+<!-- ═══ TECH TOPOLOGY ═══ -->
+<div class="divider"></div>
+<section id="tech" style="background:var(--s1)">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Tech Stack</div></div>
+    <h2 class="sec-title reveal">Technology Topology</h2>
+    <p class="sec-desc reveal">A modern, scalable stack chosen for AI-native performance and developer velocity. Interactive — hover each node.</p>
+    <div style="height:32px"></div>
+    <div id="topology-wrapper" class="reveal">
+      <svg id="topology-svg"></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INTEGRATIONS RADIAL ═══ -->
+<div class="divider"></div>
+<section id="integrations">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Ecosystem</div></div>
+    <h2 class="sec-title reveal">Integration Radial Map</h2>
+    <p class="sec-desc reveal">30+ integrations visualized by category. RecallSense sits at the center of your entire digital life.</p>
+    <div style="height:32px"></div>
+    <div class="int-canvas-wrapper reveal"><svg id="int-svg"></svg></div>
+  </div>
+</section>
+
+<!-- ═══ FEATURE MATRIX ═══ -->
+<div class="divider"></div>
+<section id="features" style="background:var(--s1)">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Competitive Analysis</div></div>
+    <h2 class="sec-title reveal">Feature Matrix</h2>
+    <p class="sec-desc reveal">How RecallSense compares to every major competitor across every dimension that matters.</p>
+    <div style="height:32px"></div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:16px;overflow:hidden" class="reveal">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="min-width:200px">Feature</th>
+            <th class="matrix-header-recall" style="min-width:120px">RecallSense ★</th>
+            <th style="min-width:100px">Notion AI</th>
+            <th style="min-width:100px">Rewind AI</th>
+            <th style="min-width:100px">Mem.ai</th>
+            <th style="min-width:100px">Obsidian</th>
+            <th style="min-width:100px">Roam</th>
+            <th style="min-width:110px">NotebookLM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Passive Capture</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-partial">Screen</td><td class="m-partial">Manual</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Semantic RAG Search</td><td class="m-us">✦</td><td class="m-yes">✓</td><td class="m-partial">Basic</td><td class="m-yes">✓</td><td class="m-partial">Plugin</td><td class="m-no">—</td><td class="m-yes">✓</td></tr>
+          <tr><td>Cognitive Analytics</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Auto Knowledge Graph</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-partial">Partial</td><td class="m-yes">✓ Manual</td><td class="m-yes">✓ Manual</td><td class="m-no">—</td></tr>
+          <tr><td>Autonomous Research Agent</td><td class="m-us">✦</td><td class="m-partial">Limited</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>YouTube Transcript Capture</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-partial">Screen</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Focus Score / Brain Analytics</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Spaced Repetition (SRS)</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-partial">Plugin</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Mobile App</td><td class="m-us">✦</td><td class="m-yes">✓</td><td class="m-partial">Mac only</td><td class="m-yes">✓</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-yes">✓</td></tr>
+          <tr><td>Team Collaboration</td><td class="m-us">✦</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-partial">Beta</td><td class="m-partial">Plugin</td><td class="m-partial">Basic</td><td class="m-no">—</td></tr>
+          <tr><td>Browser Extension</td><td class="m-us">✦</td><td class="m-partial">Clipper</td><td class="m-yes">✓</td><td class="m-partial">Clipper</td><td class="m-partial">Plugin</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Local-First / Privacy Mode</td><td class="m-us">✦ (Roadmap)</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-no">—</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Public API</td><td class="m-us">✦</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-partial">Limited</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+          <tr><td>Generous Free Tier</td><td class="m-us">✦</td><td class="m-partial">Limited</td><td class="m-no">Paid</td><td class="m-partial">Trial</td><td class="m-yes">✓</td><td class="m-no">Paid</td><td class="m-yes">✓</td></tr>
+          <tr><td>Voice Capture + Transcription</td><td class="m-us">✦</td><td class="m-no">—</td><td class="m-yes">✓</td><td class="m-no">—</td><td class="m-partial">Plugin</td><td class="m-no">—</td><td class="m-no">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:24px;font-family:'Space Mono',monospace;font-size:11px" class="reveal">
+      <span><span class="c0">✦</span> RecallSense unique/best</span>
+      <span><span class="c4">✓</span> Feature exists</span>
+      <span><span class="c3">~</span> Partial/limited</span>
+      <span style="color:var(--muted)">— Not available</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ API DOCS ═══ -->
+<div class="divider"></div>
+<section id="api-section">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Developer API</div></div>
+    <h2 class="sec-title reveal">Public API Blueprint</h2>
+    <p class="sec-desc reveal">RESTful API that lets developers build on top of RecallSense's knowledge graph. Shipped in Phase 6.</p>
+    <div style="height:32px"></div>
+    <div class="api-grid reveal">
+      <div class="api-card">
+        <div class="api-card-header">
+          <span class="api-method get">GET</span>
+          <span class="api-endpoint">/v1/captures?q=design+systems</span>
+        </div>
+        <div class="api-body">
+          <div style="font-size:13px;color:var(--muted2);font-style:italic;margin-bottom:12px">Semantic search across all captured knowledge</div>
+          <div class="code-block">
+<span class="code-comment">// Response</span>
+{
+  <span class="code-key">"results"</span>: [
+    {
+      <span class="code-key">"id"</span>: <span class="code-str">"cap_9xKm2P"</span>,
+      <span class="code-key">"title"</span>: <span class="code-str">"Design Systems Explained"</span>,
+      <span class="code-key">"source_type"</span>: <span class="code-str">"youtube"</span>,
+      <span class="code-key">"relevance_score"</span>: <span class="code-num">0.94</span>,
+      <span class="code-key">"timestamp"</span>: <span class="code-str">"2024-11-12T14:32:00Z"</span>,
+      <span class="code-key">"project"</span>: <span class="code-str">"hackathon"</span>,
+      <span class="code-key">"summary"</span>: <span class="code-str">"Overview of atomic design..."</span>,
+      <span class="code-key">"tags"</span>: [<span class="code-str">"UI"</span>, <span class="code-str">"design"</span>, <span class="code-str">"systems"</span>]
+    }
+  ],
+  <span class="code-key">"total"</span>: <span class="code-num">47</span>,
+  <span class="code-key">"semantic_clusters"</span>: <span class="code-num">3</span>
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-header">
+          <span class="api-method post">POST</span>
+          <span class="api-endpoint">/v1/assistant/query</span>
+        </div>
+        <div class="api-body">
+          <div style="font-size:13px;color:var(--muted2);font-style:italic;margin-bottom:12px">Query the AI assistant grounded in your knowledge</div>
+          <div class="code-block">
+<span class="code-comment">// Request body</span>
+{
+  <span class="code-key">"question"</span>: <span class="code-str">"What did I learn about<br>  React hooks last week?"</span>,
+  <span class="code-key">"project_filter"</span>: <span class="code-str">"frontend"</span>,
+  <span class="code-key">"stream"</span>: <span class="code-bool">true</span>,
+  <span class="code-key">"max_sources"</span>: <span class="code-num">5</span>
+}
+
+<span class="code-comment">// Response (streamed)</span>
+{
+  <span class="code-key">"answer"</span>: <span class="code-str">"Based on 3 sources..."</span>,
+  <span class="code-key">"citations"</span>: [<span class="code-str">"cap_9xKm"</span>, <span class="code-str">"cap_3pLx"</span>],
+  <span class="code-key">"confidence"</span>: <span class="code-num">0.87</span>
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-header">
+          <span class="api-method post">POST</span>
+          <span class="api-endpoint">/v1/captures</span>
+        </div>
+        <div class="api-body">
+          <div style="font-size:13px;color:var(--muted2);font-style:italic;margin-bottom:12px">Programmatically add a capture to the knowledge base</div>
+          <div class="code-block">
+<span class="code-comment">// Request body</span>
+{
+  <span class="code-key">"url"</span>: <span class="code-str">"https://arxiv.org/..."</span>,
+  <span class="code-key">"source_type"</span>: <span class="code-str">"research_paper"</span>,
+  <span class="code-key">"project"</span>: <span class="code-str">"ml-research"</span>,
+  <span class="code-key">"note"</span>: <span class="code-str">"Attention mechanism details"</span>,
+  <span class="code-key">"auto_process"</span>: <span class="code-bool">true</span>
+}
+
+<span class="code-comment">// Response</span>
+{
+  <span class="code-key">"id"</span>: <span class="code-str">"cap_newId"</span>,
+  <span class="code-key">"status"</span>: <span class="code-str">"processing"</span>,
+  <span class="code-key">"estimated_ready"</span>: <span class="code-num">12</span> <span class="code-comment">// seconds</span>
+}
+          </div>
+        </div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-header">
+          <span class="api-method get">GET</span>
+          <span class="api-endpoint">/v1/cognitive/score</span>
+        </div>
+        <div class="api-body">
+          <div style="font-size:13px;color:var(--muted2);font-style:italic;margin-bottom:12px">Get real-time cognitive analytics for the current user</div>
+          <div class="code-block">
+<span class="code-comment">// Response</span>
+{
+  <span class="code-key">"focus_score"</span>: <span class="code-num">71</span>,
+  <span class="code-key">"cognitive_load"</span>: <span class="code-str">"medium"</span>,
+  <span class="code-key">"overload_risk"</span>: <span class="code-num">0.42</span>,
+  <span class="code-key">"sources_today"</span>: <span class="code-num">84</span>,
+  <span class="code-key">"top_topics"</span>: [
+    <span class="code-str">"machine-learning"</span>,
+    <span class="code-str">"ui-design"</span>,
+    <span class="code-str">"react"</span>
+  ],
+  <span class="code-key">"recommendation"</span>: <span class="code-str">"Take a 15min break"</span>
+}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONETIZATION FUNNEL ═══ -->
+<div class="divider"></div>
+<section id="monetization" style="background:var(--s1)">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Business Model</div></div>
+    <h2 class="sec-title reveal">Monetization Funnel</h2>
+    <p class="sec-desc reveal">Freemium to enterprise with strong natural upgrade triggers at each conversion point.</p>
+    <div style="height:40px"></div>
+    <div id="funnel-wrapper" class="reveal">
+      <div id="funnel-svg-wrap"><svg id="funnel-svg" width="100%" height="480"></svg></div>
+      <div class="pricing-grid-v2">
+        <div class="price-card">
+          <div class="price-tier">Free Tier</div>
+          <div class="price-row"><div class="price-num">$0</div><div class="price-per">/ month</div></div>
+          <ul class="price-features">
+            <li>500 captures / month</li>
+            <li>7-day history</li>
+            <li>Basic AI search</li>
+            <li>3 projects max</li>
+            <li>Browser extension</li>
+          </ul>
+        </div>
+        <div class="price-card featured">
+          <div class="price-tier">Pro — Most Popular</div>
+          <div class="price-row"><div class="price-num c0">$15</div><div class="price-per">/ month</div></div>
+          <ul class="price-features">
+            <li>Unlimited captures</li>
+            <li>Full AI assistant + agent</li>
+            <li>Cognitive analytics</li>
+            <li>All integrations</li>
+            <li>Report generation</li>
+            <li>Spaced repetition</li>
+          </ul>
+        </div>
+        <div class="price-card">
+          <div class="price-tier">Team</div>
+          <div class="price-row"><div class="price-num c2">$39</div><div class="price-per">/ user / month</div></div>
+          <ul class="price-features">
+            <li>Everything in Pro</li>
+            <li>Shared workspaces</li>
+            <li>Team analytics</li>
+            <li>API access</li>
+            <li>Admin controls + SSO</li>
+            <li>SLA guarantee</li>
+          </ul>
+        </div>
+        <div class="price-card">
+          <div class="price-tier">Enterprise</div>
+          <div class="price-row"><div class="price-num c3">Custom</div></div>
+          <ul class="price-features">
+            <li>On-premise deploy</li>
+            <li>SAML + GDPR / SOC2</li>
+            <li>Dedicated instance</li>
+            <li>Custom integrations</li>
+            <li>White-label option</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISK RADAR ═══ -->
+<div class="divider"></div>
+<section id="risks">
+  <div class="container">
+    <div class="sec-eyebrow reveal"><div class="sec-eyebrow-line"></div><div class="sec-eyebrow-text">Risk Assessment</div></div>
+    <h2 class="sec-title reveal">Risk Radar</h2>
+    <p class="sec-desc reveal">Six critical risks plotted by impact × probability, each with a concrete mitigation strategy.</p>
+    <div style="height:40px"></div>
+    <div id="risk-radar-wrap" class="reveal">
+      <canvas id="risk-radar" width="420" height="420"></canvas>
+      <div class="risk-list">
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-h">High</div><div class="risk-name">Privacy & Data Capture</div></div><div class="risk-desc">Users uncomfortable with passive capture; GDPR/CCPA exposure.</div><div class="risk-mit"><strong>Fix:</strong> Local-first option, granular controls, on-device processing, full export/delete.</div></div>
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-h">High</div><div class="risk-name">LLM Cost at Scale</div></div><div class="risk-desc">AI inference cost can destroy unit economics on free tier.</div><div class="risk-mit"><strong>Fix:</strong> Token budgeting per tier, cached summaries, smaller fine-tuned models for classification.</div></div>
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-m">Medium</div><div class="risk-name">Browser Extension Approval</div></div><div class="risk-desc">Chrome Web Store strict review for broad permission requests.</div><div class="risk-mit"><strong>Fix:</strong> Minimal permissions first, incremental upgrades, Firefox/Edge fallback.</div></div>
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-m">Medium</div><div class="risk-name">Big Tech Competition</div></div><div class="risk-desc">Apple Intelligence, Google NotebookLM, Copilot could absorb this feature set.</div><div class="risk-mit"><strong>Fix:</strong> Own the cognitive analytics angle. Build team network effects they won't prioritize.</div></div>
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-m">Medium</div><div class="risk-name">Third-Party API Fragility</div></div><div class="risk-desc">Notion/YouTube API changes can break integrations overnight.</div><div class="risk-mit"><strong>Fix:</strong> Abstraction layer on every integration. Local sync fallback. Monitor API changelogs.</div></div>
+        <div class="risk-item"><div class="risk-item-header"><div class="risk-badge risk-l">Low</div><div class="risk-name">Onboarding Complexity</div></div><div class="risk-desc">Too many features → high drop-off before first "aha moment".</div><div class="risk-mit"><strong>Fix:</strong> Progressive disclosure, single-step onboarding wizard, "aha" in &lt;5 minutes.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Recall<em>Sense</em></div>
+  <p style="color:var(--muted2);font-style:italic;font-size:15px;margin-bottom:32px;max-width:460px;margin-left:auto;margin-right:auto">"A second brain that captures, understands, and navigates your digital life."</p>
+  <div class="footer-pills">
+    <div class="footer-pill" style="color:var(--c0);border-color:rgba(0,229,255,0.25)">6 PHASES</div>
+    <div class="footer-pill" style="color:var(--c1);border-color:rgba(79,143,255,0.25)">5 ENGINES</div>
+    <div class="footer-pill" style="color:var(--c2);border-color:rgba(168,85,247,0.25)">40+ FEATURES</div>
+    <div class="footer-pill" style="color:var(--c3);border-color:rgba(245,158,11,0.25)">30+ INTEGRATIONS</div>
+    <div class="footer-pill" style="color:var(--c4);border-color:rgba(16,185,129,0.25)">12 MONTHS → LAUNCH</div>
+  </div>
+  <div class="footer-copy">© 2025 RECALLSENSE AI — COMPLETE INTERACTIVE BLUEPRINT v2.0</div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════
+// CURSOR
+// ═══════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);}
+animRing();
+document.querySelectorAll('a,button,.rv-task,.rv-node,.price-card,.risk-item,.api-card,.int-item,.graph-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='18px';cursor.style.height='18px';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='10px';cursor.style.height='10px';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// ═══════════════════════════════════════════
+// HERO CANVAS — PARTICLE NETWORK
+// ═══════════════════════════════════════════
+(function(){
+  const cv = document.getElementById('hero-canvas');
+  const ctx = cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight;}
+  resize();window.addEventListener('resize',()=>{resize();init();});
+  function init(){
+    pts=[];
+    const n=Math.floor(W*H/12000);
+    for(let i=0;i<n;i++){
+      pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*0.4,vy:(Math.random()-.5)*0.4,
+        r:Math.random()*2+1,
+        col:[`rgba(0,229,255,`,`rgba(79,143,255,`,`rgba(168,85,247,`][Math.floor(Math.random()*3)]});
+    }
+  }
+  init();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i];
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      for(let j=i+1;j<pts.length;j++){
+        const q=pts[j],d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<120){
+          ctx.beginPath();
+          ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+          ctx.strokeStyle=`rgba(0,229,255,${(1-d/120)*0.08})`;
+          ctx.lineWidth=1;ctx.stroke();
+        }
+      }
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.col+'0.6)';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ═══════════════════════════════════════════
+// SCROLL REVEAL
+// ═══════════════════════════════════════════
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ═══════════════════════════════════════════
+// GANTT CHART
+// ═══════════════════════════════════════════
+(function(){
+  const months=['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'];
+  const mr=document.getElementById('gantt-month-row');
+  months.forEach(m=>{const d=document.createElement('div');d.style.cssText='flex:1;text-align:center;font-family:Space Mono,monospace;font-size:9px;color:#5a6a8a;letter-spacing:1px;';d.textContent=m;mr.appendChild(d);});
+
+  const phases=[
+    {label:'Extension + Auth',start:0,end:2,color:'var(--c0)'},
+    {label:'Data Pipeline',start:0.5,end:2.5,color:'var(--c0)'},
+    {label:'LLM Integration',start:2,end:4,color:'var(--c1)'},
+    {label:'Vector Search',start:2.5,end:4,color:'var(--c1)'},
+    {label:'Knowledge Graph',start:3,end:5,color:'var(--c1)'},
+    {label:'Cognitive Engine',start:4,end:6,color:'var(--c2)'},
+    {label:'Focus Analytics',start:4.5,end:6.5,color:'var(--c2)'},
+    {label:'YouTube Capture',start:6,end:8,color:'var(--c3)'},
+    {label:'Notion + GitHub Sync',start:6.5,end:8,color:'var(--c3)'},
+    {label:'Mobile App',start:7,end:9,color:'var(--c3)'},
+    {label:'Autonomous Agent',start:8,end:10,color:'var(--c4)'},
+    {label:'Memory Flashback',start:8.5,end:10,color:'var(--c4)'},
+    {label:'Team Workspaces',start:10,end:12,color:'var(--c6)'},
+    {label:'ProductHunt Launch',start:11,end:12,color:'var(--c6)'},
+  ];
+  const container=document.getElementById('gantt-rows');
+  phases.forEach(p=>{
+    const row=document.createElement('div');
+    row.className='gantt-row';
+    const lbl=document.createElement('div');
+    lbl.className='gantt-label';lbl.textContent=p.label;
+    const track=document.createElement('div');
+    track.className='gantt-track';
+    const bar=document.createElement('div');
+    bar.className='gantt-bar';
+    const pct=(p.end-p.start)/12*100;
+    const left=p.start/12*100;
+    bar.style.cssText=`left:${left}%;width:0%;background:${p.color};transition:width 1.2s ${p.start*0.05}s ease;`;
+    bar.style.color='rgba(4,6,15,0.8)';
+    track.appendChild(bar);
+    row.appendChild(lbl);row.appendChild(track);
+    container.appendChild(row);
+    setTimeout(()=>{bar.style.width=pct+'%';},600);
+  });
+})();
+
+// ═══════════════════════════════════════════
+// KNOWLEDGE GRAPH (D3)
+// ═══════════════════════════════════════════
+(function(){
+  const svg=d3.select('#graph-svg');
+  const wrap=document.getElementById('graph-wrapper');
+  const W=()=>wrap.clientWidth, H=()=>wrap.clientHeight;
+  const tooltip=document.getElementById('graph-tooltip');
+
+  const nodes=[
+    {id:'hackathon',label:'Hackathon Project',type:'project',group:'project',size:28,desc:'Active project — 14 sources linked'},
+    {id:'ml-research',label:'ML Research',type:'project',group:'project',size:24,desc:'Machine learning study cluster'},
+    {id:'ui-design',label:'UI/Design Systems',type:'project',group:'project',size:22,desc:'Design methodology research'},
+    {id:'attention',label:'Attention Mechanisms',type:'paper',group:'paper',size:16,desc:'ArXiv — "Attention Is All You Need"'},
+    {id:'transformers',label:'Transformers Guide',type:'browser',group:'browser',size:14,desc:'Hugging Face docs'},
+    {id:'rag-video',label:'RAG Explained',type:'video',group:'video',size:15,desc:'YouTube — 47 min · timestamp: 12:33'},
+    {id:'langchain',label:'LangChain Docs',type:'browser',group:'browser',size:13,desc:'Official documentation page'},
+    {id:'figma-ds',label:'Design System in Figma',type:'video',group:'video',size:14,desc:'YouTube tutorial · 32 min'},
+    {id:'atomic-design',label:'Atomic Design',type:'browser',group:'browser',size:12,desc:'Brad Frost — atomicdesign.bradfrost.com'},
+    {id:'react-comp',label:'React Component Patterns',type:'browser',group:'browser',size:13,desc:'Patterns.dev documentation'},
+    {id:'gpt4-paper',label:'GPT-4 Technical Report',type:'paper',group:'paper',size:15,desc:'OpenAI — research paper · 98 pages'},
+    {id:'embedding-note',label:'Embedding Strategy Note',type:'note',group:'note',size:11,desc:'Personal note — embedding approaches'},
+    {id:'hackathon-idea',label:'Hackathon Idea List',type:'note',group:'note',size:12,desc:'Brainstorm from yesterday session'},
+    {id:'twitter-llm',label:'LLM Thread (Twitter)',type:'social',group:'social',size:10,desc:'@karpathy thread on LLM internals'},
+    {id:'reddit-design',label:'r/UIDesign Discussion',type:'social',group:'social',size:10,desc:'Trending thread on design tokens'},
+    {id:'pinecone-docs',label:'Pinecone Documentation',type:'browser',group:'browser',size:12,desc:'Vector DB setup guide'},
+    {id:'cognition-paper',label:'Cognitive Load Theory',type:'paper',group:'paper',size:14,desc:'Sweller 1988 — educational psychology'},
+    {id:'notion-export',label:'Old Notion Notes',type:'note',group:'note',size:11,desc:'Imported from Notion workspace'},
+  ];
+
+  const links=[
+    {source:'hackathon',target:'ml-research',strength:0.8},
+    {source:'hackathon',target:'ui-design',strength:0.7},
+    {source:'hackathon',target:'hackathon-idea',strength:0.9},
+    {source:'hackathon',target:'rag-video',strength:0.6},
+    {source:'ml-research',target:'attention',strength:0.85},
+    {source:'ml-research',target:'transformers',strength:0.8},
+    {source:'ml-research',target:'gpt4-paper',strength:0.75},
+    {source:'ml-research',target:'embedding-note',strength:0.7},
+    {source:'ml-research',target:'rag-video',strength:0.8},
+    {source:'ml-research',target:'langchain',strength:0.65},
+    {source:'ml-research',target:'twitter-llm',strength:0.5},
+    {source:'ml-research',target:'pinecone-docs',strength:0.6},
+    {source:'attention',target:'gpt4-paper',strength:0.9},
+    {source:'attention',target:'transformers',strength:0.85},
+    {source:'embedding-note',target:'pinecone-docs',strength:0.7},
+    {source:'ui-design',target:'figma-ds',strength:0.85},
+    {source:'ui-design',target:'atomic-design',strength:0.8},
+    {source:'ui-design',target:'react-comp',strength:0.75},
+    {source:'ui-design',target:'reddit-design',strength:0.5},
+    {source:'hackathon-idea',target:'cognition-paper',strength:0.4},
+    {source:'notion-export',target:'ml-research',strength:0.5},
+    {source:'notion-export',target:'ui-design',strength:0.5},
+    {source:'cognition-paper',target:'ml-research',strength:0.3},
+  ];
+
+  const colorMap={
+    browser:'var(--c0)', video:'var(--c1)', paper:'var(--c2)',
+    note:'var(--c3)', project:'var(--c4)', social:'var(--c5)'
+  };
+
+  let sim, nodeEl, linkEl, allNodes=nodes, allLinks=links;
+
+  function build(nds, lks){
+    svg.selectAll('*').remove();
+    const ww=W(), hh=H();
+    svg.attr('viewBox',`0 0 ${ww} ${hh}`);
+
+    const defs=svg.append('defs');
+    defs.append('filter').attr('id','blur-glow').html('<feGaussianBlur stdDeviation="4" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/>');
+
+    linkEl=svg.append('g').selectAll('line').data(lks).enter().append('line')
+      .attr('stroke','rgba(255,255,255,0.06)').attr('stroke-width',d=>d.strength*2);
+
+    nodeEl=svg.append('g').selectAll('g').data(nds).enter().append('g')
+      .call(d3.drag().on('start',dragStart).on('drag',dragged).on('end',dragEnd))
+      .on('mouseover',function(e,d){
+        d3.select(this).select('circle').attr('stroke-width',3).attr('r',d.size+4);
+        tooltip.style.opacity='1';
+        tooltip.innerHTML=`<strong style="color:${colorMap[d.group]||'white'}">${d.label}</strong><br><span style="color:#5a6a8a">${d.desc}</span>`;
+      })
+      .on('mousemove',e=>{
+        const b=wrap.getBoundingClientRect();
+        let tx=e.clientX-b.left+16, ty=e.clientY-b.top-10;
+        if(tx>ww-220)tx=tx-210;
+        tooltip.style.left=tx+'px';tooltip.style.top=ty+'px';
+      })
+      .on('mouseout',function(e,d){
+        d3.select(this).select('circle').attr('stroke-width',1.5).attr('r',d.size);
+        tooltip.style.opacity='0';
+      });
+
+    nodeEl.append('circle')
+      .attr('r',d=>d.size)
+      .attr('fill',d=>colorMap[d.group]+'22' || '#ffffff11')
+      .attr('stroke',d=>colorMap[d.group]||'#fff')
+      .attr('stroke-width',1.5)
+      .style('cursor','grab');
+
+    nodeEl.append('text')
+      .text(d=>d.label.length>18?d.label.slice(0,16)+'…':d.label)
+      .attr('text-anchor','middle').attr('dy','0.35em')
+      .attr('font-size',d=>d.group==='project'?11:9)
+      .attr('font-family','Space Mono, monospace')
+      .attr('fill',d=>d.group==='project'?colorMap[d.group]:'rgba(220,228,245,0.6)')
+      .attr('pointer-events','none')
+      .attr('y',d=>d.size+12);
+
+    sim=d3.forceSimulation(nds)
+      .force('link',d3.forceLink(lks).id(d=>d.id).distance(80).strength(d=>d.strength*0.3))
+      .force('charge',d3.forceManyBody().strength(-180))
+      .force('center',d3.forceCenter(ww/2,hh/2))
+      .force('collision',d3.forceCollide(d=>d.size+18))
+      .on('tick',tick);
+  }
+
+  function tick(){
+    linkEl.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    nodeEl.attr('transform',d=>`translate(${d.x},${d.y})`);
+  }
+
+  function dragStart(e,d){if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}
+  function dragged(e,d){d.fx=e.x;d.fy=e.y;}
+  function dragEnd(e,d){if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}
+
+  build(allNodes, allLinks);
+  window.addEventListener('resize',()=>build(allNodes,allLinks));
+
+  // Filter buttons
+  const filters={
+    'btn-all':{nds:allNodes,lks:allLinks},
+    'btn-ai':{nds:allNodes.filter(n=>['ml-research','attention','transformers','rag-video','langchain','gpt4-paper','embedding-note','twitter-llm','pinecone-docs','hackathon'].includes(n.id))},
+    'btn-design':{nds:allNodes.filter(n=>['ui-design','figma-ds','atomic-design','react-comp','reddit-design','hackathon','notion-export'].includes(n.id))},
+    'btn-dev':{nds:allNodes.filter(n=>['langchain','react-comp','pinecone-docs','hackathon','hackathon-idea','notion-export'].includes(n.id))},
+    'btn-reset':{nds:allNodes,lks:allLinks}
+  };
+  document.querySelectorAll('.graph-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.graph-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const f=filters[btn.id];
+      if(!f)return;
+      const ids=new Set(f.nds.map(n=>n.id));
+      const filteredLinks=allLinks.filter(l=>ids.has(l.source.id||l.source)&&ids.has(l.target.id||l.target));
+      const ndsCopy=f.nds.map(n=>({...n}));
+      const lksCopy=filteredLinks.map(l=>({source:l.source.id||l.source,target:l.target.id||l.target,strength:l.strength}));
+      build(ndsCopy,lksCopy);
+    });
+  });
+})();
+
+// ═══════════════════════════════════════════
+// ARCHITECTURE SVG DIAGRAM
+// ═══════════════════════════════════════════
+(function(){
+  const svg = document.getElementById('arch-svg');
+  const W = svg.parentElement.clientWidth;
+  const H = 500;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const engines = [
+    {id:0,name:'Capture Engine',icon:'🌐',color:'#00e5ff',desc:'Browser · Video · PDF · Social · Screenshot',x:W*0.1,y:H*0.45},
+    {id:1,name:'Knowledge Engine',icon:'🧩',color:'#4f8fff',desc:'Embeddings · Graph · Tags · Dedup',x:W*0.3,y:H*0.25},
+    {id:2,name:'AI Assistant',icon:'🤖',color:'#a855f7',desc:'RAG · Chat · Agent · Reports',x:W*0.55,y:H*0.15},
+    {id:3,name:'Cognitive Engine',icon:'🧠',color:'#f59e0b',desc:'Focus · Load · Waves · Alerts',x:W*0.55,y:H*0.65},
+    {id:4,name:'Workflow Engine',icon:'⚙️',color:'#10b981',desc:'Projects · Resume · SRS · Briefing',x:W*0.82,y:H*0.45},
+  ];
+
+  const flows=[
+    {from:0,to:1,label:'raw captures'},
+    {from:1,to:2,label:'knowledge context'},
+    {from:1,to:3,label:'intake metrics'},
+    {from:2,to:4,label:'insights'},
+    {from:3,to:4,label:'cognitive state'},
+    {from:1,to:4,label:'project data'},
+  ];
+
+  // draw arrowhead defs
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  engines.forEach(e=>{
+    const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    marker.setAttribute('id',`arrow-${e.id}`);
+    marker.setAttribute('viewBox','0 0 8 8');
+    marker.setAttribute('refX','6');
+    marker.setAttribute('refY','4');
+    marker.setAttribute('markerWidth','6');
+    marker.setAttribute('markerHeight','6');
+    marker.setAttribute('orient','auto');
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d','M0,0 L8,4 L0,8 Z');
+    path.setAttribute('fill',e.color+'88');
+    marker.appendChild(path);
+    defs.appendChild(marker);
+  });
+  svg.appendChild(defs);
+
+  // glow filter
+  const filt = document.createElementNS('http://www.w3.org/2000/svg','filter');
+  filt.setAttribute('id','glow');
+  filt.innerHTML='<feGaussianBlur stdDeviation="6" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/>';
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+
+  // draw flows
+  flows.forEach(f=>{
+    const src=engines[f.from], tgt=engines[f.to];
+    const mx=(src.x+tgt.x)/2, my=(src.y+tgt.y)/2 - 30;
+    const pathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+    pathEl.setAttribute('d',`M${src.x},${src.y} Q${mx},${my} ${tgt.x},${tgt.y}`);
+    pathEl.setAttribute('stroke',engines[f.from].color+'55');
+    pathEl.setAttribute('stroke-width','1.5');
+    pathEl.setAttribute('fill','none');
+    pathEl.setAttribute('stroke-dasharray','6,4');
+    pathEl.setAttribute('marker-end',`url(#arrow-${f.from})`);
+    svg.appendChild(pathEl);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const mid = pathEl.getPointAtLength(pathEl.getTotalLength()/2);
+    text.setAttribute('x',mid.x); text.setAttribute('y',mid.y-6);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-size','9');
+    text.setAttribute('font-family','Space Mono, monospace');
+    text.setAttribute('fill','#5a6a8a');
+    text.setAttribute('letter-spacing','0.5');
+    text.textContent = f.label;
+    svg.appendChild(text);
+  });
+
+  // draw engine nodes
+  engines.forEach(e=>{
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${e.x},${e.y})`);
+    g.style.cursor = 'default';
+
+    const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    bg.setAttribute('x','-75'); bg.setAttribute('y','-45');
+    bg.setAttribute('width','150'); bg.setAttribute('height','90');
+    bg.setAttribute('rx','14');
+    bg.setAttribute('fill', e.color+'12');
+    bg.setAttribute('stroke', e.color+'55');
+    bg.setAttribute('stroke-width','1.5');
+    g.appendChild(bg);
+
+    const icon = document.createElementNS('http://www.w3.org/2000/svg','text');
+    icon.setAttribute('text-anchor','middle'); icon.setAttribute('y','-14');
+    icon.setAttribute('font-size','22'); icon.textContent = e.icon;
+    g.appendChild(icon);
+
+    const name = document.createElementNS('http://www.w3.org/2000/svg','text');
+    name.setAttribute('text-anchor','middle'); name.setAttribute('y','8');
+    name.setAttribute('font-size','11'); name.setAttribute('font-weight','700');
+    name.setAttribute('fill', e.color);
+    name.setAttribute('font-family','Syne, sans-serif');
+    name.textContent = e.name;
+    g.appendChild(name);
+
+    const desc = document.createElementNS('http://www.w3.org/2000/svg','text');
+    desc.setAttribute('text-anchor','middle'); desc.setAttribute('y','24');
+    desc.setAttribute('font-size','8.5'); desc.setAttribute('fill','#5a6a8a');
+    desc.setAttribute('font-family','Space Mono, monospace');
+    desc.textContent = e.desc;
+    g.appendChild(desc);
+
+    svg.appendChild(g);
+
+    // hover glow
+    g.addEventListener('mouseenter',()=>{bg.setAttribute('filter','url(#glow)');bg.setAttribute('fill',e.color+'22');});
+    g.addEventListener('mouseleave',()=>{bg.removeAttribute('filter');bg.setAttribute('fill',e.color+'12');});
+  });
+})();
+
+// ═══════════════════════════════════════════
+// COGNITIVE DASHBOARD — FOCUS RING
+// ═══════════════════════════════════════════
+(function(){
+  const cv = document.getElementById('focus-ring');
+  const ctx = cv.getContext('2d');
+  let val=0, target=71;
+  function draw(){
+    ctx.clearRect(0,0,160,160);
+    const cx=80,cy=80,r=62;
+    ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,Math.PI*1.5);
+    ctx.strokeStyle='rgba(26,37,64,1)'; ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
+    const angle = -Math.PI/2 + (val/100)*Math.PI*2;
+    const grad=ctx.createLinearGradient(0,0,160,0);
+    grad.addColorStop(0,'#00e5ff'); grad.addColorStop(1,'#4f8fff');
+    ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,angle);
+    ctx.strokeStyle=grad; ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
+    if(val<target){val+=0.8;requestAnimationFrame(draw);}
+  }
+  setTimeout(draw,800);
+
+  // Animate focus value counter
+  let v=0;
+  const counter=document.getElementById('focus-val');
+  const iv=setInterval(()=>{v=Math.min(v+1,71);counter.textContent=v;if(v>=71)clearInterval(iv);},20);
+  // Oscillate
+  setInterval(()=>{
+    target=60+Math.floor(Math.random()*25);
+    const el=document.getElementById('focus-val');
+    const labels=['DEEP FOCUS','GOOD FOCUS','DISTRACTED','IN THE ZONE'];
+    document.getElementById('focus-label').textContent=target>80?labels[0]:target>65?labels[1]:target>50?labels[2]:labels[3];
+    el.style.color=target>75?'var(--c4)':target>55?'var(--c0)':'var(--c3)';
+  },4000);
+})();
+
+// ═══════════════════════════════════════════
+// ATTENTION WAVE CHART
+// ═══════════════════════════════════════════
+(function(){
+  const cv = document.getElementById('wave-chart');
+  const ctx = cv.getContext('2d');
+  cv.width = cv.offsetWidth * 2; cv.height = 200;
+  const W=cv.width, H=cv.height;
+  const hours=Array.from({length:48},(_,i)=>Math.sin(i*0.4)*30+Math.sin(i*0.7)*20+50+Math.random()*15);
+  let offset=0;
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const grad=ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(79,143,255,0.4)'); grad.addColorStop(1,'rgba(79,143,255,0)');
+    ctx.beginPath();
+    ctx.moveTo(0,H);
+    const step=W/hours.length;
+    hours.forEach((v,i)=>{
+      const x=i*step-offset;
+      const y=H-(v/100)*H*0.85-10;
+      if(i===0)ctx.lineTo(x,y);
+      else ctx.bezierCurveTo((i-0.5)*step-offset,H-(hours[i-1]/100)*H*0.85-10,(i-0.5)*step-offset,y,x,y);
+    });
+    ctx.lineTo(W,H); ctx.closePath();
+    ctx.fillStyle=grad; ctx.fill();
+    ctx.beginPath();
+    hours.forEach((v,i)=>{
+      const x=i*step-offset,y=H-(v/100)*H*0.85-10;
+      if(i===0)ctx.moveTo(x,y);
+      else ctx.bezierCurveTo((i-0.5)*step-offset,H-(hours[i-1]/100)*H*0.85-10,(i-0.5)*step-offset,y,x,y);
+    });
+    ctx.strokeStyle='rgba(79,143,255,0.8)'; ctx.lineWidth=3; ctx.stroke();
+    offset=(offset+0.4)%step;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ═══════════════════════════════════════════
+// INTAKE BARS ANIMATION
+// ═══════════════════════════════════════════
+setTimeout(()=>{
+  document.querySelectorAll('.intake-fill').forEach(el=>{
+    el.style.width=el.dataset.target+'%';
+  });
+},1200);
+
+// ═══════════════════════════════════════════
+// PRODUCTIVITY HEATMAP
+// ═══════════════════════════════════════════
+(function(){
+  const hm=document.getElementById('heatmap');
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const hours=Array.from({length:24},(_,i)=>i);
+  const table=document.createElement('div');
+  table.style.cssText='display:flex;gap:4px;align-items:flex-end;overflow-x:auto;';
+
+  days.forEach((day,di)=>{
+    const col=document.createElement('div');
+    col.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:center;';
+    hours.forEach(h=>{
+      const cell=document.createElement('div');
+      let intensity=0;
+      if(h>=9&&h<=12)intensity=0.4+Math.random()*0.5;
+      else if(h>=14&&h<=17)intensity=0.5+Math.random()*0.4;
+      else if(h>=20&&h<=23)intensity=0.3+Math.random()*0.4;
+      else intensity=Math.random()*0.15;
+      if(di===5||di===6)intensity*=0.4;
+      const alpha=intensity.toFixed(2);
+      cell.style.cssText=`width:28px;height:10px;border-radius:2px;background:rgba(0,229,255,${alpha});transition:opacity 0.2s;`;
+      cell.title=`${day} ${h}:00 — ${Math.floor(intensity*10)} captures`;
+      cell.addEventListener('mouseenter',()=>cell.style.opacity='0.6');
+      cell.addEventListener('mouseleave',()=>cell.style.opacity='1');
+      col.appendChild(cell);
+    });
+    const lbl=document.createElement('div');
+    lbl.style.cssText='font-family:Space Mono,monospace;font-size:9px;color:#5a6a8a;margin-top:6px;letter-spacing:1px;';
+    lbl.textContent=day;
+    col.appendChild(lbl);
+    table.appendChild(col);
+  });
+  hm.appendChild(table);
+})();
+
+// ═══════════════════════════════════════════
+// TECH TOPOLOGY (D3 force)
+// ═══════════════════════════════════════════
+(function(){
+  const svg=d3.select('#topology-svg');
+  const wrap=document.getElementById('topology-wrapper');
+  const W=wrap.clientWidth, H=440;
+  svg.attr('viewBox',`0 0 ${W} ${H}`);
+
+  const layers=[
+    {id:'frontend',label:'FRONTEND',color:'#00e5ff',x:W*0.18,y:H*0.5},
+    {id:'mobile',label:'MOBILE',color:'#00e5ff',x:W*0.18,y:H*0.8},
+    {id:'backend',label:'BACKEND',color:'#4f8fff',x:W*0.42,y:H*0.5},
+    {id:'ai',label:'AI / ML',color:'#a855f7',x:W*0.65,y:H*0.3},
+    {id:'db',label:'DATABASES',color:'#f59e0b',x:W*0.65,y:H*0.7},
+    {id:'infra',label:'INFRA',color:'#10b981',x:W*0.88,y:H*0.5},
+  ];
+
+  const techs=[
+    {id:'react',label:'React 18',layer:'frontend',color:'#00e5ff'},
+    {id:'ts',label:'TypeScript',layer:'frontend',color:'#00e5ff'},
+    {id:'plasmo',label:'Plasmo (ext)',layer:'frontend',color:'#00e5ff'},
+    {id:'d3',label:'D3.js',layer:'frontend',color:'#00e5ff'},
+    {id:'rn',label:'React Native',layer:'mobile',color:'#00b4d8'},
+    {id:'fastify',label:'Fastify',layer:'backend',color:'#4f8fff'},
+    {id:'fastapi',label:'FastAPI',layer:'backend',color:'#4f8fff'},
+    {id:'kafka',label:'Kafka',layer:'backend',color:'#4f8fff'},
+    {id:'claude',label:'Claude 3.5',layer:'ai',color:'#a855f7'},
+    {id:'langchain',label:'LangChain',layer:'ai',color:'#a855f7'},
+    {id:'whisper',label:'Whisper',layer:'ai',color:'#a855f7'},
+    {id:'cohere',label:'Cohere Embed',layer:'ai',color:'#a855f7'},
+    {id:'postgres',label:'PostgreSQL',layer:'db',color:'#f59e0b'},
+    {id:'pinecone',label:'Pinecone',layer:'db',color:'#f59e0b'},
+    {id:'redis',label:'Redis',layer:'db',color:'#f59e0b'},
+    {id:'supabase',label:'Supabase',layer:'db',color:'#f59e0b'},
+    {id:'aws',label:'AWS / GCP',layer:'infra',color:'#10b981'},
+    {id:'docker',label:'Docker + K8s',layer:'infra',color:'#10b981'},
+    {id:'cf',label:'Cloudflare',layer:'infra',color:'#10b981'},
+  ];
+
+  const techLinks=[
+    {source:'react',target:'fastify'},{source:'ts',target:'fastify'},{source:'plasmo',target:'fastify'},
+    {source:'rn',target:'fastify'},{source:'fastify',target:'claude'},{source:'fastify',target:'postgres'},
+    {source:'fastify',target:'redis'},{source:'fastapi',target:'claude'},{source:'fastapi',target:'langchain'},
+    {source:'fastapi',target:'cohere'},{source:'langchain',target:'pinecone'},{source:'langchain',target:'claude'},
+    {source:'cohere',target:'pinecone'},{source:'kafka',target:'fastapi'},{source:'kafka',target:'fastify'},
+    {source:'postgres',target:'supabase'},{source:'aws',target:'fastify'},{source:'aws',target:'fastapi'},
+    {source:'docker',target:'aws'},{source:'cf',target:'aws'},{source:'supabase',target:'fastify'},
+    {source:'whisper',target:'fastapi'},
+  ];
+
+  const allNodes=[...layers,...techs];
+  svg.append('g').selectAll('line').data(techLinks).enter().append('line')
+    .attr('stroke','rgba(255,255,255,0.05)').attr('stroke-width',1)
+    .attr('x1',d=>allNodes.find(n=>n.id===d.source)?.x||0)
+    .attr('y1',d=>allNodes.find(n=>n.id===d.source)?.y||0)
+    .attr('x2',d=>allNodes.find(n=>n.id===d.target)?.x||0)
+    .attr('y2',d=>allNodes.find(n=>n.id===d.target)?.y||0);
+
+  // layer group backgrounds
+  const layerG=svg.append('g');
+  layers.forEach(l=>{
+    layerG.append('rect').attr('x',l.x-52).attr('y',l.y-20)
+      .attr('width',104).attr('height',40).attr('rx',20)
+      .attr('fill',l.color+'18').attr('stroke',l.color+'44').attr('stroke-width',1);
+    layerG.append('text').attr('x',l.x).attr('y',l.y+5)
+      .attr('text-anchor','middle').attr('font-family','Syne,sans-serif')
+      .attr('font-size',11).attr('font-weight',800).attr('fill',l.color)
+      .attr('letter-spacing',2).text(l.label);
+  });
+
+  // tech chips
+  techs.forEach((t,i)=>{
+    const layer=layers.find(l=>l.id===t.layer);
+    const angleStep=Math.PI*2/techs.filter(tt=>tt.layer===t.layer).length;
+    const sameLayer=techs.filter(tt=>tt.layer===t.layer);
+    const idx=sameLayer.indexOf(t);
+    const radius=90;
+    t.x=layer.x+Math.cos(idx*angleStep-Math.PI/2)*radius;
+    t.y=layer.y+Math.sin(idx*angleStep-Math.PI/2)*radius;
+    const g=svg.append('g').attr('transform',`translate(${t.x},${t.y})`);
+    g.append('rect').attr('x',-42).attr('y',-12).attr('width',84).attr('height',24)
+      .attr('rx',12).attr('fill',t.color+'15').attr('stroke',t.color+'50').attr('stroke-width',1)
+      .style('cursor','default')
+      .on('mouseenter',function(){d3.select(this).attr('fill',t.color+'30');})
+      .on('mouseleave',function(){d3.select(this).attr('fill',t.color+'15');});
+    g.append('text').attr('text-anchor','middle').attr('dy','0.35em')
+      .attr('font-size',9.5).attr('font-family','Space Mono, monospace')
+      .attr('fill',t.color).text(t.label).attr('pointer-events','none');
+  });
+
+  // re-draw lines with resolved positions
+  svg.select('g').selectAll('line').data(techLinks)
+    .attr('x1',d=>techs.find(n=>n.id===d.source)?.x||layers.find(n=>n.id===d.source)?.x||0)
+    .attr('y1',d=>techs.find(n=>n.id===d.source)?.y||layers.find(n=>n.id===d.source)?.y||0)
+    .attr('x2',d=>techs.find(n=>n.id===d.target)?.x||layers.find(n=>n.id===d.target)?.x||0)
+    .attr('y2',d=>techs.find(n=>n.id===d.target)?.y||layers.find(n=>n.id===d.target)?.y||0);
+})();
+
+// ═══════════════════════════════════════════
+// INTEGRATIONS RADIAL MAP
+// ═══════════════════════════════════════════
+(function(){
+  const svg=d3.select('#int-svg');
+  const wrap=document.getElementById('int-svg').parentElement;
+  const W=wrap.clientWidth, H=500;
+  svg.attr('viewBox',`0 0 ${W} ${H}`);
+  const cx=W/2, cy=H/2;
+
+  const categories=[
+    {name:'Browser',color:'#00e5ff',items:['Chrome','Brave','Edge','Firefox']},
+    {name:'Video',color:'#4f8fff',items:['YouTube','Loom','Coursera','Udemy']},
+    {name:'Research',color:'#a855f7',items:['arXiv','Zotero','PubMed','Semantic Scholar']},
+    {name:'Productivity',color:'#f59e0b',items:['Notion','Obsidian','Roam','Logseq']},
+    {name:'Dev Tools',color:'#10b981',items:['GitHub','StackOverflow','Figma','Linear']},
+    {name:'Social',color:'#f43f5e',items:['X/Twitter','Reddit','LinkedIn','HN']},
+    {name:'Comms',color:'#ec4899',items:['Slack','Gmail','Substack','Discord']},
+    {name:'Automation',color:'#fb923c',items:['Zapier','Make','n8n','Webhooks']},
+  ];
+
+  // center node
+  svg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',52)
+    .attr('fill','rgba(0,229,255,0.08)').attr('stroke','rgba(0,229,255,0.4)').attr('stroke-width',2);
+  svg.append('text').attr('x',cx).attr('y',cy-8).attr('text-anchor','middle')
+    .attr('font-family','Syne,sans-serif').attr('font-weight',800).attr('font-size',13)
+    .attr('fill','#00e5ff').text('Recall');
+  svg.append('text').attr('x',cx).attr('y',cy+10).attr('text-anchor','middle')
+    .attr('font-family','Syne,sans-serif').attr('font-weight',800).attr('font-size',13)
+    .attr('fill','#00e5ff').text('Sense');
+  svg.append('text').attr('x',cx).attr('y',cy+26).attr('text-anchor','middle')
+    .attr('font-family','Space Mono,monospace').attr('font-size',8)
+    .attr('fill','#5a6a8a').text('AI CORE');
+
+  const catAngle=Math.PI*2/categories.length;
+  const catR=165, itemR=225;
+
+  categories.forEach((cat,ci)=>{
+    const cAngle=ci*catAngle-Math.PI/2;
+    const ccx=cx+Math.cos(cAngle)*catR, ccy=cy+Math.sin(cAngle)*catR;
+
+    // line center→category
+    svg.append('line').attr('x1',cx).attr('y1',cy).attr('x2',ccx).attr('y2',ccy)
+      .attr('stroke',cat.color+'30').attr('stroke-width',1.5).attr('stroke-dasharray','4,4');
+
+    // category node
+    svg.append('circle').attr('cx',ccx).attr('cy',ccy).attr('r',26)
+      .attr('fill',cat.color+'18').attr('stroke',cat.color+'55').attr('stroke-width',1.5);
+    svg.append('text').attr('x',ccx).attr('y',ccy+4).attr('text-anchor','middle')
+      .attr('font-family','Space Mono,monospace').attr('font-size',9)
+      .attr('fill',cat.color).text(cat.name);
+
+    // items
+    cat.items.forEach((item,ii)=>{
+      const spread=0.4;
+      const iAngle=cAngle+(ii-1.5)*spread/cat.items.length*2;
+      const ix=cx+Math.cos(iAngle)*itemR, iy=cy+Math.sin(iAngle)*itemR;
+
+      svg.append('line').attr('x1',ccx).attr('y1',ccy).attr('x2',ix).attr('y2',iy)
+        .attr('stroke',cat.color+'20').attr('stroke-width',1);
+
+      const ig=svg.append('g').attr('transform',`translate(${ix},${iy})`).style('cursor','default');
+      ig.append('rect').attr('x',-36).attr('y',-10).attr('width',72).attr('height',20)
+        .attr('rx',10).attr('fill',cat.color+'12').attr('stroke',cat.color+'40').attr('stroke-width',1)
+        .on('mouseenter',function(){d3.select(this).attr('fill',cat.color+'28');})
+        .on('mouseleave',function(){d3.select(this).attr('fill',cat.color+'12');});
+      ig.append('text').attr('text-anchor','middle').attr('dy','0.35em')
+        .attr('font-size',9).attr('font-family','Space Mono, monospace')
+        .attr('fill',cat.color).text(item).attr('pointer-events','none');
+    });
+  });
+})();
+
+// ═══════════════════════════════════════════
+// MONETIZATION FUNNEL SVG
+// ═══════════════════════════════════════════
+(function(){
+  const svg=document.getElementById('funnel-svg');
+  const W=svg.parentElement.clientWidth, H=480;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('height',H);
+
+  const tiers=[
+    {label:'Website Visitors',count:'100,000',pct:100,color:'rgba(255,255,255,0.1)',text:'#5a6a8a'},
+    {label:'Sign-ups (Free)',count:'8,000',pct:62,color:'rgba(0,229,255,0.15)',text:'#00e5ff'},
+    {label:'Active Free Users',count:'3,200',pct:46,color:'rgba(79,143,255,0.2)',text:'#4f8fff'},
+    {label:'Pro Upgrades',count:'640',pct:32,color:'rgba(168,85,247,0.25)',text:'#a855f7'},
+    {label:'Team Plans',count:'128',pct:20,color:'rgba(16,185,129,0.3)',text:'#10b981'},
+    {label:'Enterprise',count:'12',pct:10,color:'rgba(245,158,11,0.35)',text:'#f59e0b'},
+  ];
+
+  const maxW=W-40, startY=20, rowH=68;
+  tiers.forEach((t,i)=>{
+    const tw=maxW*(t.pct/100);
+    const x=(maxW-tw)/2+20;
+    const y=startY+i*rowH;
+
+    const trap=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const nextPct=tiers[i+1]?.pct||t.pct;
+    const nw=maxW*(nextPct/100);
+    const nx=(maxW-nw)/2+20;
+    trap.setAttribute('d',`M${x},${y} L${x+tw},${y} L${nx+nw},${y+60} L${nx},${y+60} Z`);
+    trap.setAttribute('fill',t.color);
+    trap.setAttribute('stroke',t.text+'44');
+    trap.setAttribute('stroke-width','1');
+    svg.appendChild(trap);
+
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',W/2); lbl.setAttribute('y',y+24);
+    lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('font-family','Syne, sans-serif');
+    lbl.setAttribute('font-size','13'); lbl.setAttribute('font-weight','700');
+    lbl.setAttribute('fill',t.text); lbl.textContent=t.label;
+    svg.appendChild(lbl);
+
+    const cnt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    cnt.setAttribute('x',W/2); cnt.setAttribute('y',y+42);
+    cnt.setAttribute('text-anchor','middle');
+    cnt.setAttribute('font-family','Space Mono, monospace');
+    cnt.setAttribute('font-size','11');
+    cnt.setAttribute('fill',t.text+'aa'); cnt.textContent=t.count+' users';
+    svg.appendChild(cnt);
+  });
+})();
+
+// ═══════════════════════════════════════════
+// RISK RADAR CANVAS
+// ═══════════════════════════════════════════
+(function(){
+  const cv=document.getElementById('risk-radar');
+  const ctx=cv.getContext('2d');
+  const cx=210,cy=210,R=160;
+  const axes=['Privacy','Cost','Browser\nApproval','Big Tech\nComp.','API\nFragility','Onboarding'];
+  const data=[0.85,0.80,0.55,0.65,0.50,0.30];
+  const colors=['#f43f5e','#f43f5e','#f59e0b','#f59e0b','#f59e0b','#10b981'];
+  const n=axes.length;
+
+  // bg rings
+  [0.2,0.4,0.6,0.8,1.0].forEach(r=>{
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const a=i*Math.PI*2/n-Math.PI/2;
+      const x=cx+Math.cos(a)*R*r, y=cy+Math.sin(a)*R*r;
+      if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle='rgba(26,37,64,0.8)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='rgba(13,21,38,0.3)'; ctx.fill();
+  });
+
+  // axis lines + labels
+  axes.forEach((ax,i)=>{
+    const a=i*Math.PI*2/n-Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
+    ctx.strokeStyle='rgba(26,37,64,1)'; ctx.lineWidth=1; ctx.stroke();
+    const lx=cx+Math.cos(a)*(R+28), ly=cy+Math.sin(a)*(R+28);
+    ctx.font='10px Space Mono,monospace';
+    ctx.fillStyle='#5a6a8a'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ax.split('\n').forEach((line,li)=>ctx.fillText(line,lx,ly+(li-0.5)*14));
+  });
+
+  // data polygon
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const a=i*Math.PI*2/n-Math.PI/2;
+    const x=cx+Math.cos(a)*R*v, y=cy+Math.sin(a)*R*v;
+    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+  grad.addColorStop(0,'rgba(244,63,94,0.3)');
+  grad.addColorStop(0.5,'rgba(245,158,11,0.2)');
+  grad.addColorStop(1,'rgba(16,185,129,0.1)');
+  ctx.fillStyle=grad; ctx.fill();
+  ctx.strokeStyle='rgba(244,63,94,0.8)'; ctx.lineWidth=2; ctx.stroke();
+
+  // data points
+  data.forEach((v,i)=>{
+    const a=i*Math.PI*2/n-Math.PI/2;
+    const x=cx+Math.cos(a)*R*v, y=cy+Math.sin(a)*R*v;
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.fillStyle=colors[i]; ctx.fill();
+    ctx.strokeStyle='var(--bg)'; ctx.lineWidth=2; ctx.stroke();
+  });
+})();
+</script>
+</body>
+</html>
