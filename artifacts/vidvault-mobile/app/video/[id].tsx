@@ -155,7 +155,17 @@ function AiToolCard({
       }}
       from={{ opacity: 0 }}
       transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
-      style={[styles.toolCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+      style={[
+        styles.toolCard,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: isDark ? "#000" : "#6366f1",
+          shadowOpacity: isDark ? 0.4 : 0.08,
+          shadowRadius: isDark ? 16 : 8,
+          elevation: isDark ? 8 : 2,
+        },
+      ]}
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
 

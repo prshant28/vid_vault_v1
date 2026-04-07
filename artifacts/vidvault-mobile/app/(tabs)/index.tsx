@@ -18,7 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { ComponentProps } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/hooks/useColors";
+import { useColors, useTheme } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
@@ -133,7 +133,7 @@ function EtchedStatCard({
   accent: string;
   delay: number;
 }) {
-  const colors = useColors();
+  const { colors, isDark } = useTheme();
   const pulse = useRef(new Animated.Value(0.08)).current;
 
   useEffect(() => {
@@ -160,12 +160,21 @@ function EtchedStatCard({
       transition={{ type: "timing", duration: 400, delay }}
       style={[
         styles.etchedCard,
-        { backgroundColor: colors.card, borderColor: colors.border },
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: isDark ? "#000" : accent,
+          shadowOpacity: isDark ? 0.4 : 0.10,
+          shadowRadius: isDark ? 12 : 8,
+          elevation: isDark ? 8 : 2,
+        },
       ]}
     >
       {/* Etch highlight overlay */}
       <LinearGradient
-        colors={["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.3)"]}
+        colors={isDark
+          ? ["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.3)"]
+          : ["rgba(255,255,255,0.9)", "transparent", "rgba(0,0,0,0.02)"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -213,6 +222,7 @@ function QuickAction({
   onPress: () => void;
   delay: number;
 }) {
+  const { isDark } = useTheme();
   return (
     <MotiView
       from={{ opacity: 0, scale: 0.88 }}
@@ -225,7 +235,14 @@ function QuickAction({
         activeOpacity={0.75}
         style={[
           styles.quickBtn,
-          { backgroundColor: accent + "10", borderColor: accent + "30" },
+          {
+            backgroundColor: accent + "10",
+            borderColor: accent + "30",
+            shadowColor: isDark ? "#000" : accent,
+            shadowOpacity: isDark ? 0.3 : 0.10,
+            shadowRadius: isDark ? 8 : 6,
+            elevation: isDark ? 4 : 2,
+          },
         ]}
       >
         <View style={[styles.quickBtnIcon, { backgroundColor: accent + "18" }]}>
@@ -250,7 +267,7 @@ function ActivityNode({
   index: number;
   onPress: () => void;
 }) {
-  const colors = useColors();
+  const { colors, isDark } = useTheme();
   const isFirst = index === 0;
   return (
     <MotiView
@@ -297,6 +314,10 @@ function ActivityNode({
             {
               backgroundColor: colors.card,
               borderColor: isFirst ? PURPLE + "25" : colors.border,
+              shadowColor: isDark ? "#000" : PURPLE,
+              shadowOpacity: isDark ? 0.25 : 0.07,
+              shadowRadius: isDark ? 6 : 5,
+              elevation: isDark ? 3 : 1,
             },
           ]}
         >
@@ -354,7 +375,7 @@ function LevelCard({
   progressPct: number;
   isMaxLevel: boolean;
 }) {
-  const colors = useColors();
+  const { colors, isDark } = useTheme();
   const barW = useRef(new Animated.Value(0)).current;
   const { width: screenWidth } = useWindowDimensions();
   const innerWidth = screenWidth - 40 - 32;
@@ -375,7 +396,14 @@ function LevelCard({
       transition={{ type: "timing", duration: 500, delay: 100 }}
       style={[
         styles.levelCard,
-        { backgroundColor: colors.card, borderColor: levelColor + "40" },
+        {
+          backgroundColor: colors.card,
+          borderColor: levelColor + "40",
+          shadowColor: isDark ? "#000" : levelColor,
+          shadowOpacity: isDark ? 0.35 : 0.10,
+          shadowRadius: isDark ? 12 : 8,
+          elevation: isDark ? 7 : 2,
+        },
       ]}
     >
       <LinearGradient
