@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "VidVault AI"
+version = "1.0.0"
+id = "vidvault-ai-main"
+
+[[services]]
+localPort = 5173
+name = "web"
+paths = ["/"]
+
+[services.env]
+PORT = "5173"
+BASE_PATH = "/"
+
+[services.development]
+run = "pnpm --filter @workspace/vidvault-ai run dev"
+
+[services.production]
+serve = "static"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/vidvault-ai", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+BASE_PATH = "/"
