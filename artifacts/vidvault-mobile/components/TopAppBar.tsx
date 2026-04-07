@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   brandSub: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 8,
-    letterSpacing: 3,
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 7,
+    letterSpacing: 2.5,
     textTransform: "uppercase",
     lineHeight: 11,
     marginTop: -2,

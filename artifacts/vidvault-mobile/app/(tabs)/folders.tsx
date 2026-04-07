@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
 
   subHeader: { paddingHorizontal: 10, paddingTop: 4, paddingBottom: 14 },
-  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subLabel: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 2.5, marginBottom: 6 },
   subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   skeletonGrid: {
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   folderMeta: { flexDirection: "row", alignItems: "center", gap: 5 },
   folderName: { fontSize: 13, fontFamily: "Poppins_600SemiBold", textAlign: "center", lineHeight: 19 },
-  folderCount: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  folderCount: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
   deleteBtn: { position: "absolute", top: 8, right: 8, padding: 4 },
 
   fab: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 12, fontFamily: "Poppins_400Regular", marginTop: -8 },
 
   colorLabel: {
-    fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2,
+    fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 2,
     marginBottom: -4,
   },
   colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },

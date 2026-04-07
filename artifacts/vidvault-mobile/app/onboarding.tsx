@@ -429,7 +429,7 @@ export default function OnboardingScreen() {
           <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7}>
             <Text style={styles.signInHint}>
               ALREADY HAVE AN ACCOUNT?{"  "}
-              <Text style={{ color: WHITE, fontFamily: "JetBrainsMono_600SemiBold" }}>SIGN IN →</Text>
+              <Text style={{ color: WHITE, fontFamily: "Poppins_600SemiBold" }}>Sign in →</Text>
             </Text>
           </TouchableOpacity>
         ) : (
@@ -476,16 +476,16 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   aiBadgeText: {
-    fontFamily: "JetBrainsMono_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     fontSize: 8,
     color: PURPLE,
-    letterSpacing: 1.5,
+    letterSpacing: 0.5,
   },
   skipText: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 10,
+    fontFamily: "Poppins_500Medium",
+    fontSize: 11,
     color: MUTED,
-    letterSpacing: 2,
+    letterSpacing: 0.3,
   },
 
   /* Illustration */
@@ -540,10 +540,10 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
   },
   badgeText: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 9,
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 10,
     color: PURPLE,
-    letterSpacing: 2,
+    letterSpacing: 0.3,
   },
 
   /* Title */
@@ -564,18 +564,18 @@ const styles = StyleSheet.create({
   },
 
   signInHint: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 9,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 11,
     color: MUTED2,
-    letterSpacing: 1.2,
+    letterSpacing: 0.2,
     alignSelf: "center",
   },
 
   hintLine: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 8,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 10,
     color: MUTED2,
-    letterSpacing: 2,
+    letterSpacing: 0.3,
     alignSelf: "center",
   },
 });

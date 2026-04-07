@@ -84,13 +84,13 @@ const styles = StyleSheet.create({
   },
   bracket: {
     fontSize: 26,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontWeight: "300",
     lineHeight: 32,
   },
   codeLabel: {
     fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
-    letterSpacing: 2,
+    fontFamily: "Poppins_400Regular",
+    letterSpacing: 1,
     marginBottom: 12,
   },
   title: {

@@ -159,10 +159,10 @@ const styles = StyleSheet.create({
     lineHeight: 50,
   },
   tagline: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 10,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 9,
     color: MUTED,
-    letterSpacing: 3.5,
+    letterSpacing: 3,
   },
   barTrack: {
     position: "absolute",
@@ -183,9 +183,9 @@ const styles = StyleSheet.create({
     bottom: 56,
   },
   versionText: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 10,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 9,
     color: MUTED,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
 });

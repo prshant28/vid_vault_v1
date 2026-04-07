@@ -84,13 +84,6 @@ function EyeIcon({ visible }: { visible: boolean }) {
     </Svg>
   );
 }
-function ReplitIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M4 4h7v5H4V4zM11 9h5v5h-5V9zM4 14h7v6H4v-6z" fill={MUTED} />
-    </Svg>
-  );
-}
 
 /* ── Background decoration ── */
 function BackgroundDecor() {
@@ -508,34 +501,6 @@ export default function LoginScreen() {
               fullWidth
             />
           </MotiView>
-
-          {/* Divider */}
-          <MotiView
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ type: "timing", duration: 400, delay: isReg ? 280 : 200 }}
-            style={styles.divider}
-          >
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </MotiView>
-
-          {/* Replit */}
-          <MotiView
-            from={{ opacity: 0, translateY: 8 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: "timing", duration: 340, delay: isReg ? 320 : 240 }}
-          >
-            <AppButton
-              label="CONTINUE WITH REPLIT"
-              onPress={() => setError("Replit sign-in is available on the web app")}
-              customIcon={<ReplitIcon />}
-              size="md"
-              variant="ghost"
-              fullWidth
-            />
-          </MotiView>
         </View>
 
         {/* ── Dots decoration ── */}
@@ -582,10 +547,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   logoSub: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 8,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 9,
     color: MUTED,
-    letterSpacing: 2.5,
+    letterSpacing: 1.5,
     marginTop: 2,
   },
 
@@ -610,10 +575,10 @@ const styles = StyleSheet.create({
     borderRadius: 9,
   },
   tabText: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 9.5,
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 10,
     color: MUTED,
-    letterSpacing: 1.5,
+    letterSpacing: 0.5,
   },
   tabTextActive: {
     color: WHITE,
@@ -631,10 +596,10 @@ const styles = StyleSheet.create({
     lineHeight: 48,
   },
   subheading: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 9.5,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 11,
     color: MUTED,
-    letterSpacing: 2,
+    letterSpacing: 0.3,
   },
 
   /* Form */
@@ -647,10 +612,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   label: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 9,
+    fontFamily: "Poppins_500Medium",
+    fontSize: 10,
     color: MUTED,
-    letterSpacing: 1.5,
+    letterSpacing: 0.5,
     marginBottom: 7,
   },
 
@@ -695,29 +660,10 @@ const styles = StyleSheet.create({
   },
   errorText: {
     flex: 1,
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 11,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
     color: ERROR_COLOR,
-    letterSpacing: 0.3,
-    lineHeight: 17,
-  },
-
-  /* Divider */
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "rgba(99,102,241,0.15)",
-  },
-  dividerText: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 10,
-    color: MUTED,
-    letterSpacing: 2,
+    lineHeight: 18,
   },
 
   /* Dots */

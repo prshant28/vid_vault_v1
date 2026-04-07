@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    letterSpacing: 1.5,
+    fontFamily: "Poppins_600SemiBold",
+    letterSpacing: 0.8,
   },
 });

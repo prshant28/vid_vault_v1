@@ -383,14 +383,14 @@ export default function ProfileScreen() {
                   <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: levelColor }}>{level}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CURRENT_RANK</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CURRENT_RANK</Text>
                   <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground }}>{levelTitle}</Text>
                   <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.border, overflow: "hidden", marginTop: 8 }}>
                     <LinearGradient colors={[levelColor, levelColor + "aa"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${Math.round(progressPct * 100)}%`, height: "100%" }} />
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 5 }}>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, color: colors.mutedForeground }}>{xp} XP earned</Text>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, color: levelColor }}>{nextLevelXP - xp} XP to go</Text>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, color: colors.mutedForeground }}>{xp} XP earned</Text>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, color: levelColor }}>{nextLevelXP - xp} XP to go</Text>
                   </View>
                 </View>
               </View>
@@ -501,7 +501,7 @@ export default function ProfileScreen() {
           >
             <LinearGradient colors={[PURPLE + "14", "transparent"]} style={StyleSheet.absoluteFill} />
             <View style={{ height: 2, backgroundColor: PURPLE, width: "20%", marginBottom: 20 }} />
-            <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
+            <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
             <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, marginBottom: 16 }}>Update Name</Text>
             <TextInput
               value={editNameVal}
@@ -515,7 +515,7 @@ export default function ProfileScreen() {
             />
             <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
               <TouchableOpacity onPress={() => setShowEditName(false)} style={[styles.modalBtn, { borderColor: colors.border, backgroundColor: colors.card, flex: 1 }]}>
-                <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 11, letterSpacing: 1, color: colors.mutedForeground }}>CANCEL</Text>
+                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 1, color: colors.mutedForeground }}>CANCEL</Text>
               </TouchableOpacity>
               <AppButton label="SAVE" icon="check" size="sm" variant="primary" onPress={handleSaveName} />
             </View>
@@ -543,7 +543,7 @@ export default function ProfileScreen() {
                   <Feather name="tag" size={16} color={PURPLE} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TAG_MANAGER</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TAG_MANAGER</Text>
                   <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Manage Tags</Text>
                 </View>
               </View>
@@ -556,7 +556,7 @@ export default function ProfileScreen() {
 
             {/* Create tag */}
             <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW TAG</Text>
+              <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW TAG</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TextInput
                   value={newTagName} onChangeText={setNewTagName} placeholder="Tag name..."
@@ -588,7 +588,7 @@ export default function ProfileScreen() {
                     <Feather name="tag" size={22} color={PURPLE + "80"} />
                   </View>
                   <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground }}>No tags yet</Text>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first tag above</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first tag above</Text>
                 </View>
               }
               renderItem={({ item: tag, index }) => (
@@ -596,12 +596,12 @@ export default function ProfileScreen() {
                   <View style={[styles.tagDot, { backgroundColor: tag.color || PURPLE }]} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 14, color: colors.foreground }}>{tag.name}</Text>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
                       TAG_{(index + 1).toString().padStart(2, "0")}
                     </Text>
                   </View>
                   <View style={{ backgroundColor: (tag.color || PURPLE) + "14", borderRadius: 20, borderWidth: 1, borderColor: (tag.color || PURPLE) + "30", paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: tag.color || PURPLE }}>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1, color: tag.color || PURPLE }}>
                       {tag.videoCount ?? 0} VID{(tag.videoCount ?? 0) !== 1 ? "S" : ""}
                     </Text>
                   </View>
@@ -619,7 +619,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  pageCode:  { fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 6 },
+  pageCode:  { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 6 },
   pageTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 40, letterSpacing: -1, lineHeight: 48 },
 
   identityCard: { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
@@ -629,10 +629,10 @@ const styles = StyleSheet.create({
   cameraBadge: { position: "absolute", bottom: 2, right: 2, width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 2 },
 
   pill:     { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  pillText: { fontFamily: "JetBrainsMono_600SemiBold", fontSize: 8, letterSpacing: 1.1 },
+  pillText: { fontFamily: "Poppins_600SemiBold", fontSize: 8, letterSpacing: 1.1 },
 
   idBtn:     { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  idBtnText: { fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1 },
+  idBtnText: { fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1 },
 
   levelCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
   levelOrb:  { width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center" },
@@ -640,14 +640,14 @@ const styles = StyleSheet.create({
   statCard:    { padding: 12, borderRadius: 12, borderWidth: 1, alignItems: "center", gap: 5, overflow: "hidden" },
   statIconWrap:{ width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   statValue:   { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -1 },
-  statLabel:   { fontFamily: "JetBrainsMono_400Regular", fontSize: 6.5, letterSpacing: 1.5 },
+  statLabel:   { fontFamily: "Poppins_400Regular", fontSize: 6.5, letterSpacing: 1.5 },
 
   achieveCard: { width: 80, padding: 10, borderRadius: 14, borderWidth: 1, alignItems: "center", overflow: "hidden" },
   achieveOrb:  { width: 46, height: 46, borderRadius: 14, borderWidth: 1.5, alignItems: "center", justifyContent: "center", marginBottom: 8, position: "relative" },
   achieveCheck:{ position: "absolute", top: -4, right: -4, width: 14, height: 14, borderRadius: 7, alignItems: "center", justifyContent: "center" },
-  achieveLabel:{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7.5, letterSpacing: 0.5, textAlign: "center", lineHeight: 11 },
+  achieveLabel:{ fontFamily: "Poppins_400Regular", fontSize: 7.5, letterSpacing: 0.5, textAlign: "center", lineHeight: 11 },
 
-  groupLabel: { fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2.5, marginBottom: 8 },
+  groupLabel: { fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2.5, marginBottom: 8 },
   groupCard:  { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
 
   row:       { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },

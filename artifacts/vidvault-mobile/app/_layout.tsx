@@ -105,7 +105,7 @@ function RootLayoutNav() {
           <VidVaultLogo size={88} />
         </View>
         <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
-        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
+        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
   }
@@ -166,7 +166,7 @@ export default function RootLayout() {
           <VidVaultLogo size={72} />
         </View>
         <Text style={{ fontSize: 24, color: "#ffffff", fontWeight: "900", letterSpacing: -0.5 }}>VidVault</Text>
-        <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 3, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
+        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
   }

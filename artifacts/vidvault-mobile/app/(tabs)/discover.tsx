@@ -74,7 +74,7 @@ function PolygonBtn({ label, icon, color = PURPLE, onPress }: { label: string; i
         </Svg>
         <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 }]}>
           {icon && <Feather name={icon} size={14} color="#fff" />}
-          <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 11, letterSpacing: 1.4, color: "#fff" }}>{label}</Text>
+          <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 1.4, color: "#fff" }}>{label}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -92,7 +92,7 @@ function SectionHead({ micro, title, delay = 0 }: { micro: string; title: string
       style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}
     >
       <View>
-        <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, color: colors.mutedForeground, letterSpacing: 2.5, marginBottom: 3 }}>
+        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, color: colors.mutedForeground, letterSpacing: 2.5, marginBottom: 3 }}>
           {micro}
         </Text>
         <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, letterSpacing: -0.2 }}>
@@ -327,7 +327,7 @@ export default function DiscoverScreen() {
                   />
                 ))}
               </View>
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 1.5, color: GREEN }}>
+              <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1.5, color: GREEN }}>
                 {totalTags} TOPICS MAPPED
               </Text>
             </View>
@@ -354,7 +354,7 @@ export default function DiscoverScreen() {
                 <Feather name="zap" size={22} color={AMBER} />
               </View>
               <View style={{ alignItems: "center", gap: 6 }}>
-                <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 2, color: AMBER }}>// PRO_TIER</Text>
+                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2, color: AMBER }}>// PRO_TIER</Text>
                 <Text style={[styles.proTitle, { color: colors.foreground }]}>Unlock Pro Features</Text>
                 <Text style={[styles.proDesc, { color: colors.mutedForeground }]}>
                   Anki decks, PDF exports, custom templates, Twitter threads, and priority AI processing.
@@ -364,7 +364,7 @@ export default function DiscoverScreen() {
                 {["Anki Decks", "PDF Export", "Custom Templates", "Priority AI"].map((feat) => (
                   <View key={feat} style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: AMBER + "12", borderWidth: 1, borderColor: AMBER + "30", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
                     <Feather name="check" size={9} color={AMBER} />
-                    <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 0.8, color: AMBER }}>{feat}</Text>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 0.8, color: AMBER }}>{feat}</Text>
                   </View>
                 ))}
               </View>
@@ -395,7 +395,7 @@ export default function DiscoverScreen() {
                   <Feather name="layout" size={16} color={AMBER} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TEMPLATE_LIBRARY</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TEMPLATE_LIBRARY</Text>
                   <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Export Templates</Text>
                 </View>
               </View>
@@ -428,7 +428,7 @@ export default function DiscoverScreen() {
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <View style={{ backgroundColor: t.color + "14", borderWidth: 1, borderColor: t.color + "30", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 }}>
-                      <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
+                      <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
                     </View>
                     <Feather name="arrow-right" size={12} color={t.color + "80"} />
                   </View>
@@ -445,7 +445,7 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 
-  pageCode:  { fontFamily: "JetBrainsMono_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 6 },
+  pageCode:  { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 6 },
   pageTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 36, letterSpacing: -1, lineHeight: 42, marginBottom: 6 },
   pageSub:   { fontFamily: "Poppins_400Regular", fontSize: 12, lineHeight: 18 },
 
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   },
   statItem:  { alignItems: "center", flex: 1 },
   statValue: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 24, lineHeight: 28 },
-  statLabel: { fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1.5, marginTop: 2 },
+  statLabel: { fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1.5, marginTop: 2 },
 
   toolGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   toolCard: {
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   toolLabel:    { fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 0.1 },
   toolDesc:     { fontFamily: "Poppins_400Regular", fontSize: 10, lineHeight: 14 },
   toolBadge:    { alignSelf: "flex-start", borderRadius: 20, borderWidth: 1, paddingHorizontal: 7, paddingVertical: 2, marginTop: 2 },
-  toolBadgeText:{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 7, letterSpacing: 1 },
+  toolBadgeText:{ fontFamily: "Poppins_600SemiBold", fontSize: 7, letterSpacing: 1 },
 
   sectionIntro: { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 12 },
   templateCard: {
@@ -477,12 +477,12 @@ const styles = StyleSheet.create({
   },
   templateIcon:     { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   templateName:     { fontFamily: "Poppins_600SemiBold", fontSize: 12 },
-  templateCategory: { fontFamily: "JetBrainsMono_400Regular", fontSize: 7, letterSpacing: 1.4, marginTop: 1 },
+  templateCategory: { fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1.4, marginTop: 1 },
   viewAllBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
     borderRadius: 20, borderWidth: 1, paddingVertical: 11, marginTop: 12,
   },
-  viewAllText: { fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.5 },
+  viewAllText: { fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.5 },
 
   graphCard:    { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
   graphIconWrap:{ width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },

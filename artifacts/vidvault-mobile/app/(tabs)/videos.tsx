@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   headerBlock: { paddingBottom: 4 },
 
   subHeader: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 14 },
-  subLabel: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subLabel: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 2.5, marginBottom: 6 },
   subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   searchWrap: { paddingHorizontal: 10, marginBottom: 8 },
@@ -647,14 +647,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11, paddingVertical: 7,
     borderWidth: 1, borderRadius: 8,
   },
-  chipText: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  chipText: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 1.5 },
   tagDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   countRow: {
     flexDirection: "row", alignItems: "center",
     paddingHorizontal: 10, paddingBottom: 10, gap: 8,
   },
-  countText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  countText: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 1.5 },
   countDivider: { width: 1, height: 10 },
   iconToolBtn: {
     width: 32, height: 32, borderRadius: 8, borderWidth: 1,
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
   },
   statItem: { flex: 1, alignItems: "center", gap: 4 },
   statVal: { fontSize: 22, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1 },
-  statLabel: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  statLabel: { fontSize: 8, fontFamily: "Poppins_400Regular", letterSpacing: 1.5 },
   statsDivider: { width: 1, marginVertical: 4 },
 
   /* Section header */
@@ -681,13 +681,13 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 8,
     paddingHorizontal: 10, paddingTop: 4, paddingBottom: 10,
   },
-  sectionCode: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 1.5 },
+  sectionCode: { fontSize: 8, fontFamily: "Poppins_400Regular", letterSpacing: 1.5 },
   sectionTitle: { fontSize: 13, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.2 },
   sectionLine: { flex: 1, height: 1 },
   sectionBadge: {
     paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1,
   },
-  sectionBadgeText: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  sectionBadgeText: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
 
   listContent: { paddingHorizontal: 10, paddingBottom: 180 },
   gridRow: { flexDirection: "row", gap: 10, marginBottom: 0 },
@@ -705,12 +705,12 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   selCount: { fontSize: 13, fontFamily: "Poppins_600SemiBold", letterSpacing: -0.2 },
-  selSub:   { fontSize: 9,  fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5, opacity: 0.6 },
+  selSub:   { fontSize: 9,  fontFamily: "Poppins_400Regular", letterSpacing: 0.5, opacity: 0.6 },
   selActionBtn: {
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1,
   },
-  selActionText: { fontSize: 10, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 0.8 },
+  selActionText: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.8 },
 });
 
 const sortStyles = StyleSheet.create({
@@ -772,7 +772,7 @@ const moveStyles = StyleSheet.create({
   },
   folderIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   folderName: { fontSize: 14, fontFamily: "Poppins_600SemiBold" },
-  folderCount: { fontSize: 10, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.5 },
+  folderCount: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
   noFolders: { paddingVertical: 32, alignItems: "center" },
   noFoldersText: { fontSize: 13, fontFamily: "Poppins_400Regular" },
 });

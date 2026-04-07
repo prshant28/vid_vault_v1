@@ -651,7 +651,7 @@ function RecentAiItemCard({
               <Text
                 style={{
                   fontSize: 9,
-                  fontFamily: "JetBrainsMono_400Regular",
+                  fontFamily: "Poppins_400Regular",
                   color: colors.mutedForeground + "60",
                   letterSpacing: 0.3,
                 }}
@@ -809,7 +809,7 @@ function WelcomeHero({
         <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
           <Text style={{ fontSize: 13 }}>{emoji}</Text>
           <Text style={{
-            fontFamily: "JetBrainsMono_400Regular", fontSize: 9,
+            fontFamily: "Poppins_400Regular", fontSize: 9,
             letterSpacing: 1.8, color: PURPLE, textTransform: "uppercase",
           }}>
             {greeting}
@@ -1063,7 +1063,7 @@ export default function HomeScreen() {
                 <View style={{ gap: 4 }}>
                   <Text
                     style={{
-                      fontFamily: "JetBrainsMono_400Regular",
+                      fontFamily: "Poppins_400Regular",
                       fontSize: 9,
                       letterSpacing: 2,
                       color: PURPLE,
@@ -1503,7 +1503,7 @@ const styles = StyleSheet.create({
   },
   greetingLabel: {
     fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2.5,
   },
   greetingName: {
@@ -1515,7 +1515,7 @@ const styles = StyleSheet.create({
   },
   greetingSub: {
     fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 1.5,
   },
 
@@ -1533,7 +1533,7 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusText: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     letterSpacing: 1.5,
   },
 
@@ -1570,7 +1570,7 @@ const styles = StyleSheet.create({
   },
   quickBtnSub: {
     fontSize: 8,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 0.5,
   },
 
@@ -1593,12 +1593,12 @@ const styles = StyleSheet.create({
   sectionLine: { flex: 1, height: 1 },
   sectionLabel: {
     fontSize: 10,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2,
   },
   sectionMicro: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2,
     marginBottom: 3,
   },
@@ -1609,7 +1609,7 @@ const styles = StyleSheet.create({
   },
   viewAll: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 1.5,
     paddingBottom: 3,
   },
@@ -1635,13 +1635,13 @@ const styles = StyleSheet.create({
   },
   etchedCode: {
     fontSize: 8,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 1.5,
     color: "rgba(255,255,255,0.2)",
   },
   etchedLabel: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2,
     marginBottom: 4,
     textTransform: "uppercase",
@@ -1678,12 +1678,12 @@ const styles = StyleSheet.create({
   intelDot: { width: 7, height: 7, borderRadius: 3.5 },
   intelLabel: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 1.8,
   },
   intelCount: {
     fontSize: 11,
-    fontFamily: "JetBrainsMono_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     letterSpacing: 0.5,
   },
   intelTrack: {
@@ -1737,7 +1737,7 @@ const styles = StyleSheet.create({
   },
   activityChannel: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 0.3,
     marginTop: 1,
   },
@@ -1745,7 +1745,7 @@ const styles = StyleSheet.create({
   newPillText: {
     color: "#fff",
     fontSize: 7,
-    fontFamily: "JetBrainsMono_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     letterSpacing: 1,
   },
 
@@ -1758,7 +1758,7 @@ const styles = StyleSheet.create({
   },
   taglineText: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2.5,
   },
 
@@ -1781,7 +1781,7 @@ const styles = StyleSheet.create({
   },
   levelLabel: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2,
     marginBottom: 8,
   },
@@ -1806,7 +1806,7 @@ const styles = StyleSheet.create({
   },
   levelSub: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 0.5,
   },
   xpBlock: { alignItems: "flex-end" },
@@ -1818,7 +1818,7 @@ const styles = StyleSheet.create({
   },
   xpLabel: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 2,
   },
   xpTrack: { height: 6, borderRadius: 3, overflow: "hidden", marginBottom: 6 },
@@ -1826,7 +1826,7 @@ const styles = StyleSheet.create({
   xpMeta: { flexDirection: "row", justifyContent: "space-between" },
   xpMetaText: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 0.5,
   },
 
@@ -1850,7 +1850,7 @@ const styles = StyleSheet.create({
   },
   aiCardType: {
     fontSize: 8,
-    fontFamily: "JetBrainsMono_600SemiBold",
+    fontFamily: "Poppins_600SemiBold",
     letterSpacing: 1.5,
   },
   aiCardTitle: {
@@ -1860,7 +1860,7 @@ const styles = StyleSheet.create({
   },
   aiCardTime: {
     fontSize: 9,
-    fontFamily: "JetBrainsMono_400Regular",
+    fontFamily: "Poppins_400Regular",
     letterSpacing: 0.3,
     marginTop: 2,
   },

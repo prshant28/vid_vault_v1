@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE, borderRadius: 3,
     paddingHorizontal: 5, paddingVertical: 2,
   },
-  newBadgeText: { color: "#fff", fontSize: 7, fontFamily: "JetBrainsMono_600SemiBold", letterSpacing: 1 },
+  newBadgeText: { color: "#fff", fontSize: 7, fontWeight: "700", letterSpacing: 0.8 },
   checkCircle: {
     width: 18, height: 18, borderRadius: 9,
     backgroundColor: PURPLE, alignItems: "center", justifyContent: "center",
@@ -247,22 +247,22 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: 4, paddingVertical: 2,
   },
-  metaBadgeText: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular" },
+  metaBadgeText: { fontSize: 8, fontWeight: "500" },
   durationBadge: {
     backgroundColor: "rgba(0,0,0,0.72)",
     borderRadius: 4,
     paddingHorizontal: 5, paddingVertical: 2,
   },
-  durationText: { color: "#fff", fontSize: 9, fontFamily: "JetBrainsMono_400Regular" },
+  durationText: { color: "#fff", fontSize: 9, fontWeight: "500" },
 
   info: { padding: 10, gap: 3 },
   title: { fontSize: 12, fontFamily: "Poppins_600SemiBold", lineHeight: 17 },
-  channel: { fontSize: 9, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3 },
+  channel: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.1 },
   tagsRow: { flexDirection: "row", gap: 4, marginTop: 4, flexWrap: "wrap" },
   tagPill: {
     flexDirection: "row", alignItems: "center", gap: 3,
     paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1,
   },
   tagDot: { width: 4, height: 4, borderRadius: 2 },
-  tagText: { fontSize: 8, fontFamily: "JetBrainsMono_400Regular", letterSpacing: 0.3 },
+  tagText: { fontSize: 9, fontFamily: "Poppins_400Regular" },
 });
