@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, Switch,
   ScrollView, Platform, Alert, TextInput, FlatList, Image,
@@ -33,8 +33,11 @@ const RED    = "#ef4444";
 const AVATAR_KEY   = "vv_profile_image_uri";
 const DNAME_KEY    = "vv_display_name";
 
-const TAG_COLORS = [PURPLE, PINK, GREEN, AMBER, CYAN, "#a78bfa", "#f87171", "#4ade80", "#facc15", "#38bdf8"];
-type Tag = { id: string; name: string; color?: string | null; userId: string; videoCount?: number };
+const TAG_COLORS    = [PURPLE, PINK, GREEN, AMBER, CYAN, "#a78bfa", "#f87171", "#4ade80", "#facc15", "#38bdf8"];
+const FOLDER_COLORS = [PURPLE, AMBER, GREEN, PINK, CYAN, "#a78bfa", "#f87171", "#facc15", "#38bdf8", "#fb923c"];
+
+type Tag    = { id: string; name: string; color?: string | null; userId: string; videoCount?: number };
+type Folder = { id: string; name: string; color: string | null; videoCount: number };
 
 /* ── Achievement definition ── */
 const ACHIEVEMENTS: Array<{
@@ -138,32 +141,44 @@ export default function ProfileScreen() {
 
   const isDark = preference === "dark" || preference === "system";
 
-  const [avatarUri, setAvatarUri]     = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string>("");
-  const [showEditName, setShowEditName] = useState(false);
-  const [editNameVal, setEditNameVal] = useState("");
-  const [showTagManager, setShowTagManager] = useState(false);
-  const [newTagName, setNewTagName] = useState("");
-  const [selectedColor, setSelectedColor] = useState(TAG_COLORS[0]);
-  const [showStats, setShowStats] = useState(false);
+  const [avatarUri, setAvatarUri]         = useState<string | null>(null);
+  const [nameOverride, setNameOverride]   = useState<string | null>(null);
+  const [showEditName, setShowEditName]   = useState(false);
+  const [editNameVal, setEditNameVal]     = useState("");
+  const [showTagManager, setShowTagManager]       = useState(false);
+  const [showFolderManager, setShowFolderManager] = useState(false);
+  const [newTagName, setNewTagName]           = useState("");
+  const [selectedColor, setSelectedColor]     = useState(TAG_COLORS[0]);
+  const [newFolderName, setNewFolderName]     = useState("");
+  const [selectedFolderColor, setSelectedFolderColor] = useState(FOLDER_COLORS[0]);
 
-  /* ── Load persisted avatar + display name ── */
+  /* ── Immediately-resolved display name from user (no async delay) ── */
+  const autoName = useMemo(() =>
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() ||
+    user?.email?.split("@")[0] ||
+    "User"
+  , [user?.firstName, user?.lastName, user?.email]);
+
+  const displayName = nameOverride ?? autoName;
+
+  /* ── Load persisted avatar + custom display name override ── */
   useEffect(() => {
     AsyncStorage.multiGet([AVATAR_KEY, DNAME_KEY]).then(pairs => {
-      const av   = pairs[0][1];
-      const dn   = pairs[1][1];
+      const av = pairs[0][1];
+      const dn = pairs[1][1];
       if (av) setAvatarUri(av);
-      const fallback = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email?.split("@")[0] || "User";
-      setDisplayName(dn || fallback);
+      setNameOverride(dn || null);
     });
-  }, [user]);
+  }, []);
 
   const initials = (displayName || "??").slice(0, 2).toUpperCase();
 
   /* ── Data queries ── */
-  const { data: statsData } = useQuery({ queryKey: ["stats"], queryFn: () => api.getStats() });
-  const { data: tagsData  } = useQuery({ queryKey: ["tags"],  queryFn: () => api.listTags()  });
-  const tags: Tag[] = tagsData?.tags ?? [];
+  const { data: statsData }   = useQuery({ queryKey: ["stats"],   queryFn: () => api.getStats()    });
+  const { data: tagsData  }   = useQuery({ queryKey: ["tags"],    queryFn: () => api.listTags()    });
+  const { data: foldersData } = useQuery({ queryKey: ["folders"], queryFn: () => api.listFolders() });
+  const tags: Tag[]     = tagsData?.tags       ?? [];
+  const folders: Folder[] = (foldersData?.folders ?? []) as Folder[];
 
   /* ── Tag mutations ── */
   const createTagMutation = useMutation({
@@ -180,6 +195,28 @@ export default function ProfileScreen() {
     mutationFn: (id: string) => api.deleteTag(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["tags"] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
     onError:   (err: any) => Alert.alert("Error", err.message || "Could not delete tag."),
+  });
+
+  /* ── Folder mutations ── */
+  const createFolderMutation = useMutation({
+    mutationFn: ({ name, color }: { name: string; color: string }) => api.createFolder(name, color),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      setNewFolderName(""); setSelectedFolderColor(FOLDER_COLORS[0]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (err: any) => Alert.alert("Error", err.message || "Could not create folder."),
+  });
+
+  const deleteFolderMutation = useMutation({
+    mutationFn: (id: string) => api.deleteFolder(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    },
+    onError: (err: any) => Alert.alert("Error", err.message || "Could not delete folder."),
   });
 
   /* ── Pick profile image ── */
@@ -235,10 +272,29 @@ export default function ProfileScreen() {
   const handleSaveName = async () => {
     const trimmed = editNameVal.trim();
     if (!trimmed) return;
-    setDisplayName(trimmed);
+    setNameOverride(trimmed);
     await AsyncStorage.setItem(DNAME_KEY, trimmed);
     setShowEditName(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  /* ── Folder handlers ── */
+  const handleCreateFolder = () => {
+    if (!newFolderName.trim()) return;
+    createFolderMutation.mutate({ name: newFolderName.trim(), color: selectedFolderColor });
+  };
+
+  const handleDeleteFolder = (folder: Folder) => {
+    Alert.alert(
+      `Delete "${folder.name}"?`,
+      folder.videoCount > 0
+        ? `This folder contains ${folder.videoCount} video${folder.videoCount !== 1 ? "s" : ""}. Videos will not be deleted, only unassigned.`
+        : "This will remove the empty folder.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => deleteFolderMutation.mutate(folder.id) },
+      ]
+    );
   };
 
   const handleLogout = () => {
@@ -457,7 +513,8 @@ export default function ProfileScreen() {
 
         {/* ── Settings ── */}
         <SettingGroup title="//CONTENT">
-          <SettingRow icon="tag"       label="Manage Tags"      value={`${tags.length} tags`} onPress={() => setShowTagManager(true)} delay={360} />
+          <SettingRow icon="folder"    label="Manage Folders"   value={`${folders.length} folder${folders.length !== 1 ? "s" : ""}`} onPress={() => setShowFolderManager(true)} color={AMBER} delay={355} />
+          <SettingRow icon="tag"       label="Manage Tags"      value={`${tags.length} tag${tags.length !== 1 ? "s" : ""}`} onPress={() => setShowTagManager(true)} delay={365} />
           <SettingRow icon="download"  label="Export Vault Data" onPress={() => Alert.alert("Export", `Your vault has ${statsData?.totalVideos ?? 0} videos, ${statsData?.totalNotes ?? 0} notes, and ${statsData?.totalAiOutputs ?? 0} AI outputs.\n\nFull export feature coming in Pro.`)} delay={380} />
         </SettingGroup>
 
@@ -521,6 +578,100 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               <AppButton label="SAVE" icon="check" size="sm" variant="primary" onPress={handleSaveName} />
             </View>
+          </MotiView>
+        </View>
+      )}
+
+      {/* ── Folder Manager overlay ── */}
+      {showFolderManager && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowFolderManager(false)} />
+          <MotiView
+            from={{ translateY: 80, opacity: 0 }}
+            animate={{ translateY: 0, opacity: 1 }}
+            transition={{ type: "timing", duration: 280 }}
+            style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: AMBER + "30" }]}
+          >
+            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
+              <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
+            </View>
+            {/* Header */}
+            <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={[styles.sheetIconWrap, { backgroundColor: AMBER + "18", borderColor: AMBER + "30", borderWidth: 1 }]}>
+                  <Feather name="folder" size={16} color={AMBER} />
+                </View>
+                <View>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Folder Manager</Text>
+                  <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Manage Folders</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setShowFolderManager(false)} style={{ padding: 4 }}>
+                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                  <Feather name="x" size={14} color={colors.mutedForeground} />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Create folder */}
+            <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW FOLDER</Text>
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <TextInput
+                  value={newFolderName} onChangeText={setNewFolderName} placeholder="Folder name..."
+                  placeholderTextColor={colors.mutedForeground + "70"}
+                  style={[styles.tagInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+                  returnKeyType="done" onSubmitEditing={handleCreateFolder}
+                />
+                <TouchableOpacity onPress={handleCreateFolder} disabled={!newFolderName.trim() || createFolderMutation.isPending}
+                  style={[styles.createTagBtn, { backgroundColor: newFolderName.trim() ? AMBER : colors.border }]} activeOpacity={0.8}>
+                  <Feather name="plus" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                {FOLDER_COLORS.map(c => (
+                  <TouchableOpacity key={c} onPress={() => setSelectedFolderColor(c)}
+                    style={[styles.colorDot, { backgroundColor: c, borderWidth: selectedFolderColor === c ? 3 : 1.5, borderColor: selectedFolderColor === c ? colors.foreground : c + "40" }]}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Folder list */}
+            <FlatList
+              data={folders} keyExtractor={item => item.id} style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 32 }}
+              ListEmptyComponent={
+                <View style={{ paddingTop: 32, alignItems: "center", gap: 8 }}>
+                  <View style={{ width: 50, height: 50, borderRadius: 14, backgroundColor: AMBER + "14", borderWidth: 1, borderColor: AMBER + "25", alignItems: "center", justifyContent: "center" }}>
+                    <Feather name="folder" size={22} color={AMBER + "80"} />
+                  </View>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground }}>No folders yet</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first folder above</Text>
+                </View>
+              }
+              renderItem={({ item: folder, index }) => (
+                <View style={[styles.tagRow, { borderBottomColor: colors.border }]}>
+                  <View style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: (folder.color || AMBER) + "18", borderWidth: 1, borderColor: (folder.color || AMBER) + "35", alignItems: "center", justifyContent: "center" }}>
+                    <Feather name="folder" size={15} color={folder.color || AMBER} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 14, color: colors.foreground }}>{folder.name}</Text>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
+                      FOLDER_{(index + 1).toString().padStart(2, "0")}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: (folder.color || AMBER) + "14", borderRadius: 20, borderWidth: 1, borderColor: (folder.color || AMBER) + "30", paddingHorizontal: 8, paddingVertical: 3 }}>
+                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1, color: folder.color || AMBER }}>
+                      {folder.videoCount ?? 0} VID{(folder.videoCount ?? 0) !== 1 ? "S" : ""}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleDeleteFolder(folder)} style={{ padding: 6, marginLeft: 4 }} activeOpacity={0.7}>
+                    <Feather name="trash-2" size={14} color={RED} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
           </MotiView>
         </View>
       )}
