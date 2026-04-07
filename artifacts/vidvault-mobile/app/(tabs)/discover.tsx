@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
 import type { ComponentProps } from "react";
+import { TabFadeWrapper } from "@/components/TabFadeWrapper";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -194,6 +195,7 @@ export default function DiscoverScreen() {
   };
 
   return (
+    <TabFadeWrapper>
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
@@ -439,6 +441,7 @@ export default function DiscoverScreen() {
         </View>
       )}
     </View>
+    </TabFadeWrapper>
   );
 }
 

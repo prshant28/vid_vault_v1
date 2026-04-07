@@ -26,6 +26,7 @@ import { api } from "@/services/api";
 import { GridBackground } from "@/components/GridBackground";
 import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
+import { TabFadeWrapper } from "@/components/TabFadeWrapper";
 
 const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
@@ -463,6 +464,7 @@ export default function AIStudioScreen() {
   const isOverLimit = input.length > MAX_CHARS;
 
   return (
+    <TabFadeWrapper>
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
@@ -717,6 +719,7 @@ export default function AIStudioScreen() {
         </View>
       </Modal>
     </View>
+    </TabFadeWrapper>
   );
 }
 

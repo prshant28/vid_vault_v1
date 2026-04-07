@@ -5,224 +5,224 @@ import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { MotiView } from "moti";
+import React, { useRef, useEffect } from "react";
+import { Platform, StyleSheet, View, Text, TouchableOpacity, Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 import { useColors } from "@/hooks/useColors";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
 const INDIGO = "#6366f1";
-const INDIGO_DIM = "#6366f130";
 
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
 
-function AndroidTabIcon({
-  name,
-  focused,
-  size = 22,
-}: {
-  name: FeatherName;
-  focused: boolean;
-  size?: number;
-}) {
-  const colors = useColors();
+type TabDef = { name: string; title: string; icon: FeatherName; sfDefault: string; sfSelected: string };
+
+const TABS: TabDef[] = [
+  { name: "index",     title: "Home",     icon: "home",    sfDefault: "house",         sfSelected: "house.fill"         },
+  { name: "videos",    title: "Videos",   icon: "film",    sfDefault: "film",          sfSelected: "film.fill"          },
+  { name: "ai-studio", title: "AI",       icon: "cpu",     sfDefault: "sparkles",      sfSelected: "sparkles"           },
+  { name: "discover",  title: "Discover", icon: "compass", sfDefault: "safari",        sfSelected: "safari.fill"        },
+  { name: "profile",   title: "Profile",  icon: "user",    sfDefault: "person.circle", sfSelected: "person.circle.fill" },
+];
+
+/* ── Animated tab icon for the custom premium bar ── */
+function PremiumTabIcon({
+  name, focused, label, isDark,
+}: { name: FeatherName; focused: boolean; label: string; isDark: boolean }) {
+  const scale = useRef(new Animated.Value(focused ? 1.08 : 0.9)).current;
+  const glow  = useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, { toValue: focused ? 1.08 : 0.9, useNativeDriver: true, speed: 30, bounciness: 10 }),
+      Animated.timing(glow,  { toValue: focused ? 1 : 0, duration: 220, useNativeDriver: false }),
+    ]).start();
+  }, [focused]);
+
+  const bgColor = glow.interpolate({ inputRange: [0, 1], outputRange: ["rgba(99,102,241,0)", "rgba(99,102,241,0.14)"] });
+  const iconColor = focused ? INDIGO : (isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.38)");
+
   return (
-    <View style={styles.androidIconWrapper}>
+    <View style={S.iconWrap}>
       {focused && (
-        <View style={styles.androidPill} />
+        <MotiView
+          from={{ scaleX: 0, opacity: 0 }}
+          animate={{ scaleX: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 18, stiffness: 220 }}
+          style={S.activePill}
+        />
       )}
-      <View
-        style={[
-          styles.androidIconBg,
-          focused && styles.androidIconBgActive,
-        ]}
-      >
-        <Feather name={name} size={size} color={focused ? INDIGO : colors.mutedForeground} />
+      <Animated.View style={[S.iconBg, { backgroundColor: bgColor, transform: [{ scale }] }]}>
+        <Feather name={name} size={22} color={iconColor} />
+      </Animated.View>
+      <Text style={[S.iconLabel, { color: iconColor, fontFamily: focused ? "Poppins_600SemiBold" : "Poppins_400Regular" }]}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+/* ── Premium custom tab bar (web + Android) ── */
+function PremiumTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { colorScheme } = useThemeContext();
+  const isDark = colorScheme === "dark";
+  const insets = useSafeAreaInsets();
+  const gradColors: readonly [string, string] = isDark ? ["#09090e", "#0e0e16"] : ["#fafaff", "#f3f3fc"];
+
+  return (
+    <View style={[S.barOuter, { paddingBottom: insets.bottom || 8 }]}>
+      <LinearGradient colors={gradColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <View style={[S.topLine, { backgroundColor: isDark ? "#ffffff12" : "#00000012" }]} />
+      <View style={S.barRow}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          if (options.href === null) return null;
+          const tab = TABS.find(t => t.name === route.name);
+          if (!tab) return null;
+          const focused = state.index === index;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={() => {
+                const e = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
+                if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
+              }}
+              activeOpacity={0.8}
+              style={S.tabItem}
+            >
+              <PremiumTabIcon name={tab.icon} focused={focused} label={tab.title} isDark={isDark} />
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
+  );
+}
+
+/* ── iOS native tab (SymbolView + BlurView) ── */
+function IOSTabLayout() {
+  const colors = useColors();
+  const { colorScheme } = useThemeContext();
+  const isDark = colorScheme === "dark";
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: INDIGO,
+        tabBarInactiveTintColor: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.38)",
+        tabBarStyle: {
+          position: "absolute",
+          backgroundColor: "transparent",
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+          height: 78 + insets.bottom,
+        },
+        tabBarBackground: () => (
+          <BlurView intensity={100} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+        ),
+        tabBarLabelStyle: {
+          fontFamily: "Poppins_500Medium",
+          fontSize: 9,
+          letterSpacing: 0.2,
+          marginTop: 2,
+        },
+      }}
+    >
+      {TABS.map(({ name, title, sfDefault, sfSelected }) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          options={{
+            title,
+            tabBarIcon: ({ color, focused }) => (
+              <SymbolView name={(focused ? sfSelected : sfDefault) as any} tintColor={color} size={24} />
+            ),
+          }}
+        />
+      ))}
+      <Tabs.Screen name="folders" options={{ href: null }} />
+    </Tabs>
+  );
+}
+
+/* ── Android / Web premium tab ── */
+function PremiumTabLayout() {
+  return (
+    <Tabs
+      tabBar={(props) => <PremiumTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
+      {TABS.map(({ name, title }) => (
+        <Tabs.Screen key={name} name={name} options={{ title }} />
+      ))}
+      <Tabs.Screen name="folders" options={{ href: null }} />
+    </Tabs>
   );
 }
 
 function NativeTabLayout() {
   return (
     <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Home</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="videos">
-        <Icon sf={{ default: "film", selected: "film.fill" }} />
-        <Label>Videos</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="ai-studio">
-        <Icon sf={{ default: "sparkles", selected: "sparkles" }} />
-        <Label>AI Studio</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="discover">
-        <Icon sf={{ default: "safari", selected: "safari.fill" }} />
-        <Label>Discover</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
-        <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
-        <Label>Profile</Label>
-      </NativeTabs.Trigger>
+      {TABS.map(({ name, title, sfDefault, sfSelected }) => (
+        <NativeTabs.Trigger key={name} name={name}>
+          <Icon sf={{ default: sfDefault, selected: sfSelected }} />
+          <Label>{title}</Label>
+        </NativeTabs.Trigger>
+      ))}
     </NativeTabs>
   );
 }
 
-function ClassicTabLayout() {
-  const colors = useColors();
-  const { colorScheme } = useThemeContext();
-  const isDark = colorScheme === "dark";
-  const isIOS = Platform.OS === "ios";
-  const isAndroid = Platform.OS === "android";
-  const isWeb = Platform.OS === "web";
-  const insets = useSafeAreaInsets();
-
-  const androidTabBarHeight = 60 + insets.bottom;
-
-  const androidGradient: readonly [string, string, ...string[]] = isDark
-    ? ["#08080d", "#0b0b10"]
-    : ["#f8f8ff", "#f0f0fa"];
-
-  type TabDef = { name: string; title: string; icon: FeatherName; sfDefault: string; sfSelected: string };
-  const TABS: TabDef[] = [
-    { name: "index",     title: "Home",      icon: "home",    sfDefault: "house",            sfSelected: "house.fill"            },
-    { name: "videos",    title: "Videos",    icon: "film",    sfDefault: "film",             sfSelected: "film.fill"             },
-    { name: "ai-studio", title: "AI Studio", icon: "cpu",     sfDefault: "sparkles",         sfSelected: "sparkles"              },
-    { name: "discover",  title: "Discover",  icon: "compass", sfDefault: "safari",           sfSelected: "safari.fill"           },
-    { name: "profile",   title: "Profile",   icon: "user",    sfDefault: "person.circle",    sfSelected: "person.circle.fill"    },
-  ];
-
-  return (
-    <>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: INDIGO,
-          tabBarInactiveTintColor: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.38)",
-          headerShown: false,
-
-          tabBarStyle: isAndroid
-            ? {
-                position: "absolute",
-                height: androidTabBarHeight,
-                backgroundColor: "transparent",
-                borderTopWidth: 0,
-                elevation: 0,
-              }
-            : {
-                position: "absolute",
-                backgroundColor: isIOS ? "transparent" : colors.tabBar,
-                borderTopWidth: isWeb ? 1 : StyleSheet.hairlineWidth,
-                borderTopColor: colors.border,
-                elevation: 0,
-                ...(isWeb ? { height: 84 } : {}),
-              },
-
-          tabBarBackground: () =>
-            isAndroid ? (
-              <>
-                {/* Top accent line — pointerEvents as prop for Android */}
-                <View
-                  pointerEvents="none"
-                  style={[
-                    StyleSheet.absoluteFillObject,
-                    { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? "#ffffff14" : "#00000018" },
-                  ]}
-                />
-                <LinearGradient
-                  colors={androidGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </>
-            ) : isIOS ? (
-              <BlurView
-                intensity={100}
-                tint={isDark ? "dark" : "light"}
-                style={StyleSheet.absoluteFill}
-              />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBar }]} />
-            ),
-
-          tabBarLabelStyle: isAndroid
-            ? {
-                fontFamily: "Poppins_600SemiBold",
-                fontSize: 9,
-                letterSpacing: 0.3,
-                marginTop: -2,
-                textTransform: "uppercase",
-              }
-            : {
-                fontFamily: "Poppins_500Medium",
-                fontSize: 9,
-                letterSpacing: 0.2,
-                marginTop: 2,
-              },
-
-          tabBarItemStyle: isAndroid
-            ? { paddingTop: 6, paddingBottom: insets.bottom > 0 ? 0 : 4 }
-            : {},
-          tabBarPressColor: isAndroid ? INDIGO + "22" : undefined,
-        }}
-      >
-        {TABS.map(({ name, title, icon, sfDefault, sfSelected }) => (
-          <Tabs.Screen
-            key={name}
-            name={name}
-            options={{
-              title,
-              tabBarIcon: ({ color, focused }) =>
-                isIOS ? (
-                  <SymbolView name={(focused ? sfSelected : sfDefault) as any} tintColor={color} size={24} />
-                ) : (
-                  <AndroidTabIcon name={icon} focused={focused} />
-                ),
-            }}
-          />
-        ))}
-        {/* Hide file-based tabs that should not appear in the tab bar */}
-        <Tabs.Screen name="folders" options={{ href: null }} />
-      </Tabs>
-    </>
-  );
-}
-
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
-  return <ClassicTabLayout />;
+  if (isLiquidGlassAvailable()) return <NativeTabLayout />;
+  if (Platform.OS === "ios")    return <IOSTabLayout />;
+  return <PremiumTabLayout />;
 }
 
-const styles = StyleSheet.create({
-  androidIconWrapper: {
+const S = StyleSheet.create({
+  barOuter: {
+    position: "absolute",
+    bottom: 0, left: 0, right: 0,
+    overflow: "hidden",
+  },
+  topLine: {
+    height: StyleSheet.hairlineWidth,
+  },
+  barRow: {
+    flexDirection: "row",
+    paddingTop: 6,
+    paddingBottom: 2,
+  },
+  tabItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    width: 48,
-    height: 40,
   },
-  androidPill: {
+  iconWrap: {
+    alignItems: "center",
+    gap: 2,
+    paddingTop: 8,
+  },
+  activePill: {
     position: "absolute",
     top: 0,
-    width: 36,
-    height: 3,
+    width: 28, height: 3,
     borderRadius: 2,
     backgroundColor: INDIGO,
   },
-  androidIconBg: {
-    width: 40,
-    height: 32,
-    borderRadius: 12,
+  iconBg: {
+    width: 44, height: 36,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
-    backgroundColor: "transparent",
   },
-  androidIconBgActive: {
-    backgroundColor: INDIGO_DIM,
+  iconLabel: {
+    fontSize: 9,
+    letterSpacing: 0.3,
   },
 });

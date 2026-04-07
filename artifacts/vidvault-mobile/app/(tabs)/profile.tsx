@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api";
 import * as Haptics from "expo-haptics";
 import type { ComponentProps } from "react";
+import { TabFadeWrapper } from "@/components/TabFadeWrapper";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -277,6 +278,7 @@ export default function ProfileScreen() {
   ];
 
   return (
+    <TabFadeWrapper>
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GridBackground />
       <MotiView
@@ -615,6 +617,7 @@ export default function ProfileScreen() {
         </View>
       )}
     </View>
+    </TabFadeWrapper>
   );
 }
 

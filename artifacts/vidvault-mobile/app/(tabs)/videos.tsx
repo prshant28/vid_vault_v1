@@ -30,6 +30,7 @@ import { VideoCardSkeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { SearchBar } from "@/components/SearchBar";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
+import { TabFadeWrapper } from "@/components/TabFadeWrapper";
 
 const RED   = "#ef4444";
 const GREEN = "#10b981";
@@ -398,6 +399,7 @@ export default function VideosScreen() {
   const selBarY = selBarAnim.interpolate({ inputRange: [0, 1], outputRange: [100, 0] });
 
   return (
+    <TabFadeWrapper>
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
@@ -624,6 +626,7 @@ export default function VideosScreen() {
         </View>
       </Modal>
     </View>
+    </TabFadeWrapper>
   );
 }
 
