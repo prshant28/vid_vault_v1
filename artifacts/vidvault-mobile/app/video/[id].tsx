@@ -159,23 +159,24 @@ function AiToolCard({
         styles.toolCard,
         {
           backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: isDark ? "#000" : "#6366f1",
-          shadowOpacity: isDark ? 0.4 : 0.08,
-          shadowRadius: isDark ? 16 : 8,
-          elevation: isDark ? 8 : 2,
+          borderColor: done ? tool.color + "38" : colors.border,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: isDark ? 0.35 : 0.06,
+          shadowRadius: 6,
+          elevation: isDark ? 4 : 1,
         },
       ]}
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
 
-        {/* Etch overlay — theme-aware */}
+        {/* Etch overlay — subtle top highlight only, no dark corners */}
         <LinearGradient
           colors={isDark
-            ? ["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.35)"]
-            : ["rgba(255,255,255,0.8)", "transparent", "rgba(0,0,0,0.03)"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+            ? ["rgba(255,255,255,0.06)", "transparent"]
+            : ["rgba(255,255,255,0.9)", "transparent"]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 0.5 }}
           style={StyleSheet.absoluteFillObject}
           pointerEvents="none"
         />
@@ -200,10 +201,10 @@ function AiToolCard({
                 animate={{ rotate: "360deg" }}
                 transition={{ type: "timing", duration: 1200, loop: true }}
               >
-                <Feather name="cpu" size={14} color={tool.color} />
+                <Feather name="cpu" size={20} color={tool.color} />
               </MotiView>
             ) : (
-              <Feather name={tool.icon} size={14} color={tool.color} />
+              <Feather name={tool.icon} size={20} color={tool.color} />
             )}
           </MotiView>
         </View>
@@ -999,61 +1000,68 @@ export default function VideoDetailScreen() {
             </TouchableOpacity>
           )}
 
-          {/* ── Channel row ── */}
-          {video.channelName && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
-              <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: PURPLE + "22", alignItems: "center", justifyContent: "center" }}>
-                <Feather name="youtube" size={10} color={PURPLE} />
+          {/* ── Compact meta row: channel · folder · duration · date (all one line) ── */}
+          <ScrollView
+            horizontal showsHorizontalScrollIndicator={false}
+            style={{ marginTop: 8 }}
+            contentContainerStyle={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          >
+            {/* Channel */}
+            {video.channelName && (
+              <View style={[styles.metaChip, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "28" }]}>
+                <Feather name="youtube" size={12} color={PURPLE} />
+                <Text style={[styles.metaChipText, { color: PURPLE }]} numberOfLines={1}>{video.channelName}</Text>
               </View>
-              <Text style={{ fontSize: 12, fontFamily: "Poppins_400Regular", color: colors.mutedForeground, flex: 1 }} numberOfLines={1}>
-                {video.channelName}
-              </Text>
-            </View>
-          )}
+            )}
 
-          {/* ── Duration row ── */}
-          {video.duration && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}>
+            {/* Folder */}
+            <TouchableOpacity
+              onPress={() => setShowFolderPicker(true)}
+              style={[styles.metaChip, video.folderName
+                ? { backgroundColor: ORANGE + "10", borderColor: ORANGE + "35" }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed" }
+              ]}
+              activeOpacity={0.75}
+            >
+              <Feather name={video.folderName ? "folder" : "folder-plus"} size={12} color={video.folderName ? ORANGE : colors.mutedForeground} />
+              <Text style={[styles.metaChipText, { color: video.folderName ? ORANGE : colors.mutedForeground }]}>
+                {video.folderName ?? "Folder"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Duration */}
+            {video.duration && (
               <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Feather name="clock" size={10} color={colors.mutedForeground} />
+                <Feather name="clock" size={12} color={colors.mutedForeground} />
                 <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{video.duration}</Text>
               </View>
-              {video.createdAt && (
-                <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Feather name="calendar" size={10} color={colors.mutedForeground} />
-                  <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>
-                    Saved {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* ── Folder row ── */}
-          <View style={{ marginTop: 8 }}>
-            {video.folderName ? (
-              <TouchableOpacity
-                onPress={() => setShowFolderPicker(true)}
-                style={[styles.metaChip, { backgroundColor: PURPLE + "0e", borderColor: PURPLE + "28", alignSelf: "flex-start" }]}
-                activeOpacity={0.75}
-              >
-                <Feather name="folder" size={10} color={PURPLE} />
-                <Text style={[styles.metaChipText, { color: PURPLE }]}>{video.folderName}</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => setShowFolderPicker(true)}
-                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed", alignSelf: "flex-start" }]}
-                activeOpacity={0.75}
-              >
-                <Feather name="folder-plus" size={10} color={colors.mutedForeground} />
-                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>Add to folder</Text>
-              </TouchableOpacity>
             )}
-          </View>
 
-          {/* ── Tag pills + Add Tag chip ── */}
-          <View style={[styles.tagsRow, { flexWrap: "wrap", marginTop: 4 }]}>
+            {/* Saved date */}
+            {video.createdAt && (
+              <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Feather name="calendar" size={12} color={colors.mutedForeground} />
+                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>
+                  {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </Text>
+              </View>
+            )}
+
+            {/* Watched status */}
+            {(video as any).isWatched && (
+              <View style={[styles.metaChip, { backgroundColor: GREEN + "10", borderColor: GREEN + "30" }]}>
+                <Feather name="check-circle" size={12} color={GREEN} />
+                <Text style={[styles.metaChipText, { color: GREEN }]}>Watched</Text>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* ── Tags row + Add Tag (second line, compact) ── */}
+          <ScrollView
+            horizontal showsHorizontalScrollIndicator={false}
+            style={{ marginTop: 6 }}
+            contentContainerStyle={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          >
             {(video.tags ?? []).map((tag: Tag) => (
               <TouchableOpacity
                 key={tag.id}
@@ -1064,8 +1072,9 @@ export default function VideoDetailScreen() {
                 style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "18", borderColor: (tag.color || PURPLE) + "35" }]}
                 activeOpacity={0.75}
               >
+                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: tag.color || PURPLE }} />
                 <Text style={[styles.tagPillText, { color: tag.color || PURPLE }]}>{tag.name}</Text>
-                <Feather name="x" size={9} color={tag.color || PURPLE} />
+                <Feather name="x" size={9} color={(tag.color || PURPLE) + "99"} />
               </TouchableOpacity>
             ))}
             <TouchableOpacity
@@ -1073,10 +1082,10 @@ export default function VideoDetailScreen() {
               style={[styles.tagPill, { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed" }]}
               activeOpacity={0.75}
             >
-              <Feather name="tag" size={9} color={colors.mutedForeground} />
+              <Feather name="tag" size={10} color={colors.mutedForeground} />
               <Text style={[styles.tagPillText, { color: colors.mutedForeground }]}>Add Tag</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
 
           {/* Quick action pills — show shortcuts to already-generated outputs */}
           {quickPills.length > 0 && (
@@ -1097,6 +1106,28 @@ export default function VideoDetailScreen() {
           )}
         </View>
 
+        {/* ── Video Stats Strip ── */}
+        <View style={[styles.statsStrip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {[
+            { icon: "cpu" as FeatherIconName,      label: "AI",       value: aiCount,                       color: PURPLE },
+            { icon: "edit-3" as FeatherIconName,   label: "Notes",    value: video.notes?.length ?? 0,      color: CYAN   },
+            { icon: "heart" as FeatherIconName,    label: "Favorite", value: video.isFavorite ? "Yes" : "No", color: PINK },
+            { icon: "check" as FeatherIconName,    label: "Watched",  value: (video as any).isWatched ? "Yes" : "No", color: GREEN },
+            { icon: "tag" as FeatherIconName,      label: "Tags",     value: video.tags?.length ?? 0,       color: ORANGE },
+          ].map((s, i, arr) => (
+            <React.Fragment key={s.label}>
+              <View style={styles.statItem}>
+                <View style={[styles.statIconBadge, { backgroundColor: s.color + "16", borderColor: s.color + "30" }]}>
+                  <Feather name={s.icon} size={13} color={s.color} />
+                </View>
+                <Text style={[styles.statVal, { color: colors.foreground }]}>{s.value}</Text>
+                <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
+              </View>
+              {i < arr.length - 1 && <View style={[styles.statDivider, { backgroundColor: colors.border }]} />}
+            </React.Fragment>
+          ))}
+        </View>
+
         {/* Tabs */}
         <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
           {([
@@ -1114,8 +1145,8 @@ export default function VideoDetailScreen() {
               }]}
               activeOpacity={0.75}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Feather name={icon} size={10} color={activeTab === key ? PURPLE : colors.mutedForeground} />
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <Feather name={icon} size={13} color={activeTab === key ? PURPLE : colors.mutedForeground} />
                 <Text style={[styles.tabBtnText, { color: activeTab === key ? PURPLE : colors.mutedForeground }]}>
                   {label}
                 </Text>
@@ -1578,17 +1609,10 @@ const styles = StyleSheet.create({
   toolGrid: { flexDirection: "column", gap: CARD_GAP },
   toolRow: { flexDirection: "row", gap: CARD_GAP },
   toolCard: {
-    backgroundColor: "#111115",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#ffffff12",
-    minHeight: 142,
+    minHeight: 148,
     overflow: "hidden",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
   },
   toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
   toolCardTop: {
@@ -1796,4 +1820,16 @@ const styles = StyleSheet.create({
   folderPickerItemText: { fontSize: 14, fontFamily: "Poppins_500Medium", flex: 1 },
   folderColorDot: { width: 10, height: 10, borderRadius: 5 },
   folderPickerEmpty: { fontSize: 13, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 20 },
+
+  /* Stats strip */
+  statsStrip: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-around",
+    marginHorizontal: 16, marginBottom: 4, borderRadius: 14, borderWidth: 1,
+    paddingVertical: 12, paddingHorizontal: 8,
+  },
+  statItem:     { flex: 1, alignItems: "center", gap: 4 },
+  statIconBadge:{ width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  statVal:      { fontSize: 13, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -0.3 },
+  statLbl:      { fontSize: 7.5, fontFamily: "Poppins_400Regular", letterSpacing: 1, textTransform: "uppercase" },
+  statDivider:  { width: 1, height: 32, borderRadius: 1 },
 });

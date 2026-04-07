@@ -1055,7 +1055,7 @@ function WelcomeHero({
 
         {/* Sub */}
         <Text style={{
-          fontFamily: "Poppins_600Regular", fontSize: 16,
+          fontFamily: "Poppins_400Regular", fontSize: 12,
           color: colors.mutedForeground, lineHeight: 18,
           marginBottom: totalVideos > 0 ? 16 : 0,
         }}>
