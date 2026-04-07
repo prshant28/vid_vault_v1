@@ -469,140 +469,206 @@ function RecentAiItemCard({
 
   return (
     <MotiView
-      from={{ opacity: 0, translateX: 10 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      transition={{ type: "timing", duration: 320, delay: 60 * index }}
+      from={{ opacity: 0, translateY: 12, scale: 0.97 }}
+      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+      transition={{ type: "spring", delay: 55 * index, damping: 18, stiffness: 200 }}
     >
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={0.78}
         onPress={() => router.push(`/video/${output.videoId}` as any)}
         style={[
           styles.aiCard,
-          { backgroundColor: colors.card, borderColor: meta.color + "25" },
+          {
+            backgroundColor: colors.card,
+            borderColor: meta.color + "28",
+            overflow: "hidden",
+            padding: 0,
+          },
         ]}
       >
-        {/* Thumbnail */}
-        <View style={styles.aiCardThumb}>
-          <View
-            style={{
-              width: 72,
-              height: 50,
-              borderRadius: 6,
-              backgroundColor: colors.secondary,
-              overflow: "hidden",
-            }}
-          >
-            {thumbUri ? (
-              <Image
-                source={{ uri: thumbUri }}
-                style={{ width: 72, height: 50 }}
-                resizeMode="cover"
-              />
-            ) : (
+        {/* Left accent stripe */}
+        <View
+          style={{
+            width: 3,
+            alignSelf: "stretch",
+            backgroundColor: meta.color,
+            borderRadius: 3,
+          }}
+        />
+
+        {/* Gradient glow background */}
+        <LinearGradient
+          colors={[meta.color + "12", "transparent"]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={{
+            position: "absolute",
+            left: 3,
+            top: 0,
+            width: 90,
+            bottom: 0,
+          }}
+          pointerEvents="none"
+        />
+
+        {/* Inner content */}
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, padding: 12 }}>
+
+          {/* Thumbnail with icon overlay */}
+          <View style={{ position: "relative", flexShrink: 0 }}>
+            <View
+              style={{
+                width: 80,
+                height: 56,
+                borderRadius: 10,
+                backgroundColor: colors.secondary,
+                overflow: "hidden",
+              }}
+            >
+              {thumbUri ? (
+                <Image
+                  source={{ uri: thumbUri }}
+                  style={{ width: 80, height: 56 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: meta.color + "12",
+                  }}
+                >
+                  <Feather name={meta.icon} size={22} color={meta.color + "60"} />
+                </View>
+              )}
+            </View>
+            {/* Type icon badge on thumbnail corner */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: -4,
+                right: -4,
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                backgroundColor: meta.color,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 2,
+                borderColor: colors.background,
+                shadowColor: meta.color,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.5,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Feather name={meta.icon} size={9} color="#fff" />
+            </View>
+          </View>
+
+          {/* Info column */}
+          <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
+            {/* Type pill + time row — global button style */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <View
                 style={{
-                  flex: 1,
+                  flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: meta.color + "15",
+                  gap: 4,
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
+                  borderRadius: 14,
+                  backgroundColor: meta.color + "10",
+                  borderWidth: 1,
+                  borderColor: meta.color + "30",
                 }}
               >
-                <Feather name={meta.icon} size={18} color={meta.color + "80"} />
+                <Feather name={meta.icon} size={8} color={meta.color} />
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontFamily: "Poppins_600SemiBold",
+                    color: meta.color,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {meta.label}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontSize: 9,
+                  fontFamily: "JetBrainsMono_400Regular",
+                  color: colors.mutedForeground + "60",
+                  letterSpacing: 0.3,
+                }}
+              >
+                {timeAgo}
+              </Text>
+            </View>
+
+            {/* Video title */}
+            <Text
+              numberOfLines={2}
+              style={{
+                fontSize: 12.5,
+                fontFamily: "Poppins_600SemiBold",
+                lineHeight: 17,
+                color: colors.foreground,
+              }}
+            >
+              {output.videoTitle}
+            </Text>
+
+            {/* Channel row */}
+            {output.channelName && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <View
+                  style={{
+                    width: 13,
+                    height: 13,
+                    borderRadius: 7,
+                    backgroundColor: meta.color + "20",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Feather name="user" size={7} color={meta.color} />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 9.5,
+                    fontFamily: "Poppins_400Regular",
+                    color: colors.mutedForeground,
+                    flex: 1,
+                  }}
+                  numberOfLines={1}
+                >
+                  {output.channelName}
+                </Text>
               </View>
             )}
           </View>
-        </View>
 
-        {/* Info */}
-        <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-          {/* AI type label pill */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                paddingHorizontal: 8,
-                paddingVertical: 3,
-                borderRadius: 20,
-                backgroundColor: meta.color + "20",
-                borderWidth: 1,
-                borderColor: meta.color + "40",
-                alignSelf: "flex-start",
-              }}
-            >
-              <Feather name={meta.icon} size={9} color={meta.color} />
-              <Text
-                style={{
-                  fontSize: 9,
-                  fontFamily: "JetBrainsMono_700Bold",
-                  color: meta.color,
-                  letterSpacing: 0.8,
-                  textTransform: "uppercase",
-                }}
-              >
-                {meta.label}
-              </Text>
-            </View>
-            <Text
-              style={{
-                fontSize: 9,
-                fontFamily: "JetBrainsMono_400Regular",
-                color: colors.mutedForeground + "70",
-                letterSpacing: 0.3,
-              }}
-            >
-              {timeAgo}
-            </Text>
-          </View>
-
-          <Text
-            numberOfLines={2}
+          {/* Arrow */}
+          <View
             style={{
-              fontSize: 12,
-              fontFamily: "Poppins_500Medium",
-              lineHeight: 16,
-              color: colors.foreground,
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: meta.color + "12",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
             }}
           >
-            {output.videoTitle}
-          </Text>
-          {/* Channel row */}
-          {output.channelName && (
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-            >
-              <View
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 6,
-                  backgroundColor: meta.color + "30",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Feather name="user" size={7} color={meta.color} />
-              </View>
-              <Text
-                style={{
-                  fontSize: 9,
-                  fontFamily: "Poppins_400Regular",
-                  color: colors.mutedForeground,
-                }}
-                numberOfLines={1}
-              >
-                {output.channelName}
-              </Text>
-            </View>
-          )}
-        </View>
+            <Feather name="chevron-right" size={12} color={meta.color + "80"} />
+          </View>
 
-        <Feather
-          name="chevron-right"
-          size={12}
-          color={colors.mutedForeground + "50"}
-        />
+        </View>
       </TouchableOpacity>
     </MotiView>
   );
@@ -1226,9 +1292,6 @@ export default function HomeScreen() {
             end={{ x: 1, y: 0 }}
             style={[StyleSheet.absoluteFill, { borderRadius: 8 }]}
           />
-          <Text style={[styles.taglineText, { color: colors.mutedForeground }]}>
-            VIDVAULT AI // BUILD YOUR KNOWLEDGE VAULT
-          </Text>
         </MotiView>
       </ScrollView>
 
@@ -1591,15 +1654,13 @@ const styles = StyleSheet.create({
   aiCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 12,
+    elevation: 6,
   },
   aiCardThumb: { flexShrink: 0 },
   aiCardTypeRow: {
