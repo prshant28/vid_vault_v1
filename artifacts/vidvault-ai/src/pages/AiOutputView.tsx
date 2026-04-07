@@ -77,47 +77,104 @@ function openPrintWindow(html: string) {
   }
 }
 
-function TemplatePicker({ title, templates, onSelect, onClose }: {
+const CONTENT_THEME_META: Record<number, { bg: string; headerBg: string; accent: string; mode: string; desc: string }> = {
+  1:  { bg: "#131210", headerBg: "#1a1814", accent: "#c0392b", mode: "DARK", desc: "Serif academic style" },
+  2:  { bg: "#0d0d0d", headerBg: "#111",    accent: "#00ff88", mode: "DARK", desc: "Glowing neon terminals" },
+  3:  { bg: "#faf7f0", headerBg: "#f0ebe0", accent: "#2c1810", mode: "LIGHT", desc: "Classic parchment feel" },
+  4:  { bg: "#0a0a0b", headerBg: "#111",    accent: "#8b5cf6", mode: "DARK", desc: "VidVault brand purple" },
+  5:  { bg: "#0c1824", headerBg: "#0d1f2d", accent: "#0ea5e9", mode: "DARK", desc: "Deep ocean blues" },
+  6:  { bg: "#0f1f16", headerBg: "#0f2a1c", accent: "#10b981", mode: "DARK", desc: "Rich emerald tones" },
+  7:  { bg: "#1c1008", headerBg: "#251507", accent: "#f59e0b", mode: "DARK", desc: "Warm amber sunrise" },
+  8:  { bg: "#ffffff", headerBg: "#f5f5f5", accent: "#171717", mode: "LIGHT", desc: "Clean Bauhaus minimal" },
+  9:  { bg: "#0b0714", headerBg: "#100b1e", accent: "#a855f7", mode: "DARK", desc: "Cosmic purple galaxy" },
+  10: { bg: "#f2f5f9", headerBg: "#1e3a5f", accent: "#2563eb", mode: "LIGHT", desc: "Corporate professional" },
+};
+
+const QUIZ_THEME_META: Record<number, { bg: string; headerBg: string; accent: string; mode: string; desc: string }> = {
+  1:  { bg: "#0a0a0b", headerBg: "#111",    accent: "#22c55e", mode: "DARK", desc: "Sleek dark quiz" },
+  2:  { bg: "#0d1117", headerBg: "#161b22", accent: "#58a6ff", mode: "DARK", desc: "GitHub-style dark" },
+  3:  { bg: "#ffffff", headerBg: "#f0fdf4", accent: "#16a34a", mode: "LIGHT", desc: "Clean green academic" },
+  4:  { bg: "#0b0714", headerBg: "#130d24", accent: "#a855f7", mode: "DARK", desc: "Purple galaxy quiz" },
+  5:  { bg: "#0c1824", headerBg: "#0d2137", accent: "#0ea5e9", mode: "DARK", desc: "Ocean challenge" },
+  6:  { bg: "#faf7f0", headerBg: "#1a1814", accent: "#c0392b", mode: "LIGHT", desc: "Dark Academic test" },
+  7:  { bg: "#f2f5f9", headerBg: "#1e3a5f", accent: "#2563eb", mode: "LIGHT", desc: "Corporate exam style" },
+  8:  { bg: "#0f1f16", headerBg: "#0f2a1c", accent: "#10b981", mode: "DARK", desc: "Forest challenge" },
+  9:  { bg: "#1c1008", headerBg: "#251507", accent: "#f59e0b", mode: "DARK", desc: "Warm amber quiz" },
+  10: { bg: "#0d0d0d", headerBg: "#111",    accent: "#00ff88", mode: "DARK", desc: "Neon cyberpunk quiz" },
+};
+
+function TemplatePicker({ title, templates, onSelect, onClose, mode }: {
   title: string;
   templates: { id: number; name: string }[];
   onSelect: (id: number) => void;
   onClose: () => void;
+  mode: "quiz" | "content";
 }) {
+  const themeMap = mode === "quiz" ? QUIZ_THEME_META : CONTENT_THEME_META;
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }}
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
+        className="rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto"
         style={{ background: "var(--vv-card-bg)", border: "1px solid var(--vv-card-border)" }}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
             <div className="text-[9px] font-mono-ui uppercase tracking-widest text-muted-foreground mb-1">// EXPORT THEME</div>
             <h3 className="font-display font-bold text-lg text-foreground">{title}</h3>
-            <p className="text-xs text-muted-foreground mt-1">Pick a visual theme for your HTML report</p>
+            <p className="text-xs text-muted-foreground mt-1">Pick a visual theme — click to download instantly</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1.5 transition-colors rounded-lg hover:bg-white/5">
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          {templates.map(tpl => (
-            <button
-              key={tpl.id}
-              onClick={() => onSelect(tpl.id)}
-              className="text-left p-3.5 rounded-xl border transition-all hover:border-primary/50 hover:bg-primary/5 group"
-              style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
-            >
-              <div className="text-[9px] font-mono-ui uppercase tracking-wider text-muted-foreground mb-1.5">Theme {tpl.id}</div>
-              <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{tpl.name}</div>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {templates.map(tpl => {
+            const meta = themeMap[tpl.id] ?? { bg: "#111", headerBg: "#1a1a1a", accent: "#8b5cf6", mode: "DARK", desc: "" };
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => onSelect(tpl.id)}
+                className="text-left rounded-xl overflow-hidden border transition-all hover:scale-[1.03] group"
+                style={{ background: "var(--vv-surface)", border: "1px solid var(--vv-card-border)" }}
+              >
+                {/* Mini visual preview */}
+                <div className="h-16 relative overflow-hidden" style={{ background: meta.bg }}>
+                  <div className="absolute top-0 left-0 right-0 h-5" style={{ background: meta.headerBg }} />
+                  <div className="absolute top-1.5 left-2 right-2 flex items-center gap-1">
+                    <div className="w-6 h-1.5 rounded-sm opacity-80" style={{ background: meta.accent }} />
+                    <div className="flex-1 h-1 rounded-sm opacity-25" style={{ background: meta.mode === "LIGHT" ? "#000" : "#fff" }} />
+                  </div>
+                  <div className="absolute top-6 left-2 right-2 space-y-1">
+                    <div className="h-1 rounded-sm opacity-30" style={{ background: meta.mode === "LIGHT" ? "#000" : "#fff", width: "80%" }} />
+                    <div className="h-1 rounded-sm opacity-20" style={{ background: meta.mode === "LIGHT" ? "#000" : "#fff", width: "60%" }} />
+                    <div className="h-1 rounded-sm opacity-20" style={{ background: meta.mode === "LIGHT" ? "#000" : "#fff", width: "70%" }} />
+                  </div>
+                  <div
+                    className="absolute top-0 left-0 bottom-0 w-1"
+                    style={{ background: meta.accent }}
+                  />
+                  <div
+                    className="absolute top-1 right-1 px-1 py-0.5 rounded font-mono-ui text-[7px] leading-none"
+                    style={{ background: meta.accent + "30", color: meta.accent, border: `1px solid ${meta.accent}40` }}
+                  >
+                    {meta.mode}
+                  </div>
+                </div>
+                {/* Label */}
+                <div className="p-2.5">
+                  <div className="text-[10px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">{tpl.name}</div>
+                  <div className="text-[9px] font-mono-ui mt-0.5" style={{ color: "var(--vv-text-muted)" }}>{meta.desc}</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </motion.div>
     </motion.div>
@@ -267,6 +324,7 @@ export default function AiOutputView() {
           templates={pickerMode === "quiz" ? QUIZ_TEMPLATES : CONTENT_TEMPLATES}
           onSelect={id => handleDownloadHtml(id)}
           onClose={() => setShowTemplatePicker(false)}
+          mode={pickerMode}
         />
       )}
     </AnimatePresence>

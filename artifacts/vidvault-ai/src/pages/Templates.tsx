@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   FileText, BookOpen, Network, Mic, Twitter, AlignLeft,
   GraduationCap, Lightbulb, Download, Lock, Sparkles,
-  ChevronRight, Copy, CheckCheck, X,
+  ChevronRight, Copy, CheckCheck, X, Eye,
 } from "lucide-react";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
@@ -282,6 +282,84 @@ Like this? Follow for more learning threads 🔁`,
 
 const CATEGORIES = ["All", "Notes", "Research", "Study", "Visual", "Business", "Media", "Social"];
 
+function escHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function generateDemoHtml(template: Template): string {
+  const bg = "#0a0a0b";
+  const text = "#e8e4d8";
+  const muted = "#6b7280";
+  const content = escHtml(template.preview);
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escHtml(template.name)} — VidVault AI Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:${bg};color:${text};min-height:100vh}
+.banner{background:${template.color}18;border-bottom:1px solid ${template.color}30;padding:10px 24px;display:flex;align-items:center;justify-content:space-between}
+.banner-label{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:${template.color}}
+.banner-note{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:${muted}}
+.page{max-width:820px;margin:0 auto;padding:2.5rem 2rem 4rem}
+.doc-header{border-bottom:2px solid ${template.color}30;padding-bottom:1.5rem;margin-bottom:2rem;position:relative;padding-left:1rem}
+.doc-header::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:${template.color};border-radius:2px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:${template.color};margin-bottom:0.5rem}
+h1{font-family:'Inter',sans-serif;font-size:1.75rem;font-weight:900;color:${text};line-height:1.1;margin-bottom:0.5rem}
+.meta{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:${muted}}
+.badge{display:inline-flex;align-items:center;gap:0.4rem;padding:3px 10px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.15em;background:${template.color}20;color:${template.color};border:1px solid ${template.color}35;margin-bottom:1rem}
+.content-box{background:#111;border-radius:12px;padding:1.5rem 2rem;border:1px solid #222;border-left:3px solid ${template.color}}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.75;white-space:pre-wrap;color:${text}}
+pre .bracket{color:${template.color};font-weight:600}
+.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #222;display:flex;align-items:center;justify-content:space-between}
+.footer-brand{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:${muted}}
+.print-bar{text-align:center;padding:20px 0 32px}
+@media print{.banner,.print-bar{display:none}body{background:#fff}pre{color:#111}.content-box{background:#f9f9f9;border-color:#ddd}.doc-header{border-color:#ddd}}
+</style>
+</head>
+<body>
+<div class="banner">
+  <span class="banner-label">VidVault AI · ${escHtml(template.name)} · ${template.format} Format · Demo Preview</span>
+  <span class="banner-note">AI fills [brackets] from real video content</span>
+</div>
+<div class="page">
+  <div class="doc-header">
+    <div class="eyebrow">VidVault AI · ${template.category.toUpperCase()} TEMPLATE</div>
+    <h1>${escHtml(template.name)}</h1>
+    <div class="meta">Channel: AI Learning Academy · Generated: ${today} · Format: ${template.format}</div>
+  </div>
+  <div class="badge">${escHtml(template.category)} · ${template.format} · ${template.premium ? "PRO" : "FREE"}</div>
+  <div class="content-box">
+    <pre>${content.replace(/\[([^\]]+)\]/g, '<span class="bracket">[$1]</span>')}</pre>
+  </div>
+  <div class="footer">
+    <span class="footer-brand">VidVault AI — ${escHtml(template.name)} Demo</span>
+    <span class="footer-brand">${today}</span>
+  </div>
+</div>
+<div class="print-bar">
+  <button onclick="window.print()" style="background:${template.color};color:#fff;border:none;font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;font-weight:700;padding:10px 24px;cursor:pointer;border-radius:6px;">↓ Print / Save as PDF</button>
+</div>
+</body>
+</html>`;
+}
+
+function downloadDemoFile(template: Template) {
+  const html = generateDemoHtml(template);
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `VidVault_${template.id}_demo.html`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function TemplatePreviewModal({ template, onClose }: { template: Template; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
 
@@ -292,7 +370,7 @@ function TemplatePreviewModal({ template, onClose }: { template: Template; onClo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -307,7 +385,7 @@ function TemplatePreviewModal({ template, onClose }: { template: Template; onClo
             </div>
             <div>
               <p className="font-mono-ui text-sm font-bold uppercase tracking-wider" style={{ color: "var(--vv-text)" }}>{template.name}</p>
-              <p className="font-mono-ui text-[9px] uppercase tracking-widest" style={{ color: template.color }}>{template.format} FORMAT</p>
+              <p className="font-mono-ui text-[9px] uppercase tracking-widest" style={{ color: template.color }}>{template.format} FORMAT · {template.category}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -324,22 +402,41 @@ function TemplatePreviewModal({ template, onClose }: { template: Template; onClo
             </button>
           </div>
         </div>
-        <div className="p-5 max-h-[60vh] overflow-y-auto">
+
+        {/* Info banner */}
+        <div className="px-5 py-2.5 flex items-center justify-between" style={{ background: template.color + "0a", borderBottom: `1px solid ${template.color}20` }}>
+          <p className="font-mono-ui text-[9px] uppercase tracking-widest" style={{ color: template.color }}>
+            Template Structure Preview — [brackets] = AI-filled from your video
+          </p>
+          <button
+            onClick={() => downloadDemoFile(template)}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg font-mono-ui text-[9px] uppercase tracking-wider font-bold transition-all"
+            style={{ background: template.color, color: "#fff" }}
+            title="Download a real demo HTML file to see the final export"
+          >
+            <Eye className="w-3 h-3" />
+            Download Demo File
+          </button>
+        </div>
+
+        <div className="p-5 max-h-[50vh] overflow-y-auto">
           <pre className="font-mono text-[11px] leading-relaxed whitespace-pre-wrap" style={{ color: "var(--vv-text)", fontFamily: "'JetBrains Mono', monospace" }}>
             {template.preview}
           </pre>
         </div>
-        <div className="p-5 border-t flex items-center justify-between" style={{ borderColor: "var(--vv-border)" }}>
-          <p className="font-mono-ui text-[9px] uppercase tracking-widest" style={{ color: "var(--vv-text-muted)" }}>
-            AI will fill in [brackets] from your video content
-          </p>
+        <div className="p-5 border-t flex items-center justify-between gap-3" style={{ borderColor: "var(--vv-border)" }}>
+          <div>
+            <p className="font-mono-ui text-[9px] uppercase tracking-widest" style={{ color: "var(--vv-text-muted)" }}>
+              {template.premium ? "PRO template — upgrade to use with your videos" : "Free template — open any video and use AI Studio"}
+            </p>
+          </div>
           <button
-            className="flex items-center gap-2 px-4 py-2 rounded-xl font-mono-ui text-[10px] uppercase tracking-wider font-bold transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-mono-ui text-[10px] uppercase tracking-wider font-bold transition-all flex-shrink-0"
             style={{ background: template.color, color: "#fff" }}
-            onClick={() => { alert("Select a video first, then use AI Studio to apply this template."); }}
+            onClick={() => { onClose(); window.location.href = "/videos"; }}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Apply to Video
+            Go to My Videos
           </button>
         </div>
       </motion.div>

@@ -308,22 +308,29 @@ export default function Home() {
               const mins = Math.floor(diff / 60000);
               const ago = mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
               return (
-                <Link key={out.id} href={`/videos/${out.videoId}`}>
+                <Link key={out.id} href={`/videos/${out.videoId}/ai/${out.type}`}>
                   <div className="etched-slab p-3.5 cursor-pointer group relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(ellipse at 0% 50%,${meta.color}08,transparent)` }} />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(ellipse at 0% 50%,${meta.color}10,transparent)` }} />
+                    <div className="absolute top-0 left-0 bottom-0 w-0.5 rounded-l-full" style={{ background: meta.color }} />
                     <div className="flex items-start gap-3 relative z-10">
                       {out.videoThumbnail && (
-                        <img src={out.videoThumbnail} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0 opacity-75" />
+                        <img src={out.videoThumbnail} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0 opacity-80 mt-0.5" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <meta.icon className="w-2.5 h-2.5" style={{ color: meta.color }} />
-                          <span className="font-mono-ui text-[8px] uppercase tracking-widest" style={{ color: meta.color }}>{meta.label}</span>
+                        {/* Prominent AI type badge */}
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-mono-ui text-[9px] font-bold uppercase tracking-wider"
+                            style={{ background: meta.color + "20", color: meta.color, border: `1px solid ${meta.color}35` }}
+                          >
+                            <meta.icon className="w-2.5 h-2.5" />
+                            {meta.label}
+                          </span>
+                          <span className="font-mono-ui text-[8px]" style={{ color: "var(--vv-text-muted)" }}>{ago}</span>
                         </div>
-                        <p className="font-mono-ui text-[10px] truncate" style={{ color: "var(--vv-text)" }}>{out.videoTitle}</p>
-                        <p className="font-mono-ui text-[8px] mt-0.5" style={{ color: "var(--vv-text-muted)" }}>{ago}</p>
+                        <p className="font-mono-ui text-[10px] truncate leading-tight" style={{ color: "var(--vv-text)" }}>{out.videoTitle}</p>
                       </div>
-                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity flex-shrink-0 mt-0.5" style={{ color: "var(--vv-text-muted)" }} />
+                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity flex-shrink-0 mt-1" style={{ color: "var(--vv-text-muted)" }} />
                     </div>
                   </div>
                 </Link>
