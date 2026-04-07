@@ -514,7 +514,48 @@ function RecentAiItemCard({
         </View>
 
         {/* Info */}
-        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+          {/* AI type label pill */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: 20,
+                backgroundColor: meta.color + "20",
+                borderWidth: 1,
+                borderColor: meta.color + "40",
+                alignSelf: "flex-start",
+              }}
+            >
+              <Feather name={meta.icon} size={9} color={meta.color} />
+              <Text
+                style={{
+                  fontSize: 9,
+                  fontFamily: "JetBrainsMono_700Bold",
+                  color: meta.color,
+                  letterSpacing: 0.8,
+                  textTransform: "uppercase",
+                }}
+              >
+                {meta.label}
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 9,
+                fontFamily: "JetBrainsMono_400Regular",
+                color: colors.mutedForeground + "70",
+                letterSpacing: 0.3,
+              }}
+            >
+              {timeAgo}
+            </Text>
+          </View>
+
           <Text
             numberOfLines={2}
             style={{
@@ -526,7 +567,7 @@ function RecentAiItemCard({
           >
             {output.videoTitle}
           </Text>
-          {/* YouTube-style channel row */}
+          {/* Channel row */}
           {output.channelName && (
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
@@ -555,16 +596,6 @@ function RecentAiItemCard({
               </Text>
             </View>
           )}
-          <Text
-            style={{
-              fontSize: 9,
-              fontFamily: "JetBrainsMono_400Regular",
-              color: colors.mutedForeground + "70",
-              letterSpacing: 0.3,
-            }}
-          >
-            {timeAgo}
-          </Text>
         </View>
 
         <Feather
