@@ -77,7 +77,6 @@ export function TopAppBar({
             <VidVaultLogo size={30} />
             <View>
               <Text style={[styles.brandText, { color: colors.foreground }]}>VidVault</Text>
-              <Text style={[styles.brandSub, { color: colors.primary }]}>AI</Text>
             </View>
           </View>
         )}
