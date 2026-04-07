@@ -57,7 +57,13 @@ const AI_TOOLS: Array<{
   { type: "mcq",            label: "Quiz (MCQ)",     icon: "check-circle", color: GREEN,  desc: "Test your knowledge with 10 MCQs" },
   { type: "flashcards",     label: "Flashcards",     icon: "layers",       color: PINK,   desc: "15 spaced-repetition cards" },
   { type: "notes",          label: "Study Notes",    icon: "book-open",    color: PURPLE, desc: "Organised bullet study notes" },
+  { type: "mindmap",        label: "Mind Map",       icon: "share-2",      color: CYAN,   desc: "Visual concept tree of key ideas" },
+  { type: "eli5",           label: "Simple Explain", icon: "smile",        color: ORANGE, desc: "Simplified explanation, easy to grasp" },
+  { type: "pros_cons",      label: "Pros & Cons",    icon: "bar-chart-2",  color: GREEN,  desc: "Balanced analysis of key tradeoffs" },
+  { type: "interview_qa",   label: "Interview Prep", icon: "user-check",   color: PINK,   desc: "10 Q&A pairs for interviews" },
   { type: "action_plan",    label: "Action Plan",    icon: "target",       color: GREEN,  desc: "30-60-90 day implementation plan" },
+  { type: "deep_dive",      label: "Deep Dive",      icon: "search",       color: PURPLE, desc: "In-depth analysis with examples" },
+  { type: "podcast_script", label: "Podcast Script", icon: "mic",          color: PINK,   desc: "Conversational host + guest script" },
   { type: "tweet_thread",   label: "Tweet Thread",   icon: "twitter",      color: BLUE,   desc: "Shareable 10-tweet thread" },
   { type: "blog_article",   label: "Blog Article",   icon: "edit",         color: ORANGE, desc: "700-900 word blog post" },
   { type: "vocabulary",     label: "Vocabulary",     icon: "book",         color: CYAN,   desc: "Key terms and definitions" },
@@ -159,12 +165,7 @@ function AiToolCard({
         styles.toolCard,
         {
           backgroundColor: colors.card,
-          borderColor: done ? tool.color + "38" : colors.border,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: isDark ? 0.35 : 0.06,
-          shadowRadius: 6,
-          elevation: isDark ? 4 : 1,
+          borderColor: done ? tool.color + "45" : colors.border,
         },
       ]}
     >

@@ -101,6 +101,24 @@ export const AI_PROMPTS: Record<string, (title: string, desc: string, channel: s
 
   executive_brief: (title, desc, channel) =>
     `Write a concise executive briefing document (300-400 words) for this video that a busy professional can read in 2 minutes. Include: a 1-sentence TL;DR, the 3 most important points, business implications, and recommended next steps.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nExecutive Brief:`,
+
+  mindmap: (title, desc, channel) =>
+    `Create a detailed text-based mind map for this video using indented bullet points. Start with the central topic at the top, then branch into 4-6 main themes, each with 3-5 sub-topics, and each sub-topic with 2-3 key details or examples. Use indentation levels (no symbols, just clean indented text) to show hierarchy clearly.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nMind Map:`,
+
+  eli5: (title, desc, channel) =>
+    `Explain the key ideas of this video as if you're talking to a curious 10-year-old who has never heard about this topic. Use simple words, fun analogies, everyday examples, and short sentences. Avoid jargon completely. Break it into 4-6 short sections with simple headings. End with a 1-sentence "So basically..." summary.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nSimple Explanation:`,
+
+  pros_cons: (title, desc, channel) =>
+    `Analyse the main topic of this video and create a comprehensive Pros & Cons breakdown. List 6-8 pros (benefits, advantages, opportunities) and 6-8 cons (drawbacks, risks, challenges). For each point write a bold title (4-6 words) and 1-2 sentences of explanation. End with a balanced "Verdict" paragraph (3-4 sentences).\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nPros & Cons Analysis:`,
+
+  interview_qa: (title, desc, channel) =>
+    `Generate 10 high-quality interview questions and detailed model answers based on the content of this video. Mix question types: conceptual, situational, technical, and behavioral. For each: write the question in bold, then a 3-5 sentence model answer. Questions should range from introductory to expert level.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nInterview Q&A:`,
+
+  deep_dive: (title, desc, channel) =>
+    `Write a comprehensive deep-dive analysis of this video's topic. Structure it as: 1) Background & Context (why this topic matters), 2) Core Concepts Explained (with real-world examples), 3) Key Mechanisms / How It Works, 4) Common Misconceptions debunked, 5) Advanced Nuances, 6) Real-world Applications, 7) Future Implications. Be thorough and insightful — this is for a serious learner.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nDeep Dive:`,
+
+  podcast_script: (title, desc, channel) =>
+    `Write an engaging podcast script (600-800 words) based on this video. Format it as a dialogue between two hosts — HOST A (knowledgeable, explains things) and HOST B (curious, asks follow-up questions). Include: a catchy intro hook, natural back-and-forth conversation covering the key ideas, interesting facts, and a memorable outro with a key takeaway. Make it sound natural and conversational.\n\nVideo: "${title}"\nChannel: ${channel || "Unknown"}\nDescription: ${desc || "Not available"}\n\nPodcast Script:`,
 };
 
 /* Auto-analysis: generate summary + key_insights in parallel on video save */
