@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { VidVaultLogo } from "@/components/VidVaultLogo";
 import { MotiView } from "moti";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -69,11 +70,7 @@ export default function SplashScreen() {
           transition={{ type: "timing", duration: 500 }}
           style={styles.logoRing}
         >
-          <Image
-            source={require("@/assets/images/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <VidVaultLogo size={76} />
         </MotiView>
 
         <MotiView
@@ -147,18 +144,8 @@ const styles = StyleSheet.create({
     gap: 28,
   },
   logoRing: {
-    width: 110,
-    height: 110,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "rgba(139,92,246,0.2)",
-    backgroundColor: "rgba(139,92,246,0.06)",
     alignItems: "center",
     justifyContent: "center",
-  },
-  logo: {
-    width: 76,
-    height: 76,
   },
   titleBlock: {
     alignItems: "center",

@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
   Platform,
+  TouchableOpacity,
   Animated,
   Easing,
 } from "react-native";
-import { TouchableOpacity } from "react-native";
-import Svg, { Line, Defs, RadialGradient, Stop, Ellipse, Circle } from "react-native-svg";
+import Svg, {
+  Defs, RadialGradient, LinearGradient, Stop,
+  Circle, Ellipse, Line, Path, Rect, Polygon,
+} from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,49 +22,15 @@ import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 const { width: W, height: H } = Dimensions.get("window");
 
-const BG     = "#09090c";
-const PURPLE = "#6366f1";
-const CYAN   = "#06b6d4";
-const GREEN  = "#10b981";
-const WHITE  = "#ffffff";
-const MUTED  = "rgba(255,255,255,0.55)";
-const MUTED2 = "rgba(255,255,255,0.28)";
-
-const CELL = Platform.OS === "android" ? 60 : 56;
-const GRID_LINE = "rgba(139,92,246,0.05)";
-
-const SLIDES = [
-  {
-    code: "01",
-    badge: "SAVE_CONTENT",
-    title: "Your Second\nBrain for Video",
-    subtitle: "Paste any YouTube URL to instantly save it to your personal knowledge vault — forever.",
-    accent: PURPLE,
-    accentGlow: "rgba(99,102,241,0.18)",
-    accentBorder: "rgba(99,102,241,0.35)",
-    icon: "▶",
-  },
-  {
-    code: "02",
-    badge: "AI_INSIGHTS",
-    title: "Instant AI\nAnalysis",
-    subtitle: "Summaries, study notes, flashcards and quizzes — generated from any video in seconds.",
-    accent: CYAN,
-    accentGlow: "rgba(6,182,212,0.16)",
-    accentBorder: "rgba(6,182,212,0.30)",
-    icon: "◈",
-  },
-  {
-    code: "03",
-    badge: "ORGANIZE",
-    title: "Organize &\nDiscover",
-    subtitle: "Sort videos into folders, add tags, and chat with AI to find exactly what you need.",
-    accent: GREEN,
-    accentGlow: "rgba(16,185,129,0.16)",
-    accentBorder: "rgba(16,185,129,0.30)",
-    icon: "⬡",
-  },
-];
+const BG       = "#08080d";
+const CARD     = "#0f0f1a";
+const PURPLE   = "#6366f1";
+const VIOLET   = "#8b5cf6";
+const CYAN     = "#06b6d4";
+const WHITE    = "#ffffff";
+const MUTED    = "rgba(255,255,255,0.50)";
+const MUTED2   = "rgba(255,255,255,0.22)";
+const BORDER   = "rgba(99,102,241,0.18)";
 
 const ONBOARDING_KEY = "vidvault_onboarding_done";
 
@@ -70,491 +39,543 @@ const completeOnboarding = async () => {
   router.replace("/login");
 };
 
-/* ── Animated grid background ── */
-function GridBg() {
-  const cols = Math.ceil(W / CELL) + 1;
-  const rows = Math.ceil(H / CELL) + 1;
+/* ─── Slide data ─── */
+const SLIDES = [
+  {
+    badge: "SAVE · COLLECT",
+    title: "Your Video\nKnowledge Vault",
+    subtitle: "Save any YouTube video with one tap. Build a personal library of everything that matters to you.",
+    illustration: "save",
+  },
+  {
+    badge: "AI · ANALYZE",
+    title: "Instant AI\nInsights",
+    subtitle: "Auto-generate summaries, flashcards, quizzes and study notes from any video in seconds.",
+    illustration: "ai",
+  },
+  {
+    badge: "ORGANIZE · DISCOVER",
+    title: "Find What You\nNeed, Fast",
+    subtitle: "Folders, tags and AI chat — everything organized so you can retrieve any insight instantly.",
+    illustration: "organize",
+  },
+];
+
+/* ─── Animated rotating ring ─── */
+function RotatingRing({ radius, color, duration, opacity = 0.3, dash = "6,10" }: {
+  radius: number; color: string; duration: number; opacity?: number; dash?: string;
+}) {
+  const spin = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spin, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: true })
+    ).start();
+    return () => spin.stopAnimation();
+  }, []);
+  const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  const d = radius * 2 + 4;
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-      <Svg width={W} height={H} style={StyleSheet.absoluteFillObject}>
+    <Animated.View style={{ position: "absolute", width: d, height: d, transform: [{ rotate }] }}>
+      <Svg width={d} height={d} viewBox={`0 0 ${d} ${d}`}>
+        <Circle
+          cx={d / 2} cy={d / 2} r={radius}
+          fill="none" stroke={color} strokeWidth={1}
+          strokeDasharray={dash} opacity={opacity}
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/* ─── Slide 1 illustration: Save / Video library ─── */
+function SaveIllustration() {
+  const IW = W * 0.78;
+  const IH = IW * 0.78;
+  const cx = IW / 2, cy = IH / 2;
+  const r0 = IW * 0.36;
+
+  return (
+    <View style={{ width: IW, height: IH, alignItems: "center", justifyContent: "center" }}>
+      {/* Rotating rings */}
+      <RotatingRing radius={r0 * 0.55} color={PURPLE} duration={8000} opacity={0.18} dash="4,8" />
+      <RotatingRing radius={r0 * 0.72} color={CYAN} duration={14000} opacity={0.12} dash="8,14" />
+      <RotatingRing radius={r0 * 0.90} color={VIOLET} duration={20000} opacity={0.08} dash="3,18" />
+
+      <Svg width={IW} height={IH} style={{ position: "absolute" }}>
         <Defs>
-          <RadialGradient id="glow" cx="50%" cy="45%" rx="55%" ry="50%">
-            <Stop offset="0%" stopColor="#6366f1" stopOpacity="0.12" />
-            <Stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          <RadialGradient id="saveGlow" cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0%" stopColor={PURPLE} stopOpacity="0.22" />
+            <Stop offset="100%" stopColor={PURPLE} stopOpacity="0" />
           </RadialGradient>
+          <LinearGradient id="playGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#a78bfa" />
+            <Stop offset="100%" stopColor={PURPLE} />
+          </LinearGradient>
+          <LinearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#13132a" />
+            <Stop offset="100%" stopColor="#0d0d1f" />
+          </LinearGradient>
         </Defs>
-        <Ellipse cx={W / 2} cy={H * 0.42} rx={W * 0.65} ry={H * 0.38} fill="url(#glow)" />
-        {Array.from({ length: cols }).map((_, i) => (
-          <Line key={`v${i}`} x1={i * CELL} y1={0} x2={i * CELL} y2={H} stroke={GRID_LINE} strokeWidth={1} />
+
+        {/* Outer glow */}
+        <Ellipse cx={cx} cy={cy} rx={r0} ry={r0 * 0.88} fill="url(#saveGlow)" />
+
+        {/* Background circle */}
+        <Circle cx={cx} cy={cy} r={r0 * 0.54} fill={CARD} />
+        <Circle cx={cx} cy={cy} r={r0 * 0.54} fill="none" stroke={BORDER} strokeWidth={1} />
+
+        {/* Floating video cards (background) */}
+        {[
+          { x: cx - r0 * 0.62, y: cy - r0 * 0.52, w: r0 * 0.44, h: r0 * 0.28, op: 0.5 },
+          { x: cx + r0 * 0.22, y: cy - r0 * 0.58, w: r0 * 0.38, h: r0 * 0.25, op: 0.4 },
+          { x: cx - r0 * 0.52, y: cy + r0 * 0.38, w: r0 * 0.36, h: r0 * 0.22, op: 0.35 },
+          { x: cx + r0 * 0.30, y: cy + r0 * 0.42, w: r0 * 0.42, h: r0 * 0.26, op: 0.45 },
+        ].map((c, i) => (
+          <Rect
+            key={i}
+            x={c.x} y={c.y} width={c.w} height={c.h} rx={4}
+            fill="#1a1a2e" stroke={PURPLE} strokeWidth={0.7} opacity={c.op}
+          />
         ))}
-        {Array.from({ length: rows }).map((_, i) => (
-          <Line key={`h${i}`} x1={0} y1={i * CELL} x2={W} y2={i * CELL} stroke={GRID_LINE} strokeWidth={1} />
-        ))}
-        {/* Corner accent dots */}
-        <Circle cx={0} cy={0} r={1.5} fill={PURPLE} fillOpacity={0.4} />
-        <Circle cx={W} cy={0} r={1.5} fill={PURPLE} fillOpacity={0.4} />
-        <Circle cx={0} cy={H} r={1.5} fill={PURPLE} fillOpacity={0.3} />
-        <Circle cx={W} cy={H} r={1.5} fill={PURPLE} fillOpacity={0.3} />
+
+        {/* Central play button */}
+        <Circle cx={cx} cy={cy} r={r0 * 0.24} fill={PURPLE} fillOpacity={0.15} />
+        <Circle cx={cx} cy={cy} r={r0 * 0.18} fill={PURPLE} fillOpacity={0.25} />
+        <Polygon
+          points={`${cx + r0 * 0.08},${cy} ${cx - r0 * 0.06},${cy - r0 * 0.1} ${cx - r0 * 0.06},${cy + r0 * 0.1}`}
+          fill="url(#playGrad)"
+        />
+
+        {/* Node dots on ring */}
+        {[0, 72, 144, 216, 288].map((deg, i) => {
+          const rad = (deg * Math.PI) / 180;
+          const nx = cx + Math.cos(rad) * r0 * 0.72;
+          const ny = cy + Math.sin(rad) * r0 * 0.72;
+          return <Circle key={i} cx={nx} cy={ny} r={2.5} fill={i === 0 ? CYAN : PURPLE} fillOpacity={0.7} />;
+        })}
       </Svg>
     </View>
   );
 }
 
-/* ── Pulsing glow ring around icon ── */
-function GlowRing({ color, size }: { color: string; size: number }) {
-  const pulse = useRef(new Animated.Value(0)).current;
+/* ─── Slide 2 illustration: AI neural net ─── */
+function AIIllustration() {
+  const IW = W * 0.78;
+  const IH = IW * 0.78;
+  const cx = IW / 2, cy = IH / 2;
+  const r0 = IW * 0.36;
 
-  useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])
-    );
-    anim.start();
-    return () => anim.stop();
-  }, []);
-
-  const outerOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.12, 0.28] });
-  const innerOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.20, 0.45] });
-  const scale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
-
-  return (
-    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
-      <Animated.View
-        style={{
-          position: "absolute",
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-          opacity: outerOpacity,
-          transform: [{ scale }],
-        }}
-      />
-      <Animated.View
-        style={{
-          position: "absolute",
-          width: size * 0.75,
-          height: size * 0.75,
-          borderRadius: (size * 0.75) / 2,
-          backgroundColor: color,
-          opacity: innerOpacity,
-        }}
-      />
-    </View>
-  );
-}
-
-/* ── Floating particles ── */
-function FloatingParticles({ accent }: { accent: string }) {
-  const particles = [
-    { x: W * 0.08, y: H * 0.18, size: 2.5, delay: 0,    dur: 3200 },
-    { x: W * 0.88, y: H * 0.22, size: 2,   delay: 400,  dur: 2800 },
-    { x: W * 0.15, y: H * 0.72, size: 1.8, delay: 800,  dur: 3600 },
-    { x: W * 0.82, y: H * 0.68, size: 2.2, delay: 200,  dur: 3000 },
-    { x: W * 0.50, y: H * 0.10, size: 1.5, delay: 1000, dur: 2600 },
-    { x: W * 0.70, y: H * 0.85, size: 2,   delay: 600,  dur: 3400 },
+  const nodes = [
+    { x: cx, y: cy - r0 * 0.58, r: 7, c: "#a78bfa" },
+    { x: cx - r0 * 0.52, y: cy - r0 * 0.18, r: 5, c: PURPLE },
+    { x: cx + r0 * 0.52, y: cy - r0 * 0.18, r: 5, c: CYAN },
+    { x: cx - r0 * 0.32, y: cy + r0 * 0.40, r: 5, c: PURPLE },
+    { x: cx + r0 * 0.32, y: cy + r0 * 0.40, r: 5, c: "#a78bfa" },
+    { x: cx, y: cy, r: 14, c: PURPLE },
+  ];
+  const edges = [
+    [0, 5], [1, 5], [2, 5], [3, 5], [4, 5],
+    [0, 1], [0, 2], [1, 3], [2, 4],
   ];
 
   return (
-    <>
-      {particles.map((p, i) => (
-        <MotiView
-          key={i}
-          from={{ opacity: 0.1, translateY: -5 }}
-          animate={{ opacity: 0.5, translateY: 5 }}
-          transition={{
-            type: "timing",
-            duration: p.dur,
-            delay: p.delay,
-            loop: true,
-            repeatReverse: true,
-          }}
-          style={{
-            position: "absolute",
-            left: p.x,
-            top: p.y,
-            width: p.size,
-            height: p.size,
-            borderRadius: p.size / 2,
-            backgroundColor: accent,
-          }}
-          pointerEvents="none"
-        />
-      ))}
-    </>
-  );
-}
+    <View style={{ width: IW, height: IH, alignItems: "center", justifyContent: "center" }}>
+      <RotatingRing radius={r0 * 0.60} color={PURPLE} duration={10000} opacity={0.15} dash="5,10" />
+      <RotatingRing radius={r0 * 0.85} color={CYAN} duration={18000} opacity={0.10} dash="2,16" />
 
-/* ── Slide icon box with glow ── */
-function SlideIcon({ slide, key: _k }: { slide: typeof SLIDES[0]; key?: number }) {
-  return (
-    <View style={{ alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
-      <GlowRing color={slide.accent} size={130} />
-      <View
-        style={[
-          styles.iconBox,
-          { backgroundColor: slide.accentGlow, borderColor: slide.accentBorder },
-        ]}
-      >
-        <Text style={{ fontSize: 46, color: slide.accent }}>{slide.icon}</Text>
-      </View>
+      <Svg width={IW} height={IH} style={{ position: "absolute" }}>
+        <Defs>
+          <RadialGradient id="aiGlow" cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0%" stopColor={PURPLE} stopOpacity="0.2" />
+            <Stop offset="100%" stopColor={CYAN} stopOpacity="0" />
+          </RadialGradient>
+          <LinearGradient id="aiCenter" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#a78bfa" />
+            <Stop offset="100%" stopColor={PURPLE} />
+          </LinearGradient>
+        </Defs>
+
+        <Ellipse cx={cx} cy={cy} rx={r0} ry={r0 * 0.88} fill="url(#aiGlow)" />
+
+        {/* Edges */}
+        {edges.map(([a, b], i) => (
+          <Line
+            key={i}
+            x1={nodes[a].x} y1={nodes[a].y}
+            x2={nodes[b].x} y2={nodes[b].y}
+            stroke={PURPLE} strokeWidth={1} opacity={0.25}
+          />
+        ))}
+
+        {/* Nodes */}
+        {nodes.map((n, i) => (
+          <React.Fragment key={i}>
+            <Circle cx={n.x} cy={n.y} r={n.r * 1.8} fill={n.c} fillOpacity={0.1} />
+            <Circle cx={n.x} cy={n.y} r={n.r} fill={n.c} fillOpacity={0.85} />
+            {i === 5 && (
+              <>
+                <Circle cx={n.x} cy={n.y} r={n.r + 6} fill="none" stroke={PURPLE} strokeWidth={1} opacity={0.3} />
+                <Circle cx={n.x} cy={n.y} r={n.r + 12} fill="none" stroke={PURPLE} strokeWidth={0.5} opacity={0.15} />
+              </>
+            )}
+          </React.Fragment>
+        ))}
+
+        {/* AI spark lines */}
+        {[-12, 0, 12].map((offset, i) => (
+          <Line
+            key={i}
+            x1={cx - 6} y1={cy + offset} x2={cx + 6} y2={cy + offset}
+            stroke={WHITE} strokeWidth={1.5} opacity={0.5} strokeLinecap="round"
+          />
+        ))}
+      </Svg>
     </View>
   );
 }
 
-/* ── Main onboarding screen ── */
+/* ─── Slide 3 illustration: Organize / Folders ─── */
+function OrganizeIllustration() {
+  const IW = W * 0.78;
+  const IH = IW * 0.78;
+  const cx = IW / 2, cy = IH / 2;
+  const r0 = IW * 0.36;
+
+  const folders = [
+    { x: cx - r0 * 0.50, y: cy - r0 * 0.22, w: r0 * 0.52, h: r0 * 0.36, c: PURPLE },
+    { x: cx + r0 * 0.08, y: cy - r0 * 0.14, w: r0 * 0.44, h: r0 * 0.32, c: CYAN },
+    { x: cx - r0 * 0.28, y: cy + r0 * 0.20, w: r0 * 0.48, h: r0 * 0.32, c: VIOLET },
+  ];
+
+  return (
+    <View style={{ width: IW, height: IH, alignItems: "center", justifyContent: "center" }}>
+      <RotatingRing radius={r0 * 0.65} color={VIOLET} duration={12000} opacity={0.14} dash="6,12" />
+      <RotatingRing radius={r0 * 0.88} color={PURPLE} duration={22000} opacity={0.08} dash="4,20" />
+
+      <Svg width={IW} height={IH} style={{ position: "absolute" }}>
+        <Defs>
+          <RadialGradient id="orgGlow" cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0%" stopColor={VIOLET} stopOpacity="0.18" />
+            <Stop offset="100%" stopColor={PURPLE} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+
+        <Ellipse cx={cx} cy={cy} rx={r0} ry={r0 * 0.88} fill="url(#orgGlow)" />
+
+        {/* Central hub circle */}
+        <Circle cx={cx} cy={cy} r={r0 * 0.22} fill={CARD} />
+        <Circle cx={cx} cy={cy} r={r0 * 0.22} fill="none" stroke={PURPLE} strokeWidth={1} opacity={0.3} />
+
+        {/* Folder cards */}
+        {folders.map((f, i) => (
+          <React.Fragment key={i}>
+            {/* Connection line to center */}
+            <Line
+              x1={f.x + f.w / 2} y1={f.y + f.h / 2}
+              x2={cx} y2={cy}
+              stroke={f.c} strokeWidth={0.8} opacity={0.25}
+            />
+            {/* Folder tab */}
+            <Rect x={f.x} y={f.y - 6} width={f.w * 0.4} height={7} rx={2} fill={f.c} opacity={0.7} />
+            {/* Folder body */}
+            <Rect x={f.x} y={f.y} width={f.w} height={f.h} rx={4}
+              fill="#11111d" stroke={f.c} strokeWidth={0.8} opacity={0.8} />
+            {/* Folder content lines */}
+            <Rect x={f.x + 6} y={f.y + 7} width={f.w - 12} height={2} rx={1} fill={f.c} opacity={0.3} />
+            <Rect x={f.x + 6} y={f.y + 13} width={(f.w - 12) * 0.65} height={2} rx={1} fill={f.c} opacity={0.2} />
+          </React.Fragment>
+        ))}
+
+        {/* Center dot */}
+        <Circle cx={cx} cy={cy} r={5} fill={PURPLE} />
+        <Circle cx={cx} cy={cy} r={9} fill="none" stroke={PURPLE} strokeWidth={0.8} opacity={0.4} />
+      </Svg>
+    </View>
+  );
+}
+
+/* ─── Main onboarding screen ─── */
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState(0);
-  const [key, setKey] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
 
-  const slide  = SLIDES[Math.min(current, SLIDES.length - 1)];
+  const slide  = SLIDES[current];
   const isLast = current === SLIDES.length - 1;
 
-  const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const botPad = Math.max(insets.bottom, Platform.OS === "android" ? 20 : 0) + (Platform.OS === "web" ? 34 : 0);
+  const topPad = insets.top + (Platform.OS === "web" ? 60 : 0);
+  const botPad = Math.max(insets.bottom, Platform.OS === "android" ? 20 : 0) + (Platform.OS === "web" ? 24 : 0);
 
   const next = () => {
     if (isLast) {
       completeOnboarding();
     } else {
-      setCurrent((c) => Math.min(c + 1, SLIDES.length - 1));
-      setKey((k) => k + 1);
+      setCurrent((c) => c + 1);
+      setAnimKey((k) => k + 1);
     }
   };
 
-  return (
-    <View style={[styles.container, { paddingTop: topPad, paddingBottom: botPad }]}>
-      <GridBg />
-      <FloatingParticles accent={slide.accent} />
+  const illustrations = [SaveIllustration, AIIllustration, OrganizeIllustration];
+  const Illustration = illustrations[current];
 
-      {/* Corner brackets */}
-      <View style={[styles.bracketTL, { borderColor: PURPLE + "50" }]} />
-      <View style={[styles.bracketBR, { borderColor: slide.accent + "40" }]} />
-      <View style={[styles.bracketTR, { borderColor: slide.accent + "25" }]} />
+  return (
+    <View style={[styles.root, { paddingTop: topPad, paddingBottom: botPad }]}>
 
       {/* ── Top bar ── */}
       <MotiView
-        from={{ opacity: 0, translateY: -12 }}
+        from={{ opacity: 0, translateY: -10 }}
         animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: "timing", duration: 500 }}
+        transition={{ type: "timing", duration: 450 }}
         style={styles.topBar}
       >
         <View style={styles.logoRow}>
-          <View style={[styles.logoBox, { borderColor: PURPLE + "50", backgroundColor: PURPLE + "14" }]}>
-            <VidVaultLogo size={22} />
-          </View>
+          <VidVaultLogo size={32} />
           <Text style={styles.logoName}>VidVault</Text>
+          <View style={styles.aiBadge}>
+            <Text style={styles.aiBadgeText}>AI</Text>
+          </View>
         </View>
 
         <TouchableOpacity
           onPress={completeOnboarding}
-          activeOpacity={0.7}
-          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          activeOpacity={0.65}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
         >
-          <View style={styles.skipBadge}>
-            <Text style={styles.skipText}>SKIP</Text>
-          </View>
+          <Text style={styles.skipText}>SKIP</Text>
         </TouchableOpacity>
       </MotiView>
 
-      {/* ── Slide body ── */}
-      <View style={styles.body}>
-        {/* Faint large code number */}
-        <MotiText
-          key={`code-${key}`}
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ type: "timing", duration: 400 }}
-          style={[styles.bigCode, { color: slide.accent }]}
-        >
-          {slide.code}
-        </MotiText>
+      {/* ── Illustration ── */}
+      <MotiView
+        key={`illo-${animKey}`}
+        from={{ opacity: 0, scale: 0.90 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", damping: 20, stiffness: 180, delay: 40 }}
+        style={styles.illustrationWrap}
+      >
+        <Illustration />
+      </MotiView>
 
-        {/* Icon */}
-        <MotiView
-          key={`icon-${key}`}
-          from={{ opacity: 0, scale: 0.82 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 18, delay: 60 }}
-        >
-          <SlideIcon slide={slide} />
-        </MotiView>
+      {/* ── Content card ── */}
+      <View style={styles.card}>
+        {/* Progress dots */}
+        <View style={styles.dotsRow}>
+          {SLIDES.map((_, i) => (
+            <MotiView
+              key={i}
+              animate={{
+                width: i === current ? 28 : 6,
+                backgroundColor: i === current ? PURPLE : "rgba(99,102,241,0.25)",
+              }}
+              transition={{ type: "timing", duration: 280 }}
+              style={styles.dot}
+            />
+          ))}
+        </View>
 
         {/* Badge */}
         <MotiView
-          key={`badge-${key}`}
-          from={{ opacity: 0, translateX: -14 }}
+          key={`badge-${animKey}`}
+          from={{ opacity: 0, translateX: -12 }}
           animate={{ opacity: 1, translateX: 0 }}
-          transition={{ type: "timing", duration: 380, delay: 80 }}
-          style={[styles.badge, { borderColor: slide.accent + "55" }]}
+          transition={{ type: "timing", duration: 340, delay: 60 }}
+          style={styles.badge}
         >
-          <View style={[styles.badgeDot, { backgroundColor: slide.accent }]} />
-          <Text style={[styles.badgeText, { color: slide.accent }]}>{slide.badge}</Text>
+          <View style={styles.badgeDot} />
+          <Text style={styles.badgeText}>{slide.badge}</Text>
         </MotiView>
 
         {/* Title */}
         <MotiText
-          key={`title-${key}`}
-          from={{ opacity: 0, translateY: 16 }}
+          key={`title-${animKey}`}
+          from={{ opacity: 0, translateY: 14 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 420, delay: 100 }}
+          transition={{ type: "timing", duration: 360, delay: 80 }}
           style={styles.title}
         >
           {slide.title}
         </MotiText>
 
-        {/* Accent rule */}
-        <MotiView
-          key={`rule-${key}`}
-          from={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ type: "timing", duration: 400, delay: 140 }}
-          style={[styles.accentRule, { backgroundColor: slide.accent }]}
-        />
-
         {/* Subtitle */}
         <MotiText
-          key={`sub-${key}`}
-          from={{ opacity: 0, translateY: 12 }}
+          key={`sub-${animKey}`}
+          from={{ opacity: 0, translateY: 10 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 400, delay: 160 }}
+          transition={{ type: "timing", duration: 360, delay: 120 }}
           style={styles.subtitle}
         >
           {slide.subtitle}
         </MotiText>
-      </View>
 
-      {/* ── Footer ── */}
-      <MotiView
-        from={{ opacity: 0, translateY: 20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: "timing", duration: 500, delay: 80 }}
-        style={styles.footer}
-      >
-        {/* Progress indicators */}
-        <View style={styles.stepRow}>
-          {SLIDES.map((s, i) => (
-            <MotiView
-              key={i}
-              animate={{
-                width: i === current ? 32 : 6,
-                backgroundColor: i === current ? WHITE : MUTED2,
-              }}
-              transition={{ type: "timing", duration: 300 }}
-              style={styles.stepDot}
-            />
-          ))}
-          <Text style={styles.stepLabel}>{current + 1} / {SLIDES.length}</Text>
-        </View>
+        {/* CTA */}
+        <MotiView
+          key={`cta-${animKey}`}
+          from={{ opacity: 0, translateY: 8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 320, delay: 160 }}
+          style={{ width: "100%" }}
+        >
+          <AppButton
+            label={isLast ? "GET STARTED" : "CONTINUE"}
+            onPress={next}
+            variant="primary"
+            size="lg"
+            fullWidth
+          />
+        </MotiView>
 
-        {/* CTA using the global AppButton */}
-        <AppButton
-          label={isLast ? "GET STARTED" : "CONTINUE"}
-          onPress={next}
-          variant="primary"
-          size="lg"
-          fullWidth
-        />
-
-        {/* Ghost skip/sign-in link on last slide */}
-        {isLast && (
+        {/* Sign in hint on last slide */}
+        {isLast ? (
           <TouchableOpacity onPress={completeOnboarding} activeOpacity={0.7}>
-            <Text style={styles.signInLink}>ALREADY HAVE AN ACCOUNT? <Text style={{ color: WHITE }}>SIGN IN →</Text></Text>
+            <Text style={styles.signInHint}>
+              ALREADY HAVE AN ACCOUNT?{"  "}
+              <Text style={{ color: WHITE, fontFamily: "JetBrainsMono_600SemiBold" }}>SIGN IN →</Text>
+            </Text>
           </TouchableOpacity>
+        ) : (
+          <Text style={styles.hintLine}>KNOWLEDGE_BASE // {current + 1}/{SLIDES.length}</Text>
         )}
-
-        <Text style={styles.hint}>KNOWLEDGE_BASE // ACTIVE</Text>
-      </MotiView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: BG,
-    paddingHorizontal: 24,
-  },
-
-  /* Corner brackets */
-  bracketTL: {
-    position: "absolute",
-    top: 60,
-    left: 14,
-    width: 22,
-    height: 22,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-  },
-  bracketBR: {
-    position: "absolute",
-    bottom: 108,
-    right: 14,
-    width: 22,
-    height: 22,
-    borderBottomWidth: 1.5,
-    borderRightWidth: 1.5,
-  },
-  bracketTR: {
-    position: "absolute",
-    top: 60,
-    right: 14,
-    width: 14,
-    height: 14,
-    borderTopWidth: 1,
-    borderRightWidth: 1,
+    alignItems: "center",
   },
 
   /* Top bar */
   topBar: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 22,
     paddingTop: 8,
+    marginBottom: 4,
   },
   logoRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 9,
-  },
-  logoBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 5,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    gap: 8,
   },
   logoName: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 17,
+    fontSize: 18,
     color: WHITE,
   },
-  skipBadge: {
+  aiBadge: {
+    backgroundColor: "rgba(99,102,241,0.15)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    borderColor: "rgba(99,102,241,0.35)",
     borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  aiBadgeText: {
+    fontFamily: "JetBrainsMono_600SemiBold",
+    fontSize: 8,
+    color: PURPLE,
+    letterSpacing: 1.5,
   },
   skipText: {
     fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 9,
+    fontSize: 10,
     color: MUTED,
     letterSpacing: 2,
   },
 
-  /* Body */
-  body: {
+  /* Illustration */
+  illustrationWrap: {
     flex: 1,
-    alignItems: "flex-start",
-    justifyContent: "center",
-    gap: 16,
-    paddingBottom: 8,
-  },
-
-  bigCode: {
-    fontFamily: "JetBrainsMono_600SemiBold",
-    fontSize: 110,
-    lineHeight: 110,
-    opacity: 0.045,
-    position: "absolute",
-    top: -14,
-    right: -8,
-  },
-
-  iconBox: {
-    width: 106,
-    height: 106,
-    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    minHeight: H * 0.32,
+    maxHeight: H * 0.44,
   },
 
+  /* Content card */
+  card: {
+    width: "100%",
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+    gap: 14,
+    alignItems: "flex-start",
+    borderTopWidth: 1,
+    borderTopColor: BORDER,
+  },
+
+  /* Progress dots */
+  dotsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 8,
+  },
+  dot: {
+    height: 4,
+    borderRadius: 2,
+  },
+
+  /* Badge */
   badge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
     borderWidth: 1,
+    borderColor: "rgba(99,102,241,0.35)",
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 4,
+    borderRadius: 5,
+    backgroundColor: "rgba(99,102,241,0.06)",
   },
   badgeDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
+    backgroundColor: PURPLE,
   },
   badgeText: {
     fontFamily: "JetBrainsMono_600SemiBold",
     fontSize: 9,
+    color: PURPLE,
     letterSpacing: 2,
   },
 
+  /* Title */
   title: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 38,
+    fontSize: 34,
     color: WHITE,
-    lineHeight: 46,
+    lineHeight: 42,
   },
 
-  accentRule: {
-    width: 44,
-    height: 2,
-    borderRadius: 1,
-    opacity: 0.85,
-    alignSelf: "flex-start",
-  },
-
+  /* Subtitle */
   subtitle: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 14,
+    fontSize: 13.5,
     color: MUTED,
-    lineHeight: 23,
-    maxWidth: 310,
+    lineHeight: 22,
+    maxWidth: W - 48,
   },
 
-  /* Footer */
-  footer: {
-    alignItems: "center",
-    gap: 16,
-    paddingBottom: Platform.OS === "android" ? 8 : 12,
-  },
-
-  stepRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    height: 10,
-  },
-  stepDot: {
-    height: 4,
-    borderRadius: 2,
-  },
-  stepLabel: {
+  signInHint: {
     fontFamily: "JetBrainsMono_400Regular",
     fontSize: 9,
     color: MUTED2,
-    letterSpacing: 1.5,
-    marginLeft: 6,
-  },
-
-  signInLink: {
-    fontFamily: "JetBrainsMono_400Regular",
-    fontSize: 9,
-    color: MUTED,
     letterSpacing: 1.2,
+    alignSelf: "center",
   },
 
-  hint: {
+  hintLine: {
     fontFamily: "JetBrainsMono_400Regular",
     fontSize: 8,
     color: MUTED2,
     letterSpacing: 2,
+    alignSelf: "center",
   },
 });
