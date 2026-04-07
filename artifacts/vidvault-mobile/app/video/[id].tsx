@@ -29,7 +29,7 @@ import Svg, { Polygon } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
-import { useColors } from "@/hooks/useColors";
+import { useColors, useTheme } from "@/hooks/useColors";
 import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
 import { YouTubePlayer } from "@/components/YouTubeEmbed";
@@ -141,6 +141,7 @@ function AiToolCard({
 }) {
   const done = !!existingOutput;
   const num = String(index + 1).padStart(2, "0");
+  const { colors, isDark } = useTheme();
 
   return (
     <MotiView
@@ -149,18 +150,20 @@ function AiToolCard({
           ? tool.color + "55"
           : done
           ? tool.color + "45"
-          : "rgba(255,255,255,0.04)",
+          : colors.border,
         opacity: 1,
       }}
       from={{ opacity: 0 }}
       transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
-      style={styles.toolCard}
+      style={[styles.toolCard, { backgroundColor: colors.card, borderColor: colors.border }]}
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
 
-        {/* Etch overlay — simulates web's inset rgba(255,255,255,0.07) top-left + rgba(0,0,0,0.5) bottom-right */}
+        {/* Etch overlay — theme-aware */}
         <LinearGradient
-          colors={["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.35)"]}
+          colors={isDark
+            ? ["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.35)"]
+            : ["rgba(255,255,255,0.8)", "transparent", "rgba(0,0,0,0.03)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}
@@ -176,7 +179,7 @@ function AiToolCard({
 
         {/* Number code (top-left) + bare icon (top-right) — exact web layout */}
         <View style={styles.toolCardTop}>
-          <Text style={styles.toolNum}>{num}</Text>
+          <Text style={[styles.toolNum, { color: colors.mutedForeground + "55" }]}>{num}</Text>
           <MotiView
             animate={{ opacity: isGenerating ? 1.0 : done ? 0.85 : 0.4 }}
             transition={{ type: "timing", duration: 400 }}
@@ -201,7 +204,7 @@ function AiToolCard({
         </Text>
 
         {/* Description — mono, 8px, very muted */}
-        <Text style={styles.toolDesc} numberOfLines={2}>{tool.desc}</Text>
+        <Text style={[styles.toolDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{tool.desc}</Text>
 
         {/* Footer badge */}
         <View style={styles.toolCardFooter}>
@@ -265,6 +268,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   lang: "en" | "hi"; onLangChange: (l: "en" | "hi") => void;
 }) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const [copied, setCopied] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -376,7 +380,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       from={{ opacity: 0, translateX: 24 }}
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ type: "timing", duration: 280 }}
-      style={{ flex: 1, backgroundColor: "#09090e" }}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
       {/* ── Export bottom sheet ── */}
       <Modal
@@ -392,23 +396,23 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
         />
         <View style={{
           position: "absolute", bottom: 0, left: 0, right: 0,
-          backgroundColor: "#111118",
+          backgroundColor: colors.card,
           borderTopLeftRadius: 24, borderTopRightRadius: 24,
-          borderTopWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+          borderTopWidth: 1, borderColor: colors.border,
           paddingBottom: insets.bottom + 16,
         }}>
           {/* Handle */}
           <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.15)" }} />
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.mutedForeground + "40" }} />
           </View>
           {/* Title */}
-          <View style={{ paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.07)", flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", gap: 10 }}>
             <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: tool.color + "22", borderWidth: 1, borderColor: tool.color + "35", alignItems: "center", justifyContent: "center" }}>
               <Feather name="download" size={15} color={tool.color} />
             </View>
             <View>
               <Text style={{ fontFamily: "JetBrainsMono_700Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: tool.color }}>Export Options</Text>
-              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{tool.label} · {wordCount} words</Text>
+              <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }}>{tool.label} · {wordCount} words</Text>
             </View>
           </View>
           {/* Options */}
@@ -430,8 +434,8 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
                   <Feather name={opt.icon} size={16} color={opt.color} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: "#fff", marginBottom: 1 }}>{opt.label}</Text>
-                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 0.3 }}>{opt.desc}</Text>
+                  <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground, marginBottom: 1 }}>{opt.label}</Text>
+                  <Text style={{ fontFamily: "JetBrainsMono_400Regular", fontSize: 10, color: colors.mutedForeground, letterSpacing: 0.3 }}>{opt.desc}</Text>
                 </View>
                 <Feather name="chevron-right" size={14} color={opt.color + "80"} />
               </TouchableOpacity>
@@ -441,14 +445,14 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       </Modal>
 
       {/* Header bar */}
-      <View style={[styles.outputFullHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={[styles.outputFullHeader, { paddingTop: insets.top + 10, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={onClose} activeOpacity={0.75} style={styles.outputBackRow} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Feather name="arrow-left" size={15} color={tool.color} />
           <Text style={[styles.outputBackLabel, { color: tool.color }]}>TOOLS</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity onPress={onRegenerate} style={styles.outputIconBtn} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Feather name="refresh-cw" size={14} color="rgba(255,255,255,0.45)" />
+          <TouchableOpacity onPress={onRegenerate} style={[styles.outputIconBtn, { backgroundColor: colors.card, borderColor: colors.border }]} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Feather name="refresh-cw" size={14} color={colors.mutedForeground} />
           </TouchableOpacity>
           {/* Export button — opens the export sheet */}
           <TouchableOpacity
@@ -463,30 +467,30 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       </View>
 
       {/* Tool identity + stats */}
-      <View style={[styles.outputToolHeader, { borderBottomColor: "rgba(255,255,255,0.14)" }]}>
+      <View style={[styles.outputToolHeader, { borderBottomColor: colors.border }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
           <View style={[styles.outputToolIcon, { backgroundColor: tool.color + "22", borderColor: tool.color + "30" }]}>
             <Feather name={tool.icon} size={20} color={tool.color} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.outputToolName}>{tool.label}</Text>
-            {videoTitle ? <Text style={styles.outputToolSub} numberOfLines={1}>{videoTitle}</Text> : null}
+            <Text style={[styles.outputToolName, { color: colors.foreground }]}>{tool.label}</Text>
+            {videoTitle ? <Text style={[styles.outputToolSub, { color: colors.mutedForeground }]} numberOfLines={1}>{videoTitle}</Text> : null}
           </View>
         </View>
         <View style={{ gap: 5, alignItems: "flex-end" }}>
           <View style={[styles.outputStatChip, { borderColor: tool.color + "35", backgroundColor: tool.color + "10" }]}>
             <Text style={[styles.outputStatText, { color: tool.color }]}>{wordCount} words</Text>
           </View>
-          <View style={[styles.outputStatChip, { borderColor: "rgba(255,255,255,0.18)" }]}>
-            <Text style={[styles.outputStatText, { color: "rgba(255,255,255,0.6)" }]}>{readMins} min read</Text>
+          <View style={[styles.outputStatChip, { borderColor: colors.border }]}>
+            <Text style={[styles.outputStatText, { color: colors.mutedForeground }]}>{readMins} min read</Text>
           </View>
         </View>
       </View>
 
       {/* Generated date strip */}
-      <View style={styles.outputDateStrip}>
-        <Feather name="calendar" size={9} color="rgba(255,255,255,0.2)" />
-        <Text style={styles.outputDateText}>Generated {generatedDate}</Text>
+      <View style={[styles.outputDateStrip, { borderBottomColor: colors.border }]}>
+        <Feather name="calendar" size={9} color={colors.mutedForeground + "80"} />
+        <Text style={[styles.outputDateText, { color: colors.mutedForeground }]}>Generated {generatedDate}</Text>
       </View>
 
       {/* Content */}
@@ -495,13 +499,13 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
         contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 80 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.outputFullText}>{output.content}</Text>
+        <Text style={[styles.outputFullText, { color: colors.foreground }]}>{output.content}</Text>
       </ScrollView>
 
       {/* Bottom bar: language toggle + regenerate hint */}
-      <View style={[styles.outputBottomBar, { paddingBottom: insets.bottom + 12 }]}>
-        <Feather name="globe" size={10} color="rgba(255,255,255,0.3)" />
-        <Text style={styles.outputBottomLabel}>Generate in:</Text>
+      <View style={[styles.outputBottomBar, { paddingBottom: insets.bottom + 12, borderTopColor: colors.border, backgroundColor: colors.card }]}>
+        <Feather name="globe" size={10} color={colors.mutedForeground} />
+        <Text style={[styles.outputBottomLabel, { color: colors.mutedForeground }]}>Generate in:</Text>
         <View style={{ flexDirection: "row", gap: 5 }}>
           {(["en", "hi"] as const).map(l => (
             <TouchableOpacity
@@ -511,11 +515,11 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
               style={{
                 flexDirection: "row", alignItems: "center", gap: 4,
                 paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
-                borderColor: lang === l ? tool.color + "88" : "rgba(255,255,255,0.14)",
-                backgroundColor: lang === l ? tool.color + "18" : "rgba(255,255,255,0.04)",
+                borderColor: lang === l ? tool.color + "88" : colors.border,
+                backgroundColor: lang === l ? tool.color + "18" : colors.secondary,
               }}
             >
-              <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : "rgba(255,255,255,0.4)" }}>
+              <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : colors.mutedForeground }}>
                 {l === "en" ? "EN" : "हिं"}
               </Text>
             </TouchableOpacity>
@@ -552,6 +556,7 @@ function NoteItem({ note, onDelete, onUpdate }: {
       ? `${Math.floor(note.timestamp / 60)}:${(note.timestamp % 60).toString().padStart(2, "0")}`
       : ""
   );
+  const { colors } = useTheme();
   const parseTs = (t: string): number | undefined => {
     const parts = t.split(":").map(Number);
     if (parts.length === 2 && !parts.some(isNaN)) return parts[0] * 60 + parts[1];
@@ -559,7 +564,7 @@ function NoteItem({ note, onDelete, onUpdate }: {
   };
 
   return (
-    <View style={styles.noteCard}>
+    <View style={[styles.noteCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {!editing && note.timestamp != null && (
         <View style={styles.noteTsBadge}>
           <Feather name="clock" size={9} color={PURPLE} />
@@ -572,13 +577,14 @@ function NoteItem({ note, onDelete, onUpdate }: {
         <View style={{ gap: 8 }}>
           <TextInput
             value={editContent} onChangeText={setEditContent}
-            style={styles.noteEditInput} multiline autoFocus
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            style={[styles.noteEditInput, { color: colors.foreground, backgroundColor: colors.secondary, borderColor: colors.border }]}
+            multiline autoFocus
+            placeholderTextColor={colors.mutedForeground}
           />
           <TextInput
             value={editTs} onChangeText={setEditTs}
-            placeholder="Timestamp (1:30)" placeholderTextColor="rgba(255,255,255,0.3)"
-            style={styles.tsInput}
+            placeholder="Timestamp (1:30)" placeholderTextColor={colors.mutedForeground}
+            style={[styles.tsInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.secondary }]}
           />
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
@@ -589,20 +595,20 @@ function NoteItem({ note, onDelete, onUpdate }: {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setEditing(false)}
-              style={[styles.noteActionBtn, { backgroundColor: "rgba(255,255,255,0.08)" }]}
+              style={[styles.noteActionBtn, { backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }]}
             >
-              <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, fontFamily: "Poppins_500Medium" }}>Cancel</Text>
+              <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Poppins_500Medium" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
         <>
-          <Text style={styles.noteContent}>{note.content}</Text>
+          <Text style={[styles.noteContent, { color: colors.foreground }]}>{note.content}</Text>
           <View style={styles.noteFooter}>
-            <Text style={styles.noteDate}>{new Date(note.createdAt).toLocaleDateString()}</Text>
+            <Text style={[styles.noteDate, { color: colors.mutedForeground }]}>{new Date(note.createdAt).toLocaleDateString()}</Text>
             <View style={{ flexDirection: "row", gap: 14 }}>
               <TouchableOpacity onPress={() => setEditing(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Feather name="edit-2" size={13} color="rgba(255,255,255,0.35)" />
+                <Feather name="edit-2" size={13} color={colors.mutedForeground} />
               </TouchableOpacity>
               <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Feather name="trash-2" size={13} color="#ef4444" />
@@ -1149,12 +1155,12 @@ export default function VideoDetailScreen() {
                         style={{
                           flexDirection: "row", alignItems: "center", gap: 4,
                           paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
-                          borderColor: lang === l ? PURPLE + "88" : "rgba(255,255,255,0.14)",
-                          backgroundColor: lang === l ? PURPLE + "18" : "rgba(255,255,255,0.04)",
+                          borderColor: lang === l ? PURPLE + "88" : colors.border,
+                          backgroundColor: lang === l ? PURPLE + "18" : colors.secondary,
                         }}
                       >
-                        <Feather name="globe" size={8} color={lang === l ? PURPLE : "rgba(255,255,255,0.35)"} />
-                        <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : "rgba(255,255,255,0.4)" }}>
+                        <Feather name="globe" size={8} color={lang === l ? PURPLE : colors.mutedForeground} />
+                        <Text style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
                           {l === "en" ? "EN" : "हिं"}
                         </Text>
                       </TouchableOpacity>

@@ -172,7 +172,11 @@ function EtchedStatCard({
         pointerEvents="none"
       />
       <View style={styles.etchedTop}>
-        <Text style={[styles.etchedCode, { color: colors.mutedForeground + "55" }]}>{code}</Text>
+        <Text
+          style={[styles.etchedCode, { color: colors.mutedForeground + "55" }]}
+        >
+          {code}
+        </Text>
         <Feather
           name={icon}
           size={14}
@@ -384,7 +388,7 @@ function LevelCard({
       <View style={styles.levelTop}>
         <View>
           <Text style={[styles.levelLabel, { color: colors.mutedForeground }]}>
-            //LEARNER_PROFILE
+            LEARNER_PROFILE
           </Text>
           <View style={styles.levelRow}>
             <View
@@ -471,7 +475,12 @@ function RecentAiItemCard({
     <MotiView
       from={{ opacity: 0, translateY: 12, scale: 0.97 }}
       animate={{ opacity: 1, translateY: 0, scale: 1 }}
-      transition={{ type: "spring", delay: 55 * index, damping: 18, stiffness: 200 }}
+      transition={{
+        type: "spring",
+        delay: 55 * index,
+        damping: 18,
+        stiffness: 200,
+      }}
     >
       <TouchableOpacity
         activeOpacity={0.78}
@@ -512,8 +521,15 @@ function RecentAiItemCard({
         />
 
         {/* Inner content */}
-        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, padding: 12 }}>
-
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            padding: 12,
+          }}
+        >
           {/* Thumbnail with icon overlay */}
           <View style={{ position: "relative", flexShrink: 0 }}>
             <View
@@ -540,7 +556,11 @@ function RecentAiItemCard({
                     backgroundColor: meta.color + "12",
                   }}
                 >
-                  <Feather name={meta.icon} size={22} color={meta.color + "60"} />
+                  <Feather
+                    name={meta.icon}
+                    size={22}
+                    color={meta.color + "60"}
+                  />
                 </View>
               )}
             </View>
@@ -572,7 +592,9 @@ function RecentAiItemCard({
           {/* Info column */}
           <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
             {/* Type pill + time row — global button style */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
               <View
                 style={{
                   flexDirection: "row",
@@ -625,7 +647,9 @@ function RecentAiItemCard({
 
             {/* Channel row */}
             {output.channelName && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+              >
                 <View
                   style={{
                     width: 13,
@@ -667,7 +691,6 @@ function RecentAiItemCard({
           >
             <Feather name="chevron-right" size={12} color={meta.color + "80"} />
           </View>
-
         </View>
       </TouchableOpacity>
     </MotiView>
@@ -834,22 +857,6 @@ export default function HomeScreen() {
           transition={{ type: "timing", duration: 500 }}
           style={styles.greeting}
         >
-          <View style={styles.greetingTopRow}>
-            <Text
-              style={[styles.greetingLabel, { color: colors.mutedForeground }]}
-            >
-              //SYSTEM_STATUS
-            </Text>
-            <View style={styles.statusBadge}>
-              <MotiView
-                from={{ opacity: 0.3 }}
-                animate={{ opacity: 1 }}
-                transition={{ type: "timing", duration: 700, loop: true }}
-                style={[styles.statusDot, { backgroundColor: GREEN }]}
-              />
-              <Text style={[styles.statusText, { color: GREEN }]}>ACTIVE</Text>
-            </View>
-          </View>
           <Text style={[styles.greetingName, { color: colors.foreground }]}>
             Hey, {displayName} 👋
           </Text>
@@ -897,9 +904,7 @@ export default function HomeScreen() {
                       letterSpacing: 2,
                       color: PURPLE,
                     }}
-                  >
-                    // SYSTEM_INIT · v2.0
-                  </Text>
+                  ></Text>
                   <Text
                     style={{
                       fontFamily: "AlegreyaSansSC_700Bold",
@@ -998,13 +1003,6 @@ export default function HomeScreen() {
           </MotiView>
         )}
 
-        {/* ── Watch Progress bar ── */}
-        {totalVideos > 0 && (
-          <View style={styles.sectionPad}>
-            <WatchProgressBar watched={totalWatched} total={totalVideos} />
-          </View>
-        )}
-
         {/* ── Stats 2×2 grid ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -1074,6 +1072,13 @@ export default function HomeScreen() {
           />
         </View>
 
+        {/* ── Watch Progress bar ── */}
+        {totalVideos > 0 && (
+          <View style={styles.sectionPad}>
+            <WatchProgressBar watched={totalWatched} total={totalVideos} />
+          </View>
+        )}
+
         {/* ── Recent AI Activity ── */}
         {recentAiOutputs.length > 0 && (
           <View style={styles.section}>
@@ -1090,7 +1095,7 @@ export default function HomeScreen() {
                     { color: colors.mutedForeground },
                   ]}
                 >
-                  //RECENT_INTELLIGENCE
+                  RECENT
                 </Text>
                 <Text
                   style={[styles.sectionTitle, { color: colors.foreground }]}
@@ -1127,7 +1132,7 @@ export default function HomeScreen() {
               <Text
                 style={[styles.sectionMicro, { color: colors.mutedForeground }]}
               >
-                //RECENTLY_SAVED
+                VIDVAULT
               </Text>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
                 Latest Captures
@@ -1200,7 +1205,7 @@ export default function HomeScreen() {
                     { color: colors.mutedForeground },
                   ]}
                 >
-                  //ACTIVITY_FEED
+                  ACTIVITY
                 </Text>
                 <Text
                   style={[styles.sectionTitle, { color: colors.foreground }]}
@@ -1238,7 +1243,7 @@ export default function HomeScreen() {
                     { color: colors.mutedForeground },
                   ]}
                 >
-                  //STARRED
+                  STARRED
                 </Text>
                 <Text
                   style={[styles.sectionTitle, { color: colors.foreground }]}
