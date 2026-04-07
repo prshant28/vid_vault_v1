@@ -1614,6 +1614,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 148,
     overflow: "hidden",
+    elevation: 0,
+    shadowColor: "transparent",
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
   },
   toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
   toolCardTop: {
