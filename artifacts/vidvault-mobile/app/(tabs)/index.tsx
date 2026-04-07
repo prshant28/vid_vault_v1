@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { MotiView } from "moti";
 import { LinearGradient } from "expo-linear-gradient";
@@ -1194,7 +1194,19 @@ export default function HomeScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["stats"] }),
   });
 
-  const displayName = user?.firstName || user?.email?.split("@")[0] || "there";
+  // ── Custom display name — synced from AsyncStorage on every focus ──
+  const [nameOverride, setNameOverride] = useState<string | null>(null);
+  const loadName = useCallback(async () => {
+    try {
+      const saved = await AsyncStorage.getItem("vv_display_name");
+      setNameOverride(saved || null);
+    } catch (_) {}
+  }, []);
+  useEffect(() => { loadName(); }, []);
+  useFocusEffect(useCallback(() => { loadName(); }, [loadName]));
+
+  const rawName = nameOverride || user?.firstName || user?.email?.split("@")[0] || "there";
+  const displayName = rawName;
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   // ── Streak tracking (local, AsyncStorage) ──

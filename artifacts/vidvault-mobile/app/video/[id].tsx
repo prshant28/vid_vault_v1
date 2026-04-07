@@ -176,16 +176,16 @@ function AiToolCard({
     >
       <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
 
-        {/* Etch overlay — subtle top highlight only, no dark corners */}
-        <LinearGradient
-          colors={isDark
-            ? ["rgba(255,255,255,0.06)", "transparent"]
-            : ["rgba(255,255,255,0.9)", "transparent"]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
-          style={StyleSheet.absoluteFillObject}
-          pointerEvents="none"
-        />
+        {/* Etch overlay — subtle top highlight, dark mode only */}
+        {isDark && (
+          <LinearGradient
+            colors={["rgba(255,255,255,0.06)", "transparent"]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 0.5 }}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+        )}
 
         {/* Bottom-right accent glow — visible when done or generating */}
         {(done || isGenerating) && (
