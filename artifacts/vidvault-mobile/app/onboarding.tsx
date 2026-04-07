@@ -119,12 +119,12 @@ export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState(0);
 
-  const slide   = SLIDES[current];
+  const slide   = SLIDES[Math.min(current, SLIDES.length - 1)];
   const isLast  = current === SLIDES.length - 1;
 
   const next = () => {
     if (isLast) completeOnboarding();
-    else setCurrent((c) => c + 1);
+    else setCurrent((c) => Math.min(c + 1, SLIDES.length - 1));
   };
 
   /* Safe area padding — ensure minimum on Android (nav bar) */
