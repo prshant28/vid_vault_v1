@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   Animated,
   Image,
+  Dimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -206,6 +207,241 @@ function EtchedStatCard({
   );
 }
 
+/* ── Section Nav Bar ── */
+const NAV_SECTIONS = [
+  { key: "feed",     label: "Feed",     icon: "home"      as FeatherIconName },
+  { key: "stats",    label: "Stats",    icon: "bar-chart-2" as FeatherIconName },
+  { key: "activity", label: "Activity", icon: "activity"  as FeatherIconName },
+  { key: "library",  label: "Library",  icon: "film"      as FeatherIconName },
+  { key: "progress", label: "Progress", icon: "trending-up" as FeatherIconName },
+];
+
+function SectionNavBar({
+  active,
+  onChange,
+}: {
+  active: string;
+  onChange: (k: string) => void;
+}) {
+  const { colors, isDark } = useTheme();
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: -12 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "spring", damping: 18, stiffness: 180, delay: 60 }}
+    >
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingVertical: 2 }}
+        style={{ marginBottom: 16 }}
+      >
+        {NAV_SECTIONS.map((s, i) => {
+          const isActive = s.key === active;
+          return (
+            <MotiView
+              key={s.key}
+              animate={{ scale: isActive ? 1 : 0.96, opacity: isActive ? 1 : 0.72 }}
+              transition={{ type: "spring", damping: 18, stiffness: 260 }}
+            >
+              <TouchableOpacity
+                onPress={() => onChange(s.key)}
+                activeOpacity={0.75}
+                style={[
+                  styles.navPill,
+                  {
+                    backgroundColor: isActive
+                      ? PURPLE + (isDark ? "22" : "14")
+                      : "transparent",
+                    borderColor: isActive
+                      ? PURPLE + (isDark ? "50" : "38")
+                      : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"),
+                  },
+                ]}
+              >
+                <Feather
+                  name={s.icon}
+                  size={12}
+                  color={isActive ? PURPLE : colors.mutedForeground}
+                />
+                <Text style={[styles.navPillText, {
+                  color: isActive ? PURPLE : colors.mutedForeground,
+                  fontFamily: isActive ? "Poppins_600SemiBold" : "Poppins_400Regular",
+                }]}>
+                  {s.label}
+                </Text>
+              </TouchableOpacity>
+            </MotiView>
+          );
+        })}
+      </ScrollView>
+    </MotiView>
+  );
+}
+
+/* ── Streak + Daily Goal Card ── */
+function StreakCard({ streak, goal, done }: { streak: number; goal: number; done: number }) {
+  const { colors, isDark } = useTheme();
+  const ORANGE = "#f97316";
+  const flameScale = useRef(new Animated.Value(1)).current;
+  const pct = goal > 0 ? Math.min(done / goal, 1) : 0;
+  const barW = useRef(new Animated.Value(0)).current;
+  const SCR_W = Dimensions.get("window").width;
+  const innerW = SCR_W - 40 - 32;
+
+  useEffect(() => {
+    Animated.loop(Animated.sequence([
+      Animated.timing(flameScale, { toValue: 1.20, duration: 700, useNativeDriver: true }),
+      Animated.timing(flameScale, { toValue: 0.90, duration: 700, useNativeDriver: true }),
+    ])).start();
+    Animated.timing(barW, { toValue: pct * innerW, duration: 1000, delay: 300, useNativeDriver: false }).start();
+    return () => flameScale.stopAnimation();
+  }, [pct]);
+
+  const days = ["M","T","W","T","F","S","S"];
+  const today = new Date().getDay();
+  const todayIdx = today === 0 ? 6 : today - 1;
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: 12, scale: 0.97 }}
+      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+      transition={{ type: "spring", damping: 18, stiffness: 180, delay: 80 }}
+      style={[styles.streakCard, {
+        backgroundColor: colors.card,
+        borderColor: ORANGE + "35",
+        shadowColor: isDark ? "#000" : ORANGE,
+        shadowOpacity: isDark ? 0.3 : 0.10,
+        shadowRadius: isDark ? 10 : 8,
+        elevation: isDark ? 6 : 2,
+      }]}
+    >
+      <LinearGradient
+        colors={[ORANGE + "0f", "transparent"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+      <View style={styles.streakTop}>
+        {/* Flame + streak */}
+        <View style={styles.streakLeft}>
+          <Animated.Text style={[styles.streakFlame, { transform: [{ scale: flameScale }] }]}>🔥</Animated.Text>
+          <View>
+            <Text style={[styles.streakNum, { color: ORANGE }]}>{streak}</Text>
+            <Text style={[styles.streakLabel, { color: colors.mutedForeground }]}>DAY STREAK</Text>
+          </View>
+        </View>
+        {/* Day dots */}
+        <View style={styles.streakDays}>
+          {days.map((d, i) => {
+            const isPast   = i < todayIdx;
+            const isToday  = i === todayIdx;
+            return (
+              <View key={i} style={styles.streakDayWrap}>
+                <View style={[styles.streakDayDot, {
+                  backgroundColor: isPast || isToday
+                    ? ORANGE + (isToday ? "ff" : "cc")
+                    : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"),
+                  borderWidth: isToday ? 2 : 0,
+                  borderColor: ORANGE,
+                  shadowColor: isToday ? ORANGE : "transparent",
+                  shadowOpacity: isToday ? 0.6 : 0,
+                  shadowRadius: isToday ? 4 : 0,
+                  elevation: isToday ? 3 : 0,
+                }]}>
+                  {(isPast || isToday) && <Feather name="check" size={7} color="#fff" />}
+                </View>
+                <Text style={[styles.streakDayLabel, { color: isToday ? ORANGE : colors.mutedForeground }]}>{d}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+      {/* Daily goal progress */}
+      <View style={styles.streakGoal}>
+        <View style={styles.streakGoalRow}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+            <Feather name="target" size={10} color={ORANGE} />
+            <Text style={[styles.streakGoalLabel, { color: colors.mutedForeground }]}>DAILY GOAL</Text>
+          </View>
+          <Text style={[styles.streakGoalVal, { color: ORANGE }]}>{done}/{goal} videos</Text>
+        </View>
+        <View style={[styles.streakTrack, { backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)" }]}>
+          <Animated.View style={[styles.streakFill, { width: barW }]}>
+            <LinearGradient colors={[ORANGE, "#fbbf24"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+          </Animated.View>
+        </View>
+      </View>
+    </MotiView>
+  );
+}
+
+/* ── Daily AI Tip card ── */
+const AI_TIPS = [
+  { icon: "zap"        as FeatherIconName, color: PURPLE, tip: "Use AI Summaries to grasp the main ideas of any video in under 30 seconds." },
+  { icon: "book-open"  as FeatherIconName, color: CYAN,   tip: "Generate Flashcards to review key concepts — spaced repetition boosts retention by 80%." },
+  { icon: "help-circle"as FeatherIconName, color: GREEN,  tip: "Test yourself with AI-generated MCQs right after watching to lock in long-term memory." },
+  { icon: "message-circle" as FeatherIconName, color: AMBER, tip: "Chat with the AI about any video to ask follow-up questions and deepen your understanding." },
+  { icon: "tag"        as FeatherIconName, color: PINK,   tip: "Tag your videos by topic — then filter your vault to create focused study sessions." },
+];
+
+function DailyTipCard() {
+  const { colors, isDark } = useTheme();
+  const [tipIdx] = useState(() => new Date().getDate() % AI_TIPS.length);
+  const tip = AI_TIPS[tipIdx];
+  const glowAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    Animated.loop(Animated.sequence([
+      Animated.timing(glowAnim, { toValue: 1, duration: 1800, useNativeDriver: false }),
+      Animated.timing(glowAnim, { toValue: 0.4, duration: 1800, useNativeDriver: false }),
+    ])).start();
+    return () => glowAnim.stopAnimation();
+  }, []);
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: 14 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "spring", damping: 18, stiffness: 180, delay: 120 }}
+      style={[styles.tipCard, {
+        backgroundColor: colors.card,
+        borderColor: tip.color + "28",
+      }]}
+    >
+      <LinearGradient
+        colors={[tip.color + "0d", "transparent"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+      {/* Left stripe */}
+      <View style={[styles.tipStripe, { backgroundColor: tip.color }]} />
+      <View style={styles.tipContent}>
+        <View style={styles.tipHeaderRow}>
+          <Animated.View style={[styles.tipIconWrap, {
+            backgroundColor: tip.color + "18",
+            borderColor: tip.color + "30",
+            shadowColor: tip.color,
+            shadowOpacity: glowAnim,
+            shadowRadius: 6,
+            elevation: 3,
+          }]}>
+            <Feather name={tip.icon} size={14} color={tip.color} />
+          </Animated.View>
+          <View>
+            <Text style={[styles.tipLabel, { color: tip.color }]}>AI TIP OF THE DAY</Text>
+            <Text style={[styles.tipDate, { color: colors.mutedForeground }]}>
+              {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.tipText, { color: colors.foreground }]}>{tip.tip}</Text>
+      </View>
+    </MotiView>
+  );
+}
+
 /* ── Quick action button ── */
 function QuickAction({
   icon,
@@ -228,7 +464,6 @@ function QuickAction({
       from={{ opacity: 0, scale: 0.88 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", delay, damping: 16, stiffness: 180 }}
-      style={{ flex: 1 }}
     >
       <TouchableOpacity
         onPress={onPress}
@@ -946,6 +1181,7 @@ export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const CARD_W = screenWidth - 40;
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [activeSection, setActiveSection] = useState("feed");
 
   const {
     data: stats,
@@ -1007,6 +1243,9 @@ export default function HomeScreen() {
         }
       />
 
+      {/* ── Section Nav Bar ── */}
+      <SectionNavBar active={activeSection} onChange={setActiveSection} />
+
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: botInset + 100 }}
@@ -1025,6 +1264,20 @@ export default function HomeScreen() {
           totalVideos={totalVideos}
           totalAi={recentAiOutputs.length}
         />
+
+        {/* ── Streak + Daily Goal ── */}
+        <View style={[styles.sectionPad, { marginTop: -4 }]}>
+          <StreakCard
+            streak={(stats as any)?.streak ?? 0}
+            goal={3}
+            done={Math.min(totalVideos, 3)}
+          />
+        </View>
+
+        {/* ── Daily AI Tip ── */}
+        <View style={[styles.sectionPad, { marginTop: -4 }]}>
+          <DailyTipCard />
+        </View>
 
         {/* ── Welcome Banner (first-time / empty vault) ── */}
         {!isLoading && totalVideos === 0 && (
@@ -1170,6 +1423,7 @@ export default function HomeScreen() {
         {/* ── Stats 2×2 grid ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
+            <Feather name="bar-chart-2" size={12} color={PURPLE} />
             <Text
               style={[styles.sectionLabel, { color: colors.mutedForeground }]}
             >
@@ -1208,33 +1462,55 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* ── Quick Actions ── */}
-        <View style={styles.quickActions}>
-          <QuickAction
-            icon="cpu"
-            label="AI Studio"
-            sublabel="Generate"
-            accent={PURPLE}
-            delay={100}
-            onPress={() => router.push("/(tabs)/ai-studio")}
-          />
-          <QuickAction
-            icon="folder"
-            label="Folders"
-            sublabel="Organize"
-            accent={CYAN}
-            delay={160}
-            onPress={() => router.push("/(tabs)/folders")}
-          />
-          <QuickAction
-            icon="heart"
-            label="Favorites"
-            sublabel="Starred"
-            accent={PINK}
-            delay={220}
-            onPress={() => router.push("/(tabs)/videos")}
-          />
-        </View>
+        {/* ── Quick Actions (horizontal scroll, 5 items) ── */}
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "spring", damping: 18, stiffness: 180, delay: 80 }}
+          style={{ marginBottom: 20 }}
+        >
+          <View style={styles.sectionHeaderInline}>
+            <Feather name="grid" size={13} color={PURPLE} style={{ marginTop: 1 }} />
+            <Text style={[styles.sectionInlineTitle, { color: colors.foreground }]}>Quick Actions</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          >
+            {[
+              { icon: "plus-circle" as FeatherIconName, label: "Save Video",  sublabel: "Add to vault",   accent: PURPLE, onPress: () => setShowSaveModal(true) },
+              { icon: "cpu"         as FeatherIconName, label: "AI Studio",   sublabel: "Generate AI",    accent: CYAN,   onPress: () => router.push("/(tabs)/ai-studio") },
+              { icon: "folder"      as FeatherIconName, label: "Folders",     sublabel: "Organize",       accent: AMBER,  onPress: () => router.push("/(tabs)/folders") },
+              { icon: "heart"       as FeatherIconName, label: "Favorites",   sublabel: "Starred",        accent: PINK,   onPress: () => router.push("/(tabs)/videos") },
+              { icon: "compass"     as FeatherIconName, label: "Discover",    sublabel: "Explore",        accent: GREEN,  onPress: () => router.push("/(tabs)/discover") },
+            ].map((qa, i) => (
+              <QuickAction key={qa.label} {...qa} delay={60 + i * 50} />
+            ))}
+          </ScrollView>
+        </MotiView>
+
+        {/* ── Level / XP Card ── */}
+        {!isLoading && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Feather name="trending-up" size={12} color={GREEN} />
+              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                LEARNER PROGRESS
+              </Text>
+              <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+            </View>
+            <LevelCard
+              level={level}
+              levelTitle={levelTitle}
+              levelColor={levelColor}
+              xp={xp}
+              nextLevelXP={nextLevelXP}
+              progressPct={progressPct}
+              isMaxLevel={isMaxLevel}
+            />
+          </View>
+        )}
 
         {/* ── Watch Progress bar ── */}
         {totalVideos > 0 && (
@@ -1253,27 +1529,14 @@ export default function HomeScreen() {
               style={styles.sectionHeader2}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  style={[
-                    styles.sectionMicro,
-                    { color: colors.mutedForeground },
-                  ]}
-                >
-                  RECENT
-                </Text>
-                <Text
-                  style={[styles.sectionTitle, { color: colors.foreground }]}
-                >
-                  AI Activity
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                  <Feather name="cpu" size={10} color={PURPLE} />
+                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>RECENT</Text>
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>AI Activity</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/ai-studio")}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.viewAll, { color: PURPLE }]}>
-                  STUDIO →
-                </Text>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/ai-studio")} activeOpacity={0.7}>
+                <Text style={[styles.viewAll, { color: PURPLE }]}>STUDIO →</Text>
               </TouchableOpacity>
             </MotiView>
             <View style={{ gap: 8 }}>
@@ -1293,22 +1556,14 @@ export default function HomeScreen() {
             style={styles.sectionHeader2}
           >
             <View style={{ flex: 1 }}>
-              <Text
-                style={[styles.sectionMicro, { color: colors.mutedForeground }]}
-              >
-                VIDVAULT
-              </Text>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Latest Captures
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                <Feather name="film" size={10} color={CYAN} />
+                <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>VIDVAULT</Text>
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Latest Captures</Text>
             </View>
-            <TouchableOpacity
-              onPress={() => router.push("/(tabs)/videos")}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.viewAll, { color: PURPLE }]}>
-                VIEW ALL →
-              </Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
+              <Text style={[styles.viewAll, { color: PURPLE }]}>VIEW ALL →</Text>
             </TouchableOpacity>
           </MotiView>
 
@@ -1363,19 +1618,11 @@ export default function HomeScreen() {
               style={styles.sectionHeader2}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  style={[
-                    styles.sectionMicro,
-                    { color: colors.mutedForeground },
-                  ]}
-                >
-                  ACTIVITY
-                </Text>
-                <Text
-                  style={[styles.sectionTitle, { color: colors.foreground }]}
-                >
-                  Timeline
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                  <Feather name="activity" size={10} color={AMBER} />
+                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>ACTIVITY</Text>
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Timeline</Text>
               </View>
             </MotiView>
             <View style={{ paddingLeft: 4 }}>
@@ -1401,27 +1648,14 @@ export default function HomeScreen() {
               style={styles.sectionHeader2}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  style={[
-                    styles.sectionMicro,
-                    { color: colors.mutedForeground },
-                  ]}
-                >
-                  STARRED
-                </Text>
-                <Text
-                  style={[styles.sectionTitle, { color: colors.foreground }]}
-                >
-                  Favorites
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                  <Feather name="heart" size={10} color={PINK} />
+                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>STARRED</Text>
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Favorites</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/videos")}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.viewAll, { color: PINK }]}>
-                  VIEW ALL →
-                </Text>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
+                <Text style={[styles.viewAll, { color: PINK }]}>VIEW ALL →</Text>
               </TouchableOpacity>
             </MotiView>
             <View style={{ gap: 0 }}>
@@ -1761,6 +1995,64 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     letterSpacing: 2.5,
   },
+
+  /* Section nav bar */
+  navPill: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1,
+  },
+  navPillText: { fontSize: 11, letterSpacing: 0.2 },
+
+  /* Section inline header (Quick Actions) */
+  sectionHeaderInline: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 20, marginBottom: 10,
+  },
+  sectionInlineTitle: {
+    fontFamily: "Poppins_600SemiBold", fontSize: 13, letterSpacing: 0.1,
+  },
+
+  /* Streak card */
+  streakCard: {
+    borderRadius: 16, borderWidth: 1, padding: 16, overflow: "hidden",
+    shadowOffset: { width: 0, height: 4 },
+  },
+  streakTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  streakLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  streakFlame: { fontSize: 28 },
+  streakNum: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 32, lineHeight: 36 },
+  streakLabel: { fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1.5 },
+  streakDays: { flexDirection: "row", gap: 5 },
+  streakDayWrap: { alignItems: "center", gap: 3 },
+  streakDayDot: {
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: "center", justifyContent: "center",
+    shadowOffset: { width: 0, height: 0 },
+  },
+  streakDayLabel: { fontFamily: "Poppins_400Regular", fontSize: 8 },
+  streakGoal: { gap: 7 },
+  streakGoalRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  streakGoalLabel: { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1.5 },
+  streakGoalVal: { fontFamily: "Poppins_600SemiBold", fontSize: 10 },
+  streakTrack: { height: 5, borderRadius: 3, overflow: "hidden" },
+  streakFill: { height: "100%", borderRadius: 3, overflow: "hidden" },
+
+  /* Daily tip card */
+  tipCard: {
+    borderRadius: 14, borderWidth: 1, flexDirection: "row",
+    overflow: "hidden", shadowOffset: { width: 0, height: 3 },
+  },
+  tipStripe: { width: 3 },
+  tipContent: { flex: 1, padding: 14, gap: 10 },
+  tipHeaderRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  tipIconWrap: {
+    width: 34, height: 34, borderRadius: 10,
+    alignItems: "center", justifyContent: "center", borderWidth: 1,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  tipLabel: { fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.2 },
+  tipDate:  { fontFamily: "Poppins_400Regular",  fontSize: 9, marginTop: 1 },
+  tipText:  { fontFamily: "Poppins_400Regular",  fontSize: 12.5, lineHeight: 20 },
 
   levelCard: {
     borderRadius: 14,
