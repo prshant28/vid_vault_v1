@@ -12,7 +12,6 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { MotiView } from "moti";
@@ -31,7 +30,6 @@ import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
 import { VideoCard } from "@/components/VideoCard";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
-import { TabFadeWrapper } from "@/components/TabFadeWrapper";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -388,62 +386,36 @@ function QuickAction({
   onPress: () => void;
   delay: number;
 }) {
-  const { colors, isDark } = useTheme();
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const onPressIn  = () => Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true, speed: 40 }).start();
-  const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1,    useNativeDriver: true, speed: 30 }).start();
-
+  const { isDark } = useTheme();
   return (
     <MotiView
-      from={{ opacity: 0, translateY: 12, scale: 0.88 }}
-      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+      from={{ opacity: 0, scale: 0.88 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", delay, damping: 16, stiffness: 180 }}
     >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <TouchableOpacity
-          onPress={onPress}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          activeOpacity={1}
-          style={[
-            styles.quickBtn,
-            {
-              backgroundColor: colors.card,
-              borderColor: accent + (isDark ? "35" : "28"),
-              shadowColor: accent,
-              shadowOpacity: isDark ? 0.28 : 0.12,
-              shadowRadius: isDark ? 10 : 7,
-              elevation: isDark ? 5 : 2,
-            },
-          ]}
-        >
-          {/* Gradient BG */}
-          <LinearGradient
-            colors={[accent + (isDark ? "18" : "10"), "transparent"]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-            pointerEvents="none"
-          />
-          {/* Top accent line */}
-          <View style={{
-            position: "absolute", top: 0, left: 0, right: 0,
-            height: 2, backgroundColor: accent, borderTopLeftRadius: 14, borderTopRightRadius: 14,
-          }} />
-
-          <View style={[styles.quickBtnIcon, {
-            backgroundColor: accent + (isDark ? "22" : "16"),
-            borderWidth: 1,
-            borderColor: accent + (isDark ? "40" : "28"),
-          }]}>
-            <Feather name={icon} size={17} color={accent} />
-          </View>
-          <Text style={[styles.quickBtnLabel, { color: colors.foreground }]}>{label}</Text>
-          <Text style={[styles.quickBtnSub, { color: colors.mutedForeground }]}>
-            {sublabel}
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.75}
+        style={[
+          styles.quickBtn,
+          {
+            backgroundColor: accent + "10",
+            borderColor: accent + "30",
+            shadowColor: isDark ? "#000" : accent,
+            shadowOpacity: isDark ? 0.3 : 0.10,
+            shadowRadius: isDark ? 8 : 6,
+            elevation: isDark ? 4 : 2,
+          },
+        ]}
+      >
+        <View style={[styles.quickBtnIcon, { backgroundColor: accent + "18" }]}>
+          <Feather name={icon} size={16} color={accent} />
+        </View>
+        <Text style={[styles.quickBtnLabel, { color: accent }]}>{label}</Text>
+        <Text style={[styles.quickBtnSub, { color: accent + "80" }]}>
+          {sublabel}
+        </Text>
+      </TouchableOpacity>
     </MotiView>
   );
 }
@@ -921,171 +893,132 @@ function WelcomeHero({
   name,
   totalVideos,
   totalAi,
-  streak,
 }: {
   name: string;
   totalVideos: number;
   totalAi: number;
-  streak: number;
 }) {
   const { colors, isDark } = useTheme();
   const hour = new Date().getHours();
 
-  const { line1, line2, emoji, sub, accent } = (() => {
+  const { greeting, emoji, sub } = (() => {
     if (hour >= 5 && hour < 12)
-      return { line1: "Good", line2: "Morning", emoji: "☀️", sub: "Ready to learn something new?", accent: AMBER };
+      return { greeting: "Good Morning", emoji: "☀️", sub: "Ready to learn something new?" };
     if (hour >= 12 && hour < 17)
-      return { line1: "Good", line2: "Afternoon", emoji: "🌤️", sub: "Keep the momentum going!", accent: CYAN };
+      return { greeting: "Good Afternoon", emoji: "🌤️", sub: "Keep the momentum going!" };
     if (hour >= 17 && hour < 21)
-      return { line1: "Good", line2: "Evening", emoji: "🌆", sub: "Review your knowledge vault", accent: PINK };
-    return { line1: "Good", line2: "Night", emoji: "🌙", sub: "Rest well, see you tomorrow", accent: "#a78bfa" };
+      return { greeting: "Good Evening", emoji: "🌆", sub: "Review your knowledge vault today" };
+    return { greeting: "Good Night", emoji: "🌙", sub: "Rest well and come back tomorrow" };
   })();
 
-  const today = new Date()
-    .toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
-    .toUpperCase();
-
-  const CORNER_ICONS: Array<{ icon: FeatherIconName; color: string; delay: number }> = [
-    { icon: "cpu",       color: PURPLE, delay: 0   },
-    { icon: "zap",       color: accent, delay: 400 },
-    { icon: "book-open", color: CYAN,   delay: 800 },
+  const ICONS: Array<{ icon: FeatherIconName; color: string; top: number; right: number; delay: number }> = [
+    { icon: "cpu",     color: PURPLE, top: 14, right: 16, delay: 0   },
+    { icon: "youtube", color: PINK,   top: 56, right: 60, delay: 500 },
+    { icon: "zap",     color: AMBER,  top: 30, right: 52, delay: 250 },
+    { icon: "edit-3",  color: CYAN,   top: 72, right: 12, delay: 750 },
+    { icon: "star",    color: GREEN,  top: 48, right: 32, delay: 375 },
   ];
 
   return (
     <MotiView
-      from={{ opacity: 0, translateY: -20, scale: 0.97 }}
-      animate={{ opacity: 1, translateY: 0, scale: 1 }}
-      transition={{ type: "spring", damping: 20, stiffness: 150, delay: 40 }}
+      from={{ opacity: 0, translateY: -18 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "spring", damping: 20, stiffness: 160, delay: 40 }}
       style={[
         styles.heroCard,
         {
           backgroundColor: colors.card,
-          borderColor: PURPLE + "30",
-          shadowColor: PURPLE,
-          shadowOpacity: isDark ? 0.35 : 0.12,
-          shadowRadius: isDark ? 20 : 14,
-          elevation: isDark ? 10 : 4,
-          minHeight: 210,
+          borderColor: PURPLE + "28",
+          shadowColor: isDark ? "#000" : PURPLE,
+          shadowOpacity: isDark ? 0.3 : 0.10,
+          shadowRadius: isDark ? 16 : 12,
+          elevation: isDark ? 8 : 3,
         },
       ]}
     >
-      {/* Full-card gradient */}
       <LinearGradient
-        colors={isDark
-          ? [PURPLE + "22", accent + "0e", "transparent"]
-          : [PURPLE + "16", accent + "08", "transparent"]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        colors={[PURPLE + "1a", "transparent", CYAN + "0c"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
         pointerEvents="none"
       />
+      {/* Top accent stripe */}
+      <View style={{ height: 2.5, backgroundColor: PURPLE, width: "38%", borderBottomRightRadius: 3 }} />
 
-      {/* Top gradient bar purple → accent */}
-      <LinearGradient
-        colors={[PURPLE, accent, "transparent"]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        style={{ height: 3 }}
-        pointerEvents="none"
-      />
+      {/* Floating animated icons */}
+      {ICONS.map(({ icon, color, top, right, delay }, i) => (
+        <MotiView
+          key={i}
+          from={{ translateY: 0, scale: 0.9, opacity: 0.55 }}
+          animate={{ translateY: -8, scale: 1, opacity: 0.9 }}
+          transition={{ type: "timing", duration: 1900 + i * 180, loop: true, delay, repeatReverse: true }}
+          style={{ position: "absolute", top, right }}
+          pointerEvents="none"
+        >
+          <View style={{
+            width: 34, height: 34, borderRadius: 10,
+            backgroundColor: color + "18", borderWidth: 1, borderColor: color + "35",
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Feather name={icon} size={14} color={color} />
+          </View>
+        </MotiView>
+      ))}
 
-      {/* Floating corner icon cluster */}
-      <View style={{ position: "absolute", top: 20, right: 16, gap: 8, alignItems: "flex-end" }} pointerEvents="none">
-        {CORNER_ICONS.map(({ icon, color, delay }, i) => (
-          <MotiView
-            key={i}
-            from={{ translateY: 0, opacity: 0.5 }}
-            animate={{ translateY: -6, opacity: 1 }}
-            transition={{ type: "timing", duration: 2000 + i * 300, loop: true, delay, repeatReverse: true }}
-          >
-            <View style={{
-              width: 36, height: 36, borderRadius: 12,
-              backgroundColor: color + (isDark ? "20" : "14"),
-              borderWidth: 1, borderColor: color + (isDark ? "40" : "28"),
-              alignItems: "center", justifyContent: "center",
-            }}>
-              <Feather name={icon} size={14} color={color} />
-            </View>
-          </MotiView>
-        ))}
-      </View>
-
-      {/* Main content */}
-      <View style={{ padding: 20, paddingTop: 16, paddingRight: 72 }}>
-        {/* Date row */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 }}>
-          <Text style={{ fontSize: 14 }}>{emoji}</Text>
-          <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2.5, color: colors.mutedForeground, textTransform: "uppercase" }}>
-            {today}
-          </Text>
-          {streak > 0 && (
-            <View style={{
-              flexDirection: "row", alignItems: "center", gap: 3,
-              marginLeft: 8, backgroundColor: "#f59e0b16",
-              borderRadius: 12, borderWidth: 1, borderColor: "#f59e0b30",
-              paddingHorizontal: 7, paddingVertical: 2,
-            }}>
-              <Text style={{ fontSize: 10 }}>🔥</Text>
-              <Text style={{ fontFamily: "Poppins_700Bold", fontSize: 10, color: AMBER }}>{streak}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Big H2 greeting — two stacked lines */}
-        <Text style={{
-          fontFamily: "AlegreyaSansSC_800ExtraBold",
-          fontSize: 46, lineHeight: 44, letterSpacing: -1,
-          color: colors.mutedForeground + "bb",
-        }}>
-          {line1}
-        </Text>
-        <Text style={{
-          fontFamily: "AlegreyaSansSC_800ExtraBold",
-          fontSize: 54, lineHeight: 54, letterSpacing: -1.5,
-          color: colors.foreground, marginBottom: 10,
-        }}>
-          {line2}
-        </Text>
-
-        {/* User name with accent bar */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: PURPLE }} />
-          <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.foreground }}>
-            {name}
+      {/* Text content — left side, stays clear of icons */}
+      <View style={{ padding: 18, paddingTop: 14, gap: 5, maxWidth: "62%" }}>
+        {/* Greeting label */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+          <Text style={{ fontSize: 13 }}>{emoji}</Text>
+          <Text style={{
+            fontFamily: "Poppins_400Regular", fontSize: 9,
+            letterSpacing: 1.8, color: PURPLE, textTransform: "uppercase",
+          }}>
+            {greeting}
           </Text>
         </View>
 
-        {/* Sub */}
+        {/* User name */}
         <Text style={{
-          fontFamily: "Poppins_400Regular", fontSize: 12,
-          color: colors.mutedForeground, lineHeight: 18,
-          marginBottom: totalVideos > 0 ? 16 : 0,
+          fontFamily: "AlegreyaSansSC_700Bold", fontSize: 30,
+          color: colors.foreground, letterSpacing: 0.4, lineHeight: 34,
+        }}>
+          {name}
+        </Text>
+
+        {/* Subtitle */}
+        <Text style={{
+          fontFamily: "Poppins_400Regular", fontSize: 11.5,
+          color: colors.mutedForeground, lineHeight: 17,
         }}>
           {sub}
         </Text>
 
-        {/* Stat pills row */}
+        {/* Stat pills */}
         {totalVideos > 0 && (
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+          <View style={{ flexDirection: "row", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
             <View style={{
               flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: PURPLE + "16", borderRadius: 20,
-              borderWidth: 1, borderColor: PURPLE + "30",
-              paddingHorizontal: 10, paddingVertical: 5,
+              backgroundColor: PURPLE + "14", borderRadius: 20,
+              borderWidth: 1, borderColor: PURPLE + "28",
+              paddingHorizontal: 9, paddingVertical: 4,
             }}>
-              <Feather name="film" size={10} color={PURPLE} />
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, color: PURPLE }}>
+              <Feather name="film" size={9} color={PURPLE} />
+              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 10, color: PURPLE }}>
                 {totalVideos} {totalVideos === 1 ? "video" : "videos"}
               </Text>
             </View>
             {totalAi > 0 && (
               <View style={{
                 flexDirection: "row", alignItems: "center", gap: 4,
-                backgroundColor: CYAN + "16", borderRadius: 20,
-                borderWidth: 1, borderColor: CYAN + "30",
-                paddingHorizontal: 10, paddingVertical: 5,
+                backgroundColor: CYAN + "14", borderRadius: 20,
+                borderWidth: 1, borderColor: CYAN + "28",
+                paddingHorizontal: 9, paddingVertical: 4,
               }}>
-                <Feather name="cpu" size={10} color={CYAN} />
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, color: CYAN }}>
-                  {totalAi} AI
+                <Feather name="cpu" size={9} color={CYAN} />
+                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 10, color: CYAN }}>
+                  {totalAi} AI outputs
                 </Text>
               </View>
             )}
@@ -1195,28 +1128,6 @@ export default function HomeScreen() {
 
   const displayName = user?.firstName || user?.email?.split("@")[0] || "there";
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
-
-  // ── Streak tracking (local, AsyncStorage) ──
-  const [streak, setStreak] = useState(0);
-  useEffect(() => {
-    (async () => {
-      try {
-        const today = new Date().toDateString();
-        const lastDate = await AsyncStorage.getItem("vv_streak_date");
-        const saved = parseInt((await AsyncStorage.getItem("vv_streak")) || "0", 10);
-        if (lastDate === today) {
-          setStreak(saved);
-        } else {
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const next = lastDate === yesterday.toDateString() ? saved + 1 : 1;
-          await AsyncStorage.setItem("vv_streak", String(next));
-          await AsyncStorage.setItem("vv_streak_date", today);
-          setStreak(next);
-        }
-      } catch (_) {}
-    })();
-  }, []);
   const recentVideos: Video[] = stats?.recentVideos ?? [];
   const favoriteVideos: Video[] = stats?.favoriteVideos ?? [];
   const recentAiOutputs: RecentAiOutput[] = stats?.recentAiOutputs ?? [];
@@ -1231,7 +1142,6 @@ export default function HomeScreen() {
   const isMaxLevel = stats?.isMaxLevel ?? false;
 
   return (
-    <TabFadeWrapper>
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
@@ -1273,23 +1183,8 @@ export default function HomeScreen() {
           />
         }
       >
-      
-        {/* ── Welcome Hero ── */}
-        <WelcomeHero
-          name={displayName}
-          totalVideos={totalVideos}
-          totalAi={stats?.totalAiOutputs ?? 0}
-          streak={streak}
-        />
 
-        {/* ── Streak + Daily Goal Card ── */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-          <StreakCard
-            streak={streak}
-            goal={3}
-            done={Math.min(totalWatched, 3)}
-          />
-        </View>
+      
 
         {/* ── Welcome Banner (first-time / empty vault) ── */}
         {!isLoading && totalVideos === 0 && (
@@ -1715,7 +1610,6 @@ export default function HomeScreen() {
         onClose={() => setShowSaveModal(false)}
       />
     </View>
-    </TabFadeWrapper>
   );
 }
 
@@ -1791,34 +1685,34 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   quickBtn: {
-    width: 96,
+    flex: 1,
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    borderRadius: 16,
+    gap: 5,
+    paddingVertical: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    overflow: "hidden",
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   quickBtnIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   quickBtnLabel: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontFamily: "Poppins_600SemiBold",
-    letterSpacing: 0.1,
-    textAlign: "center",
+    letterSpacing: 0.2,
   },
   quickBtnSub: {
     fontSize: 8,
     fontFamily: "Poppins_400Regular",
-    letterSpacing: 0.3,
-    textAlign: "center",
+    letterSpacing: 0.5,
   },
 
   sectionPad: { paddingHorizontal: 20, marginBottom: 20 },
