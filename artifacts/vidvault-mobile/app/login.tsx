@@ -11,9 +11,8 @@ import {
   Animated,
   Easing,
   Dimensions,
-  ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
-import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
 import Svg, {
   Path, Rect, Circle, Line, Ellipse,
   Defs, RadialGradient, LinearGradient, Stop,
@@ -21,6 +20,7 @@ import Svg, {
 import { MotiView, MotiText } from "moti";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
+import { AppButton } from "@/components/ui/AppButton";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
 
 const { width: W, height: SH } = Dimensions.get("window");
@@ -270,59 +270,9 @@ const FormInput = React.forwardRef<TextInput, FormInputProps>(function FormInput
   );
 });
 
-/* ─── Full-width submit button ─────────────────────────────────────────── */
-function SubmitButton({
-  label, onPress, loading, disabled,
-}: {
-  label: string; onPress: () => void; loading: boolean; disabled: boolean;
-}) {
-  const scale = useRef(new Animated.Value(1)).current;
-  const onPressIn = () =>
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 30 }).start();
-  const onPressOut = () =>
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30 }).start();
-
-  return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <TouchableOpacity
-        activeOpacity={0.92}
-        onPress={onPress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        disabled={disabled}
-        style={{ borderRadius: 14, overflow: "hidden", width: "100%" }}
-      >
-        <ExpoLinearGradient
-          colors={["#6366f1", "#8b5cf6", "#6366f1"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            height: 52,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: disabled ? 0.65 : 1,
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <Text style={{
-              color: "#fff",
-              fontFamily: "Poppins_700Bold",
-              fontSize: 15,
-              letterSpacing: 0.4,
-            }}>
-              {label}
-            </Text>
-          )}
-        </ExpoLinearGradient>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-}
-
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const { width: screenW } = useWindowDimensions();
   const { login, register } = useAuth();
 
   const [mode, setMode]           = useState<"login" | "register">("register");
@@ -601,11 +551,14 @@ export default function LoginScreen() {
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: "timing", duration: 340, delay: isReg ? 230 : 150 }}
           >
-            <SubmitButton
+            <AppButton
               label={isReg ? "Create Account" : "Sign In"}
               onPress={submit}
               loading={loading}
               disabled={loading}
+              size="lg"
+              variant="primary"
+              width={screenW - 88}
             />
           </MotiView>
 

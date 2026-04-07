@@ -207,13 +207,7 @@ function EtchedStatCard({
   );
 }
 
-/* ── Section Nav Bar ── */
-const NAV_SECTIONS = [
-  { key: "feed",     label: "Feed",     icon: "home"      as FeatherIconName },
-  { key: "stats",    label: "Stats",    icon: "bar-chart-2" as FeatherIconName },
-  { key: "activity", label: "Activity", icon: "activity"  as FeatherIconName },
-  { key: "library",  label: "Library",  icon: "film"      as FeatherIconName },
-  { key: "progress", label: "Progress", icon: "trending-up" as FeatherIconName },
+/* ── Section Nav Bar ── *
 ];
 
 function SectionNavBar({
