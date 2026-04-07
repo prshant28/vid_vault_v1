@@ -26,6 +26,7 @@ function AndroidTabIcon({
   focused: boolean;
   size?: number;
 }) {
+  const colors = useColors();
   return (
     <View style={styles.androidIconWrapper}>
       {focused && (
@@ -37,7 +38,7 @@ function AndroidTabIcon({
           focused && styles.androidIconBgActive,
         ]}
       >
-        <Feather name={name} size={size} color={focused ? INDIGO : "rgba(255,255,255,0.38)"} />
+        <Feather name={name} size={size} color={focused ? INDIGO : colors.mutedForeground} />
       </View>
     </View>
   );
@@ -59,7 +60,7 @@ function NativeTabLayout() {
         <Label>AI Studio</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="discover">
-        <Icon sf={{ default: "compass", selected: "compass.fill" }} />
+        <Icon sf={{ default: "safari", selected: "safari.fill" }} />
         <Label>Discover</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
@@ -90,7 +91,7 @@ function ClassicTabLayout() {
     { name: "index",     title: "Home",      icon: "home",    sfDefault: "house",            sfSelected: "house.fill"            },
     { name: "videos",    title: "Videos",    icon: "film",    sfDefault: "film",             sfSelected: "film.fill"             },
     { name: "ai-studio", title: "AI Studio", icon: "cpu",     sfDefault: "sparkles",         sfSelected: "sparkles"              },
-    { name: "discover",  title: "Discover",  icon: "compass", sfDefault: "compass",          sfSelected: "compass.fill"          },
+    { name: "discover",  title: "Discover",  icon: "compass", sfDefault: "safari",           sfSelected: "safari.fill"           },
     { name: "profile",   title: "Profile",   icon: "user",    sfDefault: "person.circle",    sfSelected: "person.circle.fill"    },
   ];
 

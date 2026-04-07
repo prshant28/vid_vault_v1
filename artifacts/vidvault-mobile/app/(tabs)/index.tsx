@@ -172,7 +172,7 @@ function EtchedStatCard({
         pointerEvents="none"
       />
       <View style={styles.etchedTop}>
-        <Text style={styles.etchedCode}>{code}</Text>
+        <Text style={[styles.etchedCode, { color: colors.mutedForeground + "55" }]}>{code}</Text>
         <Feather
           name={icon}
           size={14}
@@ -807,7 +807,7 @@ export default function HomeScreen() {
                     style={{
                       fontFamily: "AlegreyaSansSC_700Bold",
                       fontSize: 26,
-                      color: "#ffffff",
+                      color: colors.foreground,
                       letterSpacing: 0.5,
                       lineHeight: 30,
                     }}
@@ -818,7 +818,7 @@ export default function HomeScreen() {
                     style={{
                       fontFamily: "Poppins_400Regular",
                       fontSize: 12,
-                      color: "rgba(255,255,255,0.55)",
+                      color: colors.mutedForeground,
                       lineHeight: 18,
                       marginTop: 2,
                     }}
@@ -877,7 +877,7 @@ export default function HomeScreen() {
                         style={{
                           fontFamily: "Poppins_400Regular",
                           fontSize: 12,
-                          color: "rgba(255,255,255,0.7)",
+                          color: colors.desc,
                           flex: 1,
                         }}
                       >
