@@ -410,7 +410,6 @@ export default function VideosScreen() {
       {/* Search bar lives OUTSIDE the FlatList to avoid TextInput remounting on every keystroke */}
       <View style={styles.searchHeader}>
         <View style={styles.searchTitleRow}>
-          <Text style={[styles.subLabel, { color: colors.mutedForeground }]}></Text>
           <Text style={[styles.subTitle, { color: colors.foreground }]}>Library</Text>
         </View>
         <View style={styles.searchWrap}>
