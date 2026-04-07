@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 import Svg, {
-  Path, Rect, Circle, Line,
+  Path, Rect, Circle, Line, Ellipse,
   Defs, RadialGradient, LinearGradient, Stop,
 } from "react-native-svg";
 import { MotiView, MotiText } from "moti";
@@ -22,23 +22,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AppButton } from "@/components/ui/AppButton";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
 
-const { width: W } = Dimensions.get("window");
+const { width: W, height: SH } = Dimensions.get("window");
 
-/* ── Always-dark palette (login/register is always on dark bg) ── */
-const BG           = "#08080d";
+const BG           = "#07070c";
+const CARD_BG      = "rgba(255,255,255,0.025)";
+const CARD_BORDER  = "rgba(99,102,241,0.15)";
 const PURPLE       = "#6366f1";
 const VIOLET       = "#8b5cf6";
 const CYAN         = "#06b6d4";
 const WHITE        = "#ffffff";
-const MUTED        = "rgba(255,255,255,0.55)";
-const MUTED2       = "rgba(255,255,255,0.30)";
-const INPUT_BG     = "#0f0f1a";
-const INPUT_BORDER = "rgba(99,102,241,0.22)";
-const FOCUS_BORDER = "rgba(99,102,241,0.70)";
+const MUTED        = "rgba(255,255,255,0.50)";
+const MUTED2       = "rgba(255,255,255,0.28)";
+const INPUT_BG     = "rgba(255,255,255,0.04)";
+const INPUT_BORDER = "rgba(99,102,241,0.20)";
+const FOCUS_BORDER = "#6366f1";
+const FOCUS_SHADOW = "rgba(99,102,241,0.30)";
 const ERROR_COLOR  = "#f87171";
 const ERROR_BG     = "rgba(239,68,68,0.08)";
 
-/* ── Tiny SVG icons ── */
 function MailIcon({ focused }: { focused: boolean }) {
   const c = focused ? PURPLE : MUTED;
   return (
@@ -85,81 +86,99 @@ function EyeIcon({ visible }: { visible: boolean }) {
   );
 }
 
-/* ── Background decoration ── */
 function BackgroundDecor() {
-  const spin = useRef(new Animated.Value(0)).current;
+  const spin  = useRef(new Animated.Value(0)).current;
   const spin2 = useRef(new Animated.Value(0)).current;
+  const pulseGlow = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
+    Animated.loop(Animated.timing(spin,  { toValue: 1, duration: 20000, easing: Easing.linear, useNativeDriver: true })).start();
+    Animated.loop(Animated.timing(spin2, { toValue: 1, duration: 32000, easing: Easing.linear, useNativeDriver: true })).start();
     Animated.loop(
-      Animated.timing(spin, { toValue: 1, duration: 18000, easing: Easing.linear, useNativeDriver: true })
+      Animated.sequence([
+        Animated.timing(pulseGlow, { toValue: 1, duration: 2200, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(pulseGlow, { toValue: 0, duration: 2200, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ])
     ).start();
-    Animated.loop(
-      Animated.timing(spin2, { toValue: 1, duration: 28000, easing: Easing.linear, useNativeDriver: true })
-    ).start();
-    return () => { spin.stopAnimation(); spin2.stopAnimation(); };
+    return () => { spin.stopAnimation(); spin2.stopAnimation(); pulseGlow.stopAnimation(); };
   }, []);
+
   const rot1 = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
   const rot2 = spin2.interpolate({ inputRange: [0, 1], outputRange: ["360deg", "0deg"] });
-  const cx = W / 2, cy = 200;
+  const cx = W / 2, cy = SH * 0.3;
+
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-      <Svg width={W} height={480} style={{ position: "absolute", top: 0, left: 0 }}>
+      <Svg width={W} height={SH} style={{ position: "absolute", top: 0, left: 0 }}>
         <Defs>
-          <RadialGradient id="loginGlow" cx="50%" cy="40%" rx="50%" ry="35%">
-            <Stop offset="0%" stopColor={PURPLE} stopOpacity="0.18" />
-            <Stop offset="60%" stopColor={VIOLET} stopOpacity="0.06" />
+          <RadialGradient id="loginGlow1" cx="50%" cy="32%" rx="55%" ry="40%">
+            <Stop offset="0%"   stopColor={PURPLE} stopOpacity="0.22" />
+            <Stop offset="55%"  stopColor={VIOLET} stopOpacity="0.07" />
             <Stop offset="100%" stopColor={PURPLE} stopOpacity="0" />
           </RadialGradient>
+          <RadialGradient id="loginGlow2" cx="80%" cy="70%" rx="35%" ry="30%">
+            <Stop offset="0%"   stopColor={CYAN}   stopOpacity="0.10" />
+            <Stop offset="100%" stopColor={CYAN}   stopOpacity="0" />
+          </RadialGradient>
+          <LinearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%"   stopColor={BG} stopOpacity="0" />
+            <Stop offset="100%" stopColor={BG} stopOpacity="1" />
+          </LinearGradient>
         </Defs>
-        <Rect x={0} y={0} width={W} height={480} fill="url(#loginGlow)" />
-        {/* Static grid lines */}
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Line key={`v${i}`} x1={i * (W / 7)} y1={0} x2={i * (W / 7)} y2={480}
-            stroke="rgba(99,102,241,0.04)" strokeWidth={1} />
+        <Rect x={0} y={0} width={W} height={SH} fill="url(#loginGlow1)" />
+        <Rect x={0} y={0} width={W} height={SH} fill="url(#loginGlow2)" />
+
+        {Array.from({ length: 9 }).map((_, i) => (
+          <Line key={`v${i}`} x1={i * (W / 8)} y1={0} x2={i * (W / 8)} y2={SH * 0.6}
+            stroke="rgba(99,102,241,0.035)" strokeWidth={1} />
         ))}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Line key={`h${i}`} x1={0} y1={i * 80} x2={W} y2={i * 80}
-            stroke="rgba(99,102,241,0.04)" strokeWidth={1} />
+        {Array.from({ length: 7 }).map((_, i) => (
+          <Line key={`h${i}`} x1={0} y1={i * 90} x2={W} y2={i * 90}
+            stroke="rgba(99,102,241,0.035)" strokeWidth={1} />
         ))}
-        {/* Corner brackets */}
-        <Path d="M16 48 L16 24 L40 24" stroke={`${PURPLE}40`} strokeWidth={1.5} fill="none" strokeLinecap="round" />
-        <Path d={`M${W - 16} 48 L${W - 16} 24 L${W - 40} 24`} stroke={`${CYAN}35`} strokeWidth={1.5} fill="none" strokeLinecap="round" />
+
+        <Path d="M18 52 L18 26 L44 26" stroke={`${PURPLE}45`} strokeWidth={1.5} fill="none" strokeLinecap="round" />
+        <Path d={`M${W - 18} 52 L${W - 18} 26 L${W - 44} 26`} stroke={`${CYAN}38`} strokeWidth={1.5} fill="none" strokeLinecap="round" />
+        <Path d={`M18 ${SH - 52} L18 ${SH - 26} L44 ${SH - 26}`} stroke={`${VIOLET}30`} strokeWidth={1} fill="none" strokeLinecap="round" />
+        <Path d={`M${W - 18} ${SH - 52} L${W - 18} ${SH - 26} L${W - 44} ${SH - 26}`} stroke={`${CYAN}28`} strokeWidth={1} fill="none" strokeLinecap="round" />
+
+        {[
+          { x: 36, y: 130, c: PURPLE, r: 2 },
+          { x: W - 32, y: 170, c: CYAN, r: 2 },
+          { x: 28, y: SH * 0.55, c: VIOLET, r: 1.5 },
+          { x: W - 24, y: SH * 0.48, c: PURPLE, r: 1.5 },
+          { x: W * 0.3, y: 80, c: CYAN, r: 1 },
+          { x: W * 0.72, y: 60, c: PURPLE, r: 1 },
+        ].map((d, i) => (
+          <Circle key={i} cx={d.x} cy={d.y} r={d.r} fill={d.c} fillOpacity={0.35} />
+        ))}
       </Svg>
 
-      {/* Rotating ring 1 */}
-      <Animated.View style={[styles.ringWrap, { width: 280, height: 280, top: cy - 140, left: cx - 140, transform: [{ rotate: rot1 }] }]}>
-        <Svg width={280} height={280}>
-          <Circle cx={140} cy={140} r={135} fill="none" stroke={PURPLE} strokeWidth={1}
-            strokeDasharray="8,16" opacity={0.12} />
+      <Animated.View style={[styles.ringWrap, {
+        width: 300, height: 300,
+        top: cy - 150, left: cx - 150,
+        transform: [{ rotate: rot1 }],
+      }]}>
+        <Svg width={300} height={300}>
+          <Circle cx={150} cy={150} r={145} fill="none" stroke={PURPLE}
+            strokeWidth={1} strokeDasharray="6,18" opacity={0.13} />
         </Svg>
       </Animated.View>
 
-      {/* Rotating ring 2 */}
-      <Animated.View style={[styles.ringWrap, { width: 380, height: 380, top: cy - 190, left: cx - 190, transform: [{ rotate: rot2 }] }]}>
-        <Svg width={380} height={380}>
-          <Circle cx={190} cy={190} r={185} fill="none" stroke={CYAN} strokeWidth={1}
-            strokeDasharray="4,22" opacity={0.07} />
+      <Animated.View style={[styles.ringWrap, {
+        width: 420, height: 420,
+        top: cy - 210, left: cx - 210,
+        transform: [{ rotate: rot2 }],
+      }]}>
+        <Svg width={420} height={420}>
+          <Circle cx={210} cy={210} r={205} fill="none" stroke={CYAN}
+            strokeWidth={0.8} strokeDasharray="3,24" opacity={0.08} />
         </Svg>
       </Animated.View>
-
-      {/* Small node dots */}
-      {[
-        { x: 32, y: 120, c: PURPLE },
-        { x: W - 28, y: 160, c: CYAN },
-        { x: 24, y: 380, c: VIOLET },
-        { x: W - 20, y: 340, c: PURPLE },
-      ].map((dot, i) => (
-        <View key={i} style={{
-          position: "absolute", left: dot.x - 3, top: dot.y - 3,
-          width: 6, height: 6, borderRadius: 3,
-          backgroundColor: dot.c, opacity: 0.25,
-        }} />
-      ))}
     </View>
   );
 }
 
-/* ── Form input ── */
 interface FormInputProps {
   value: string;
   onChangeText: (v: string) => void;
@@ -188,29 +207,34 @@ const FormInput = React.forwardRef<TextInput, FormInputProps>(function FormInput
 
   const onFocus = () => {
     setFocused(true);
-    Animated.timing(glowAnim, { toValue: 1, duration: 220, useNativeDriver: false }).start();
+    Animated.timing(glowAnim, { toValue: 1, duration: 200, useNativeDriver: false }).start();
   };
   const onBlur = () => {
     setFocused(false);
-    Animated.timing(glowAnim, { toValue: 0, duration: 220, useNativeDriver: false }).start();
+    Animated.timing(glowAnim, { toValue: 0, duration: 200, useNativeDriver: false }).start();
   };
 
-  const borderColor = glowAnim.interpolate({
-    inputRange: [0, 1], outputRange: [INPUT_BORDER, FOCUS_BORDER],
-  });
+  const borderColor = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [INPUT_BORDER, FOCUS_BORDER] });
+  const shadowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
 
   return (
     <MotiView
-      from={{ opacity: 0, translateY: 12 }}
+      from={{ opacity: 0, translateY: 14 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 340, delay }}
     >
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => resolvedRef.current?.focus()}
-      >
-        <Animated.View style={[styles.inputRow, { borderColor, backgroundColor: INPUT_BG }]}>
+      <TouchableOpacity activeOpacity={1} onPress={() => resolvedRef.current?.focus()}>
+        <Animated.View style={[
+          styles.inputRow,
+          { borderColor, backgroundColor: INPUT_BG },
+          Platform.OS !== "web" && focused && {
+            shadowColor: FOCUS_SHADOW,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity,
+            shadowRadius: 8,
+          },
+        ]}>
           {icon && (
             <View style={styles.inputIcon}>
               {icon === "mail" ? <MailIcon focused={focused} />
@@ -245,7 +269,6 @@ const FormInput = React.forwardRef<TextInput, FormInputProps>(function FormInput
   );
 });
 
-/* ── Main screen ── */
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login, register } = useAuth();
@@ -264,13 +287,14 @@ export default function LoginScreen() {
   const emailRef    = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
-  /* Pulse logo */
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim     = useRef(new Animated.Value(1)).current;
+  const slideAnim     = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.06, duration: 1800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1.00, duration: 1800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.055, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.00,  duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ])
     ).start();
     return () => pulseAnim.stopAnimation();
@@ -280,14 +304,20 @@ export default function LoginScreen() {
     setMode(m);
     setError("");
     setFormKey((k) => k + 1);
+    Animated.spring(slideAnim, {
+      toValue: m === "register" ? 0 : 1,
+      useNativeDriver: false,
+      speed: 30,
+      bounciness: 0,
+    }).start();
   };
 
   const submit = async () => {
     const e = email.trim();
     const p = password;
-    if (!e)            { setError("Email address is required"); return; }
+    if (!e)               { setError("Email address is required"); return; }
     if (!e.includes("@")) { setError("Please enter a valid email"); return; }
-    if (!p)            { setError("Password is required"); return; }
+    if (!p)               { setError("Password is required"); return; }
     if (mode === "register" && p.length < 6) {
       setError("Password must be at least 6 characters"); return;
     }
@@ -311,9 +341,12 @@ export default function LoginScreen() {
     }
   };
 
-  const isReg = mode === "register";
-  const topPad = Math.max(insets.top, 20) + 16;
-  const botPad = insets.bottom + 32;
+  const isReg   = mode === "register";
+  const topPad  = Math.max(insets.top, 20) + 8;
+  const botPad  = insets.bottom + 28;
+
+  const tabW = (W - 48) / 2;
+  const indicatorLeft = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [4, tabW + 4] });
 
   return (
     <KeyboardAvoidingView
@@ -330,38 +363,44 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* ── Logo block ── */}
+        {/* ── Logo ── */}
         <MotiView
-          from={{ opacity: 0, scale: 0.80 }}
+          from={{ opacity: 0, scale: 0.82 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", damping: 18, stiffness: 160 }}
           style={styles.logoBlock}
         >
           <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-            <VidVaultLogo size={52} />
+            <VidVaultLogo size={50} />
           </Animated.View>
-          <View>
+          <View style={{ gap: 2 }}>
             <Text style={styles.logoName}>VidVault</Text>
-            <Text style={styles.logoSub}>AI KNOWLEDGE VAULT</Text>
+            <View style={styles.logoRow}>
+              <Text style={styles.logoSub}>AI Knowledge Vault</Text>
+              <View style={styles.versionBadge}>
+                <Text style={styles.versionText}>AI</Text>
+              </View>
+            </View>
           </View>
         </MotiView>
 
-        {/* ── Mode toggle tabs ── */}
+        {/* ── Tab switcher ── */}
         <MotiView
-          from={{ opacity: 0, translateY: -8 }}
+          from={{ opacity: 0, translateY: -10 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 380, delay: 80 }}
+          transition={{ type: "timing", duration: 360, delay: 70 }}
           style={styles.tabRow}
         >
+          <Animated.View style={[styles.tabIndicator, { left: indicatorLeft, width: tabW }]} />
           {(["register", "login"] as const).map((m) => (
             <TouchableOpacity
               key={m}
               onPress={() => switchMode(m)}
-              activeOpacity={0.7}
-              style={[styles.tab, mode === m && styles.tabActive]}
+              activeOpacity={0.8}
+              style={styles.tab}
             >
               <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
-                {m === "register" ? "CREATE ACCOUNT" : "SIGN IN"}
+                {m === "register" ? "Create Account" : "Sign In"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -370,15 +409,15 @@ export default function LoginScreen() {
         {/* ── Heading ── */}
         <MotiView
           key={`heading-${mode}`}
-          from={{ opacity: 0, translateX: -16 }}
+          from={{ opacity: 0, translateX: -14 }}
           animate={{ opacity: 1, translateX: 0 }}
-          transition={{ type: "timing", duration: 320, delay: 60 }}
+          transition={{ type: "timing", duration: 300, delay: 50 }}
           style={styles.headingBlock}
         >
           <MotiText
-            from={{ opacity: 0, translateY: 10 }}
+            from={{ opacity: 0, translateY: 12 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: "timing", duration: 360, delay: 100 }}
+            transition={{ type: "timing", duration: 340, delay: 90 }}
             style={styles.heading}
           >
             {isReg ? "Join VidVault" : "Welcome Back"}
@@ -386,15 +425,20 @@ export default function LoginScreen() {
           <MotiText
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ type: "timing", duration: 400, delay: 180 }}
+            transition={{ type: "timing", duration: 380, delay: 160 }}
             style={styles.subheading}
           >
-            {isReg ? "BUILD YOUR KNOWLEDGE VAULT" : "SIGN IN TO YOUR VAULT"}
+            {isReg
+              ? "Start building your AI-powered knowledge library"
+              : "Sign in to access your personal knowledge vault"}
           </MotiText>
         </MotiView>
 
-        {/* ── Form ── */}
-        <View key={`form-${formKey}`} style={styles.form}>
+        {/* ── Form card ── */}
+        <View key={`form-${formKey}`} style={styles.formCard}>
+
+          {/* Gradient top accent */}
+          <View style={styles.cardAccent} />
 
           {/* Name row (register only) */}
           {isReg && (
@@ -407,7 +451,7 @@ export default function LoginScreen() {
               <View style={{ flex: 1 }}>
                 <FormInput
                   value={firstName} onChangeText={setFirstName}
-                  placeholder="John" label="FIRST NAME"
+                  placeholder="John" label="First Name"
                   autoCapitalize="words" returnKeyType="next"
                   icon="user"
                   onSubmitEditing={() => lastNameRef.current?.focus()}
@@ -415,9 +459,9 @@ export default function LoginScreen() {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.label}>LAST NAME</Text>
+                <Text style={styles.label}>Last Name</Text>
                 <MotiView
-                  from={{ opacity: 0, translateY: 12 }}
+                  from={{ opacity: 0, translateY: 14 }}
                   animate={{ opacity: 1, translateY: 0 }}
                   transition={{ type: "timing", duration: 340, delay: 120 }}
                 >
@@ -447,18 +491,18 @@ export default function LoginScreen() {
           <FormInput
             ref={emailRef}
             value={email} onChangeText={setEmail}
-            placeholder="you@example.com" label="EMAIL ADDRESS"
+            placeholder="you@example.com" label="Email Address"
             keyboardType="email-address" autoCapitalize="none"
             icon="mail" returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
-            delay={isReg ? 160 : 80}
+            delay={isReg ? 150 : 70}
           />
 
           {/* Password */}
           <FormInput
             ref={passwordRef}
             value={password} onChangeText={setPassword}
-            placeholder="••••••••" label="PASSWORD"
+            placeholder="••••••••" label="Password"
             secureTextEntry={!showPass} icon="lock"
             returnKeyType="done" onSubmitEditing={submit}
             rightNode={
@@ -469,8 +513,22 @@ export default function LoginScreen() {
                 <EyeIcon visible={showPass} />
               </TouchableOpacity>
             }
-            delay={isReg ? 200 : 120}
+            delay={isReg ? 190 : 110}
           />
+
+          {/* Forgot password (login only) */}
+          {!isReg && (
+            <MotiView
+              from={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ type: "timing", duration: 300, delay: 160 }}
+              style={{ alignSelf: "flex-end", marginTop: -6 }}
+            >
+              <TouchableOpacity activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </TouchableOpacity>
+            </MotiView>
+          )}
 
           {/* Error */}
           {!!error && (
@@ -489,10 +547,10 @@ export default function LoginScreen() {
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: "timing", duration: 340, delay: isReg ? 240 : 160 }}
+            transition={{ type: "timing", duration: 340, delay: isReg ? 230 : 150 }}
           >
             <AppButton
-              label={isReg ? "CREATE ACCOUNT" : "SIGN IN"}
+              label={isReg ? "Create Account" : "Sign In"}
               onPress={submit}
               loading={loading}
               disabled={loading}
@@ -501,18 +559,36 @@ export default function LoginScreen() {
               fullWidth
             />
           </MotiView>
+
+          {/* Footer hint */}
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: "timing", duration: 500, delay: isReg ? 280 : 200 }}
+            style={styles.footerRow}
+          >
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => switchMode(isReg ? "login" : "register")}
+            >
+              <Text style={styles.footerText}>
+                {isReg ? "Already have an account? " : "Don't have an account? "}
+                <Text style={styles.footerLink}>{isReg ? "Sign in" : "Create one"}</Text>
+              </Text>
+            </TouchableOpacity>
+          </MotiView>
         </View>
 
-        {/* ── Dots decoration ── */}
+        {/* ── Bottom decoration ── */}
         <MotiView
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ type: "timing", duration: 600, delay: 400 }}
-          style={styles.dotsRow}
+          transition={{ type: "timing", duration: 700, delay: 500 }}
+          style={styles.bottomDecor}
         >
-          {Array.from({ length: 9 }).map((_, i) => (
-            <View key={i} style={[styles.dot, { opacity: 0.06 + (i % 3) * 0.04 }]} />
-          ))}
+          <View style={styles.decorLine} />
+          <Text style={styles.decorText}>Secure · Private · Yours</Text>
+          <View style={styles.decorLine} />
         </MotiView>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -537,48 +613,73 @@ const styles = StyleSheet.create({
   logoBlock: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    marginBottom: 28,
+    gap: 14,
+    marginBottom: 26,
+  },
+  logoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   logoName: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 22,
+    fontSize: 24,
     color: WHITE,
-    lineHeight: 24,
+    lineHeight: 26,
   },
   logoSub: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 9,
+    fontSize: 10,
     color: MUTED,
-    letterSpacing: 1.5,
-    marginTop: 2,
+    letterSpacing: 0.2,
+  },
+  versionBadge: {
+    backgroundColor: "rgba(99,102,241,0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(99,102,241,0.38)",
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  versionText: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 8,
+    color: "#a78bfa",
+    letterSpacing: 0.5,
   },
 
-  /* Mode tabs */
+  /* Tabs */
   tabRow: {
     flexDirection: "row",
-    gap: 0,
-    marginBottom: 24,
+    marginBottom: 22,
     borderWidth: 1,
-    borderColor: "rgba(99,102,241,0.22)",
-    borderRadius: 10,
+    borderColor: CARD_BORDER,
+    borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "rgba(99,102,241,0.04)",
+    height: 46,
+    alignItems: "center",
+    position: "relative",
+  },
+  tabIndicator: {
+    position: "absolute",
+    top: 4,
+    height: 38,
+    backgroundColor: "rgba(99,102,241,0.20)",
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: "rgba(99,102,241,0.30)",
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    height: "100%",
     alignItems: "center",
-  },
-  tabActive: {
-    backgroundColor: "rgba(99,102,241,0.18)",
-    borderRadius: 9,
+    justifyContent: "center",
   },
   tabText: {
     fontFamily: "Poppins_600SemiBold",
-    fontSize: 10,
+    fontSize: 12,
     color: MUTED,
-    letterSpacing: 0.5,
   },
   tabTextActive: {
     color: WHITE,
@@ -586,26 +687,45 @@ const styles = StyleSheet.create({
 
   /* Heading */
   headingBlock: {
-    marginBottom: 24,
-    gap: 4,
+    marginBottom: 20,
+    gap: 6,
   },
   heading: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
-    fontSize: 40,
+    fontSize: 38,
     color: WHITE,
-    lineHeight: 48,
+    lineHeight: 46,
   },
   subheading: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 11,
+    fontSize: 13,
     color: MUTED,
-    letterSpacing: 0.3,
+    lineHeight: 20,
   },
 
-  /* Form */
-  form: {
+  /* Form card */
+  formCard: {
     gap: 14,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    borderRadius: 20,
+    padding: 20,
+    overflow: "hidden",
   },
+  cardAccent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: PURPLE,
+    opacity: 0.5,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
+  /* Name row */
   nameRow: {
     flexDirection: "row",
     gap: 10,
@@ -613,9 +733,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: "Poppins_500Medium",
-    fontSize: 10,
+    fontSize: 11,
     color: MUTED,
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
     marginBottom: 7,
   },
 
@@ -624,7 +744,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    height: 54,
+    height: 52,
     paddingHorizontal: 14,
     borderRadius: 12,
   },
@@ -637,10 +757,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: WHITE,
     padding: 0,
-    height: 54,
+    height: 52,
   },
   inputRight: {
     paddingLeft: 8,
+  },
+
+  /* Forgot */
+  forgotText: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    color: PURPLE,
+    letterSpacing: 0.1,
   },
 
   /* Error */
@@ -650,7 +778,9 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: ERROR_BG,
     borderWidth: 1,
-    borderColor: "rgba(239,68,68,0.18)",
+    borderColor: "rgba(239,68,68,0.20)",
+    borderLeftColor: ERROR_COLOR,
+    borderLeftWidth: 3,
     padding: 12,
     borderRadius: 10,
   },
@@ -666,18 +796,39 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  /* Dots */
-  dotsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 14,
-    justifyContent: "center",
-    marginTop: 28,
+  /* Footer */
+  footerRow: {
+    alignItems: "center",
+    paddingTop: 4,
   },
-  dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: PURPLE,
+  footerText: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    color: MUTED,
+    textAlign: "center",
+  },
+  footerLink: {
+    fontFamily: "Poppins_600SemiBold",
+    color: PURPLE,
+  },
+
+  /* Bottom decoration */
+  bottomDecor: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 28,
+    paddingHorizontal: 8,
+  },
+  decorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(99,102,241,0.12)",
+  },
+  decorText: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 10,
+    color: MUTED2,
+    letterSpacing: 0.5,
   },
 });

@@ -154,7 +154,7 @@ export default function FoldersScreen() {
       />
 
       <View style={styles.subHeader}>
-        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>//ORGANIZE</Text>
+        <Text style={[styles.subLabel, { color: colors.mutedForeground }]}>Organize</Text>
         <Text style={[styles.subTitle, { color: colors.foreground }]}>Folders</Text>
       </View>
 

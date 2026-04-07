@@ -1163,7 +1163,7 @@ export default function VideoDetailScreen() {
 
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
                   <View>
-                    <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_TOOLS</Text>
+                    <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Tools</Text>
                     <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
                       {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
                     </Text>
@@ -1236,7 +1236,7 @@ export default function VideoDetailScreen() {
         {/* ── Chat Tab ── */}
         {activeTab === "chat" && (
           <View style={[styles.section, { minHeight: 400 }]}>
-            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>// AI_CHAT</Text>
+            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Chat</Text>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Chat About This Video</Text>
 
             {/* Chat messages */}

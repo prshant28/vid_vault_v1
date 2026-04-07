@@ -3,6 +3,7 @@ import {
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
+  Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import {
   AlegreyaSansSC_400Regular,
@@ -136,6 +137,7 @@ export default function RootLayout() {
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
+    Poppins_700Bold,
     AlegreyaSansSC_400Regular,
     AlegreyaSansSC_700Bold,
     AlegreyaSansSC_800ExtraBold,

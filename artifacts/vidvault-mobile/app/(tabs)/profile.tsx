@@ -296,7 +296,7 @@ export default function ProfileScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: botInset + 100 }} showsVerticalScrollIndicator={false}>
         {/* ── Page header ── */}
         <View style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 18 }}>
-          <Text style={[styles.pageCode,  { color: colors.mutedForeground }]}>//USER_PROFILE</Text>
+          <Text style={[styles.pageCode,  { color: colors.mutedForeground }]}>Profile</Text>
           <Text style={[styles.pageTitle, { color: colors.foreground }]}>Profile</Text>
         </View>
 
@@ -383,7 +383,7 @@ export default function ProfileScreen() {
                   <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: levelColor }}>{level}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CURRENT_RANK</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>Current Rank</Text>
                   <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground }}>{levelTitle}</Text>
                   <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.border, overflow: "hidden", marginTop: 8 }}>
                     <LinearGradient colors={[levelColor, levelColor + "aa"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${Math.round(progressPct * 100)}%`, height: "100%" }} />
@@ -401,7 +401,7 @@ export default function ProfileScreen() {
         {/* ── Stats grid ── */}
         {statsData && (
           <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>//VAULT_STATS</Text>
+            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>Vault Stats</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
               {STAT_ITEMS.map((cfg, i) => (
                 <MotiView
@@ -427,7 +427,7 @@ export default function ProfileScreen() {
         {/* ── Achievements ── */}
         <View style={{ marginBottom: 20 }}>
           <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>//ACHIEVEMENTS</Text>
+            <Text style={[styles.groupLabel, { color: colors.mutedForeground }]}>Achievements</Text>
             <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Milestones</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 14 }}>
@@ -501,7 +501,7 @@ export default function ProfileScreen() {
           >
             <LinearGradient colors={[PURPLE + "14", "transparent"]} style={StyleSheet.absoluteFill} />
             <View style={{ height: 2, backgroundColor: PURPLE, width: "20%", marginBottom: 20 }} />
-            <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>// EDIT_DISPLAY_NAME</Text>
+            <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 4 }}>Display Name</Text>
             <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, marginBottom: 16 }}>Update Name</Text>
             <TextInput
               value={editNameVal}
@@ -543,7 +543,7 @@ export default function ProfileScreen() {
                   <Feather name="tag" size={16} color={PURPLE} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TAG_MANAGER</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Tag Manager</Text>
                   <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Manage Tags</Text>
                 </View>
               </View>

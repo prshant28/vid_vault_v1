@@ -471,7 +471,7 @@ export default function AIStudioScreen() {
       {/* Section header */}
       <View style={styles.studioHeader}>
         <View style={styles.headerLeft}>
-          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>//AI_STUDIO</Text>
+          <Text style={[styles.headerEyebrow, { color: colors.mutedForeground }]}>AI Studio</Text>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI Studio</Text>
         </View>
         <View style={{ gap: 6, alignItems: "flex-end" }}>
@@ -671,7 +671,7 @@ export default function AIStudioScreen() {
             {/* Header */}
             <View style={histStyles.panelHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={[histStyles.panelEye, { color: colors.mutedForeground }]}>//HISTORY</Text>
+                <Text style={[histStyles.panelEye, { color: colors.mutedForeground }]}>History</Text>
                 <Text style={[histStyles.panelTitle, { color: colors.foreground }]}>Past Sessions</Text>
               </View>
               <TouchableOpacity onPress={() => setShowHistory(false)} style={histStyles.panelClose}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   TouchableOpacity,
   View,
@@ -6,9 +6,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  Animated,
 } from "react-native";
 import type { ComponentProps } from "react";
-import Svg, { Polygon } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Stop, Polygon } from "react-native-svg";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 
@@ -50,6 +51,8 @@ export function AppButton({
   width: widthProp,
 }: AppButtonProps) {
   const [pressed, setPressed] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim  = useRef(new Animated.Value(0)).current;
   const colors = useColors();
   const { h, cut, px, iconSize, fontSize } = SIZES[size];
   const isXs = size === "xs" && !label;
@@ -69,15 +72,49 @@ export function AppButton({
     btnW = Math.ceil(px * 2 + textLen + iconW);
   }
 
-  const fillColor =
+  const handlePressIn = () => {
+    setPressed(true);
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 0.955,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 4,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 1,
+        duration: 120,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const handlePressOut = () => {
+    setPressed(false);
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 40,
+        bounciness: 6,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
+
+  const flatFill =
     disabled
       ? variant === "primary"
         ? colors.primary + "55"
         : "rgba(255,255,255,0.08)"
       : variant === "primary"
-      ? pressed
-        ? colors.primary + "dd"
-        : colors.primary
+      ? "url(#btnGrad)"
       : variant === "white"
       ? pressed ? "#d8d8d8" : "#ffffff"
       : variant === "danger"
@@ -86,12 +123,13 @@ export function AppButton({
       ? "rgba(255,255,255,0.08)"
       : "transparent";
 
-  const isDark = colors.background === "#0a0a0f" || colors.background.startsWith("#0");
   const strokeColor =
     variant === "ghost"
       ? disabled
         ? isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"
         : isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.18)"
+      : variant === "primary" && !disabled
+      ? "rgba(139,92,246,0.4)"
       : "transparent";
 
   const textColor =
@@ -103,44 +141,53 @@ export function AppButton({
         : isDark ? colors.foreground : colors.foreground
       : "#ffffff";
 
-  const points = isXs
-    ? `${cut},0 ${btnW},0 ${btnW},${h - cut} ${btnW - cut},${h} 0,${h} 0,${cut}`
-    : `${cut},0 ${btnW},0 ${btnW},${h - cut} ${btnW - cut},${h} 0,${h} 0,${cut}`;
+  const points = `${cut},0 ${btnW},0 ${btnW},${h - cut} ${btnW - cut},${h} 0,${h} 0,${cut}`;
+
+  const gradStart = disabled ? (colors.primary + "55") : pressed ? "#7c3aed" : "#6366f1";
+  const gradEnd   = disabled ? (colors.primary + "55") : pressed ? "#5b21b6" : "#8b5cf6";
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={1}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={{ width: btnW, height: h }}>
-        <Svg width={btnW} height={h} style={StyleSheet.absoluteFillObject}>
-          <Polygon
-            points={points}
-            fill={fillColor}
-            stroke={strokeColor}
-            strokeWidth={variant === "ghost" ? 1 : 0}
-          />
-        </Svg>
-        <View style={[StyleSheet.absoluteFillObject, styles.inner, { gap: (icon || customIcon) && label ? 8 : 0 }]}>
-          {loading ? (
-            <ActivityIndicator color={textColor} size="small" />
-          ) : (
-            <>
-              {icon && <Feather name={icon} size={iconSize} color={textColor} />}
-              {customIcon && customIcon}
-              {label && (
-                <Text style={[styles.label, { color: textColor, fontSize }]} numberOfLines={1}>
-                  {label}
-                </Text>
-              )}
-            </>
-          )}
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={1}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <View style={{ width: btnW, height: h }}>
+          <Svg width={btnW} height={h} style={StyleSheet.absoluteFillObject}>
+            <Defs>
+              <LinearGradient id="btnGrad" x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0%" stopColor={gradStart} />
+                <Stop offset="100%" stopColor={gradEnd} />
+              </LinearGradient>
+            </Defs>
+            <Polygon
+              points={points}
+              fill={flatFill}
+              stroke={strokeColor}
+              strokeWidth={variant === "ghost" ? 1 : variant === "primary" && !disabled ? 1 : 0}
+            />
+          </Svg>
+          <View style={[StyleSheet.absoluteFillObject, styles.inner, { gap: (icon || customIcon) && label ? 8 : 0 }]}>
+            {loading ? (
+              <ActivityIndicator color={textColor} size="small" />
+            ) : (
+              <>
+                {icon && <Feather name={icon} size={iconSize} color={textColor} />}
+                {customIcon && customIcon}
+                {label && (
+                  <Text style={[styles.label, { color: textColor, fontSize }]} numberOfLines={1}>
+                    {label}
+                  </Text>
+                )}
+              </>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -152,6 +199,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: "Poppins_600SemiBold",
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
 });

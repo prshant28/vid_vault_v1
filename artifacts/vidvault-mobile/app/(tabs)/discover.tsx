@@ -223,7 +223,7 @@ export default function DiscoverScreen() {
           transition={{ type: "timing", duration: 500 }}
           style={{ paddingTop: 4, paddingBottom: 20 }}
         >
-          <Text style={[styles.pageCode, { color: colors.mutedForeground }]}>//DISCOVER_MODE</Text>
+          <Text style={[styles.pageCode, { color: colors.mutedForeground }]}>Discover</Text>
           <Text style={[styles.pageTitle, { color: colors.foreground }]}>Explore & Learn</Text>
           <Text style={[styles.pageSub, { color: colors.mutedForeground }]}>
             Tools, templates, and features to supercharge your knowledge vault.
@@ -354,7 +354,7 @@ export default function DiscoverScreen() {
                 <Feather name="zap" size={22} color={AMBER} />
               </View>
               <View style={{ alignItems: "center", gap: 6 }}>
-                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2, color: AMBER }}>// PRO_TIER</Text>
+                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2, color: AMBER }}>Pro Tier</Text>
                 <Text style={[styles.proTitle, { color: colors.foreground }]}>Unlock Pro Features</Text>
                 <Text style={[styles.proDesc, { color: colors.mutedForeground }]}>
                   Anki decks, PDF exports, custom templates, Twitter threads, and priority AI processing.
@@ -395,7 +395,7 @@ export default function DiscoverScreen() {
                   <Feather name="layout" size={16} color={AMBER} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>// TEMPLATE_LIBRARY</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Template Library</Text>
                   <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Export Templates</Text>
                 </View>
               </View>
