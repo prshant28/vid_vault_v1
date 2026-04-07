@@ -999,29 +999,42 @@ export default function VideoDetailScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Channel name — YouTube style below title */}
+          {/* ── Channel row ── */}
           {video.channelName && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 2 }}>
-              <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: PURPLE + "30", alignItems: "center", justifyContent: "center" }}>
-                <Feather name="youtube" size={9} color={PURPLE} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
+              <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: PURPLE + "22", alignItems: "center", justifyContent: "center" }}>
+                <Feather name="youtube" size={10} color={PURPLE} />
               </View>
-              <Text style={{ fontSize: 11, fontFamily: "Poppins_400Regular", color: colors.mutedForeground }} numberOfLines={1}>
+              <Text style={{ fontSize: 12, fontFamily: "Poppins_400Regular", color: colors.mutedForeground, flex: 1 }} numberOfLines={1}>
                 {video.channelName}
               </Text>
             </View>
           )}
 
-          <View style={styles.metaRow}>
-            {video.duration && (
+          {/* ── Duration row ── */}
+          {video.duration && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}>
               <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Feather name="clock" size={10} color={colors.mutedForeground} />
                 <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{video.duration}</Text>
               </View>
-            )}
+              {video.createdAt && (
+                <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Feather name="calendar" size={10} color={colors.mutedForeground} />
+                  <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>
+                    Saved {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* ── Folder row ── */}
+          <View style={{ marginTop: 8 }}>
             {video.folderName ? (
               <TouchableOpacity
                 onPress={() => setShowFolderPicker(true)}
-                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[styles.metaChip, { backgroundColor: PURPLE + "0e", borderColor: PURPLE + "28", alignSelf: "flex-start" }]}
                 activeOpacity={0.75}
               >
                 <Feather name="folder" size={10} color={PURPLE} />
@@ -1030,7 +1043,7 @@ export default function VideoDetailScreen() {
             ) : (
               <TouchableOpacity
                 onPress={() => setShowFolderPicker(true)}
-                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed", alignSelf: "flex-start" }]}
                 activeOpacity={0.75}
               >
                 <Feather name="folder-plus" size={10} color={colors.mutedForeground} />
@@ -1039,8 +1052,8 @@ export default function VideoDetailScreen() {
             )}
           </View>
 
-          {/* Tag pills + Add Tag chip */}
-          <View style={[styles.tagsRow, { flexWrap: "wrap" }]}>
+          {/* ── Tag pills + Add Tag chip ── */}
+          <View style={[styles.tagsRow, { flexWrap: "wrap", marginTop: 4 }]}>
             {(video.tags ?? []).map((tag: Tag) => (
               <TouchableOpacity
                 key={tag.id}

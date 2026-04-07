@@ -725,6 +725,147 @@ function RecentAiItemCard({
   );
 }
 
+/* ── Welcome Hero ── */
+function WelcomeHero({
+  name,
+  totalVideos,
+  totalAi,
+}: {
+  name: string;
+  totalVideos: number;
+  totalAi: number;
+}) {
+  const { colors, isDark } = useTheme();
+  const hour = new Date().getHours();
+
+  const { greeting, emoji, sub } = (() => {
+    if (hour >= 5 && hour < 12)
+      return { greeting: "Good Morning", emoji: "☀️", sub: "Ready to learn something new?" };
+    if (hour >= 12 && hour < 17)
+      return { greeting: "Good Afternoon", emoji: "🌤️", sub: "Keep the momentum going!" };
+    if (hour >= 17 && hour < 21)
+      return { greeting: "Good Evening", emoji: "🌆", sub: "Review your knowledge vault today" };
+    return { greeting: "Good Night", emoji: "🌙", sub: "Rest well and come back tomorrow" };
+  })();
+
+  const ICONS: Array<{ icon: FeatherIconName; color: string; top: number; right: number; delay: number }> = [
+    { icon: "cpu",     color: PURPLE, top: 14, right: 16, delay: 0   },
+    { icon: "youtube", color: PINK,   top: 56, right: 60, delay: 500 },
+    { icon: "zap",     color: AMBER,  top: 30, right: 52, delay: 250 },
+    { icon: "edit-3",  color: CYAN,   top: 72, right: 12, delay: 750 },
+    { icon: "star",    color: GREEN,  top: 48, right: 32, delay: 375 },
+  ];
+
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: -18 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "spring", damping: 20, stiffness: 160, delay: 40 }}
+      style={[
+        styles.heroCard,
+        {
+          backgroundColor: colors.card,
+          borderColor: PURPLE + "28",
+          shadowColor: isDark ? "#000" : PURPLE,
+          shadowOpacity: isDark ? 0.3 : 0.10,
+          shadowRadius: isDark ? 16 : 12,
+          elevation: isDark ? 8 : 3,
+        },
+      ]}
+    >
+      <LinearGradient
+        colors={[PURPLE + "1a", "transparent", CYAN + "0c"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
+      {/* Top accent stripe */}
+      <View style={{ height: 2.5, backgroundColor: PURPLE, width: "38%", borderBottomRightRadius: 3 }} />
+
+      {/* Floating animated icons */}
+      {ICONS.map(({ icon, color, top, right, delay }, i) => (
+        <MotiView
+          key={i}
+          from={{ translateY: 0, scale: 0.9, opacity: 0.55 }}
+          animate={{ translateY: -8, scale: 1, opacity: 0.9 }}
+          transition={{ type: "timing", duration: 1900 + i * 180, loop: true, delay, repeatReverse: true }}
+          style={{ position: "absolute", top, right }}
+          pointerEvents="none"
+        >
+          <View style={{
+            width: 34, height: 34, borderRadius: 10,
+            backgroundColor: color + "18", borderWidth: 1, borderColor: color + "35",
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Feather name={icon} size={14} color={color} />
+          </View>
+        </MotiView>
+      ))}
+
+      {/* Text content — left side, stays clear of icons */}
+      <View style={{ padding: 18, paddingTop: 14, gap: 5, maxWidth: "62%" }}>
+        {/* Greeting label */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+          <Text style={{ fontSize: 13 }}>{emoji}</Text>
+          <Text style={{
+            fontFamily: "JetBrainsMono_400Regular", fontSize: 9,
+            letterSpacing: 1.8, color: PURPLE, textTransform: "uppercase",
+          }}>
+            {greeting}
+          </Text>
+        </View>
+
+        {/* User name */}
+        <Text style={{
+          fontFamily: "AlegreyaSansSC_700Bold", fontSize: 30,
+          color: colors.foreground, letterSpacing: 0.4, lineHeight: 34,
+        }}>
+          {name}
+        </Text>
+
+        {/* Subtitle */}
+        <Text style={{
+          fontFamily: "Poppins_400Regular", fontSize: 11.5,
+          color: colors.mutedForeground, lineHeight: 17,
+        }}>
+          {sub}
+        </Text>
+
+        {/* Stat pills */}
+        {totalVideos > 0 && (
+          <View style={{ flexDirection: "row", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 4,
+              backgroundColor: PURPLE + "14", borderRadius: 20,
+              borderWidth: 1, borderColor: PURPLE + "28",
+              paddingHorizontal: 9, paddingVertical: 4,
+            }}>
+              <Feather name="film" size={9} color={PURPLE} />
+              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 10, color: PURPLE }}>
+                {totalVideos} {totalVideos === 1 ? "video" : "videos"}
+              </Text>
+            </View>
+            {totalAi > 0 && (
+              <View style={{
+                flexDirection: "row", alignItems: "center", gap: 4,
+                backgroundColor: CYAN + "14", borderRadius: 20,
+                borderWidth: 1, borderColor: CYAN + "28",
+                paddingHorizontal: 9, paddingVertical: 4,
+              }}>
+                <Feather name="cpu" size={9} color={CYAN} />
+                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 10, color: CYAN }}>
+                  {totalAi} AI outputs
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+    </MotiView>
+  );
+}
+
 /* ── Watch Progress bar ── */
 function WatchProgressBar({
   watched,
@@ -878,17 +1019,12 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* ── Hero Greeting ── */}
-        <MotiView
-          from={{ opacity: 0, translateY: -12 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 500 }}
-          style={styles.greeting}
-        >
-          <Text style={[styles.greetingName, { color: colors.foreground }]}>
-            Hey, {displayName} 👋
-          </Text>
-        </MotiView>
+        {/* ── Welcome Hero ── */}
+        <WelcomeHero
+          name={displayName}
+          totalVideos={totalVideos}
+          totalAi={recentAiOutputs.length}
+        />
 
         {/* ── Welcome Banner (first-time / empty vault) ── */}
         {!isLoading && totalVideos === 0 && (
@@ -1348,6 +1484,16 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 
+  heroCard: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    marginTop: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    overflow: "hidden",
+    minHeight: 130,
+    shadowOffset: { width: 0, height: 6 },
+  },
   greeting: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 8 },
   greetingTopRow: {
     flexDirection: "row",
