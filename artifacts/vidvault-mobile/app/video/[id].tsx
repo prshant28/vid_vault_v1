@@ -166,6 +166,11 @@ function AiToolCard({
         {
           backgroundColor: colors.card,
           borderColor: done ? tool.color + "45" : colors.border,
+          elevation: 0,
+          shadowColor: "transparent",
+          shadowOpacity: 0,
+          shadowRadius: 0,
+          shadowOffset: { width: 0, height: 0 },
         },
       ]}
     >

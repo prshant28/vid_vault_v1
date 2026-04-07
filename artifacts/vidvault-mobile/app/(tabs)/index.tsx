@@ -931,14 +931,16 @@ function WelcomeHero({
   const { colors, isDark } = useTheme();
   const hour = new Date().getHours();
 
-  const { line1, line2, emoji, sub, accent } = (() => {
+  const firstName = name.split(" ")[0] || name;
+
+  const { greetLine, emoji, sub, accent } = (() => {
     if (hour >= 5 && hour < 12)
-      return { line1: "Good", line2: "Morning", emoji: "☀️", sub: "Ready to learn something new?", accent: AMBER };
+      return { greetLine: "Good Morning,", emoji: "☀️", sub: "Ready to learn something new today?", accent: AMBER };
     if (hour >= 12 && hour < 17)
-      return { line1: "Good", line2: "Afternoon", emoji: "🌤️", sub: "Keep the momentum going!", accent: CYAN };
+      return { greetLine: "Good Afternoon,", emoji: "🌤️", sub: "Keep the momentum going!", accent: CYAN };
     if (hour >= 17 && hour < 21)
-      return { line1: "Good", line2: "Evening", emoji: "🌆", sub: "Review your knowledge vault", accent: PINK };
-    return { line1: "Good", line2: "Night", emoji: "🌙", sub: "Rest well, see you tomorrow", accent: "#a78bfa" };
+      return { greetLine: "Good Evening,", emoji: "🌆", sub: "Time to review your knowledge vault.", accent: PINK };
+    return { greetLine: "Good Night,", emoji: "🌙", sub: "Rest well, see you tomorrow.", accent: "#a78bfa" };
   })();
 
   const today = new Date()
@@ -1029,38 +1031,36 @@ function WelcomeHero({
           )}
         </View>
 
-        {/* Big H2 greeting — two stacked lines */}
+        {/* Greeting label: "Good Evening," */}
         <Text style={{
-          fontFamily: "AlegreyaSansSC_800ExtraBold",
-          fontSize: 46, lineHeight: 44, letterSpacing: -1,
-          color: colors.mutedForeground + "bb",
+          fontFamily: "Poppins_400Regular",
+          fontSize: 11, letterSpacing: 1.8,
+          color: colors.mutedForeground,
+          marginBottom: 2,
+          textTransform: "uppercase",
         }}>
-          {line1}
-        </Text>
-        <Text style={{
-          fontFamily: "AlegreyaSansSC_800ExtraBold",
-          fontSize: 54, lineHeight: 54, letterSpacing: -1.5,
-          color: colors.foreground, marginBottom: 10,
-        }}>
-          {line2}
+          {greetLine}
         </Text>
 
-        {/* User name with accent bar */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: PURPLE }} />
-          <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 14, color: colors.foreground }}>
-            {name}
+        {/* Big hero name */}
+        <Text style={{
+          fontFamily: "AlegreyaSansSC_800ExtraBold",
+          fontSize: 52, lineHeight: 52, letterSpacing: -1.5,
+          color: colors.foreground, marginBottom: 8,
+        }}>
+          {firstName}
+        </Text>
+
+        {/* Accent divider + sub */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: totalVideos > 0 ? 14 : 0 }}>
+          <View style={{ width: 28, height: 2, borderRadius: 1, backgroundColor: accent }} />
+          <Text style={{
+            fontFamily: "Poppins_400Regular", fontSize: 11,
+            color: colors.mutedForeground, flex: 1,
+          }}>
+            {sub}
           </Text>
         </View>
-
-        {/* Sub */}
-        <Text style={{
-          fontFamily: "Poppins_400Regular", fontSize: 12,
-          color: colors.mutedForeground, lineHeight: 18,
-          marginBottom: totalVideos > 0 ? 16 : 0,
-        }}>
-          {sub}
-        </Text>
 
         {/* Stat pills row */}
         {totalVideos > 0 && (

@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
 import Svg, { Polygon } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/hooks/useTheme";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api";
 import { router } from "expo-router";
@@ -44,7 +45,6 @@ const TOOLS: Array<{
   { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON", action: "coming-soon"      },
 ];
 
-
 const ALL_TEMPLATES = [
   { id: "dark-academic",   name: "Dark Academic",      icon: "book-open"   as FeatherIconName, color: PURPLE, category: "Study",   desc: "Elegant dark tones for scholarly notes."        },
   { id: "neon-cyberpunk",  name: "Neon Cyberpunk",     icon: "zap"         as FeatherIconName, color: CYAN,   category: "Design",  desc: "High-contrast neon glows on dark backgrounds."  },
@@ -52,17 +52,17 @@ const ALL_TEMPLATES = [
   { id: "ocean",           name: "Ocean Depths",       icon: "droplet"     as FeatherIconName, color: "#3b82f6", category: "Visual", desc: "Deep blue gradients for immersive reading."  },
   { id: "emerald",         name: "Emerald Forest",     icon: "feather"     as FeatherIconName, color: GREEN,  category: "Nature",  desc: "Fresh greens with nature-inspired typography."  },
   { id: "bauhaus",         name: "Bauhaus Minimal",    icon: "align-left"  as FeatherIconName, color: PINK,   category: "Minimal", desc: "Bold geometry and clean whitespace."            },
-  { id: "retro-terminal",  name: "Retro Terminal",     icon: "terminal"    as FeatherIconName, color: GREEN,  category: "Hacker", desc: "Green-on-black terminal aesthetic."             },
-  { id: "aurora",          name: "Aurora Borealis",    icon: "sun"         as FeatherIconName, color: PURPLE, category: "Vivid",  desc: "Northern lights palette with shimmer effects."  },
-  { id: "sepia",           name: "Sepia Vintage",      icon: "camera"      as FeatherIconName, color: AMBER,  category: "Retro",  desc: "Warm sepia tones for a timeless feel."          },
-  { id: "midnight-glass",  name: "Midnight Glass",     icon: "layers"      as FeatherIconName, color: CYAN,   category: "Dark",   desc: "Frosted glass panels on deep midnight canvas."  },
+  { id: "retro-terminal",  name: "Retro Terminal",     icon: "terminal"    as FeatherIconName, color: GREEN,  category: "Hacker",  desc: "Green-on-black terminal aesthetic."             },
+  { id: "aurora",          name: "Aurora Borealis",    icon: "sun"         as FeatherIconName, color: PURPLE, category: "Vivid",   desc: "Northern lights palette with shimmer effects."  },
+  { id: "sepia",           name: "Sepia Vintage",      icon: "camera"      as FeatherIconName, color: AMBER,  category: "Retro",   desc: "Warm sepia tones for a timeless feel."          },
+  { id: "midnight-glass",  name: "Midnight Glass",     icon: "layers"      as FeatherIconName, color: CYAN,   category: "Dark",    desc: "Frosted glass panels on deep midnight canvas."  },
 ];
 
-/* ── Polygon button matching AppButton style ── */
+/* ── Polygon button ── */
 function PolygonBtn({ label, icon, color = PURPLE, onPress }: { label: string; icon?: FeatherIconName; color?: string; onPress?: () => void }) {
-  const h = 42;
+  const h = 44;
   const cut = 9;
-  const px = 18;
+  const px = 20;
   const charW = 11 * 0.62;
   const iconW = icon ? 18 : 0;
   const btnW = Math.ceil(px * 2 + iconW + (icon && label ? 8 : 0) + label.length * charW);
@@ -73,7 +73,7 @@ function PolygonBtn({ label, icon, color = PURPLE, onPress }: { label: string; i
         <Svg width={btnW} height={h} style={StyleSheet.absoluteFillObject}>
           <Polygon points={points} fill={color} />
         </Svg>
-        <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 }]}>
+        <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }]}>
           {icon && <Feather name={icon} size={14} color="#fff" />}
           <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 1.4, color: "#fff" }}>{label}</Text>
         </View>
@@ -82,98 +82,139 @@ function PolygonBtn({ label, icon, color = PURPLE, onPress }: { label: string; i
   );
 }
 
-/* ── Section header matching home screen style ── */
+/* ── Premium section header ── */
 function SectionHead({ micro, title, delay = 0 }: { micro: string; title: string; delay?: number }) {
-  const colors = useColors();
+  const { colors } = useTheme();
   return (
     <MotiView
-      from={{ opacity: 0, translateX: -8 }}
+      from={{ opacity: 0, translateX: -10 }}
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ type: "timing", duration: 380, delay }}
-      style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}
+      style={{ marginBottom: 16 }}
     >
-      <View>
-        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, color: colors.mutedForeground, letterSpacing: 2.5, marginBottom: 3 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <View style={{ width: 3, height: 14, borderRadius: 1.5, backgroundColor: PURPLE }} />
+        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8.5, color: colors.mutedForeground, letterSpacing: 2.5 }}>
           {micro}
         </Text>
-        <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20, color: colors.foreground, letterSpacing: -0.2 }}>
-          {title}
-        </Text>
+        <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
       </View>
-      <View style={{ height: 1, flex: 1, marginLeft: 12, marginBottom: 6, backgroundColor: colors.border }} />
+      <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, letterSpacing: -0.3, paddingLeft: 11 }}>
+        {title}
+      </Text>
     </MotiView>
   );
 }
 
-/* ── Tool card matching AI Studio etched-slab style ── */
+/* ── Premium tool card ── */
 function ToolCard({ tool, index, onPress }: { tool: typeof TOOLS[0]; index: number; onPress: () => void }) {
-  const colors = useColors();
+  const { colors, isDark } = useTheme();
   const { width } = useWindowDimensions();
   const cardW = (width - 48 - 10) / 2;
+  const num = String(index + 1).padStart(2, "0");
   return (
     <MotiView
-      from={{ opacity: 0, translateY: 16 }}
+      from={{ opacity: 0, translateY: 18 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: "timing", duration: 320, delay: index * 55 }}
-      style={{ width: cardW }}
+      transition={{ type: "timing", duration: 340, delay: index * 60 }}
+      style={{ width: cardW, elevation: 0, shadowOpacity: 0 }}
     >
       <TouchableOpacity
         activeOpacity={0.78}
         onPress={onPress}
-        style={[styles.toolCard, { backgroundColor: colors.card, borderColor: tool.color + "28" }]}
+        style={[styles.toolCard, {
+          backgroundColor: colors.card,
+          borderColor: tool.color + "30",
+          elevation: 0,
+          shadowOpacity: 0,
+          shadowColor: "transparent",
+          shadowRadius: 0,
+          shadowOffset: { width: 0, height: 0 },
+        }]}
       >
+        {/* Top color accent bar */}
+        <View style={{ height: 3, backgroundColor: tool.color, borderTopLeftRadius: 14, borderTopRightRadius: 14 }} />
+
+        {/* Subtle gradient wash */}
         <LinearGradient
-          colors={[tool.color + "08", "transparent"]}
+          colors={[tool.color + "12", "transparent"]}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+          pointerEvents="none"
         />
-        <View style={[styles.toolIconWrap, { backgroundColor: tool.color + "18", borderColor: tool.color + "30" }]}>
-          <Feather name={tool.icon} size={18} color={tool.color} />
-        </View>
-        <Text style={[styles.toolLabel, { color: colors.foreground }]}>{tool.label}</Text>
-        <Text style={[styles.toolDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{tool.desc}</Text>
-        {tool.badge && (
-          <View style={[styles.toolBadge, { backgroundColor: tool.color + "18", borderColor: tool.color + "40" }]}>
-            <Text style={[styles.toolBadgeText, { color: tool.color }]}>{tool.badge}</Text>
+
+        <View style={{ padding: 14, paddingTop: 12 }}>
+          {/* Top row: number + arrow */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1.5, color: tool.color + "80" }}>{num}</Text>
+            {tool.badge ? (
+              <View style={[styles.toolBadge, { backgroundColor: tool.color + "18", borderColor: tool.color + "40" }]}>
+                <Text style={[styles.toolBadgeText, { color: tool.color }]}>{tool.badge}</Text>
+              </View>
+            ) : (
+              <Feather name="arrow-up-right" size={12} color={tool.color + "70"} />
+            )}
           </View>
-        )}
-        <View style={{ position: "absolute", top: 10, right: 10 }}>
-          <Feather name="arrow-up-right" size={11} color={tool.color + "60"} />
+
+          {/* Icon */}
+          <View style={[styles.toolIconWrap, { backgroundColor: tool.color + "16", borderColor: tool.color + "28" }]}>
+            <Feather name={tool.icon} size={22} color={tool.color} />
+          </View>
+
+          {/* Label + desc */}
+          <Text style={[styles.toolLabel, { color: colors.foreground }]}>{tool.label}</Text>
+          <Text style={[styles.toolDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{tool.desc}</Text>
         </View>
       </TouchableOpacity>
     </MotiView>
   );
 }
 
-/* ── Template row card ── */
+/* ── Premium template row card ── */
 function TemplateCard({ template, index, onPress }: { template: typeof ALL_TEMPLATES[0]; index: number; onPress?: () => void }) {
-  const colors = useColors();
+  const { colors } = useTheme();
   return (
     <MotiView
-      from={{ opacity: 0, translateX: 14 }}
+      from={{ opacity: 0, translateX: 16 }}
       animate={{ opacity: 1, translateX: 0 }}
-      transition={{ type: "timing", duration: 280, delay: index * 45 }}
+      transition={{ type: "timing", duration: 300, delay: index * 50 }}
     >
       <TouchableOpacity
         activeOpacity={0.75}
         onPress={onPress}
-        style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.templateCard, {
+          backgroundColor: colors.card,
+          borderColor: template.color + "25",
+          elevation: 0,
+          shadowOpacity: 0,
+          shadowColor: "transparent",
+        }]}
       >
-        <View style={[styles.templateIcon, { backgroundColor: template.color + "18", borderColor: template.color + "30", borderWidth: 1 }]}>
-          <Feather name={template.icon} size={14} color={template.color} />
+        <LinearGradient
+          colors={[template.color + "0a", "transparent"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          style={[StyleSheet.absoluteFill, { borderRadius: 12 }]}
+          pointerEvents="none"
+        />
+        {/* Left accent line */}
+        <View style={{ width: 3, alignSelf: "stretch", backgroundColor: template.color, borderRadius: 2, marginRight: 12 }} />
+        <View style={[styles.templateIcon, { backgroundColor: template.color + "16", borderColor: template.color + "28", borderWidth: 1 }]}>
+          <Feather name={template.icon} size={15} color={template.color} />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, gap: 2 }}>
           <Text style={[styles.templateName, { color: colors.foreground }]} numberOfLines={1}>{template.name}</Text>
-          <Text style={[styles.templateCategory, { color: template.color }]}>{template.category.toUpperCase()}</Text>
+          <Text style={[styles.templateDesc, { color: colors.mutedForeground }]} numberOfLines={1}>{template.desc}</Text>
         </View>
-        <Feather name="chevron-right" size={13} color={colors.mutedForeground + "70"} />
+        <View style={[styles.templateCategoryBadge, { backgroundColor: template.color + "14", borderColor: template.color + "30" }]}>
+          <Text style={[styles.templateCategoryText, { color: template.color }]}>{template.category.toUpperCase()}</Text>
+        </View>
       </TouchableOpacity>
     </MotiView>
   );
 }
 
 export default function DiscoverScreen() {
-  const colors = useColors();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -194,6 +235,13 @@ export default function DiscoverScreen() {
     if (tool.route) router.push(tool.route as any);
   };
 
+  const statItems: Array<{ label: string; value: number; color: string; icon: FeatherIconName }> = [
+    { label: "Videos",  value: totalVideos,    color: PURPLE, icon: "film"    },
+    { label: "AI Outs", value: totalAiOutputs, color: PINK,   icon: "cpu"     },
+    { label: "Topics",  value: totalTags,      color: GREEN,  icon: "tag"     },
+    { label: "Notes",   value: totalNotes,     color: CYAN,   icon: "edit-3"  },
+  ];
+
   return (
     <TabFadeWrapper>
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -202,12 +250,12 @@ export default function DiscoverScreen() {
       {/* Ambient glow */}
       <MotiView
         from={{ opacity: 0 }} animate={{ opacity: 1 }}
-        transition={{ type: "timing", duration: 1200 }}
+        transition={{ type: "timing", duration: 1400 }}
         style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}
       >
         <LinearGradient
-          colors={[CYAN + "12", "transparent"]}
-          start={{ x: 1, y: 0 }} end={{ x: 0, y: 0.4 }}
+          colors={[CYAN + "10", "transparent"]}
+          start={{ x: 1, y: 0 }} end={{ x: 0, y: 0.5 }}
           style={StyleSheet.absoluteFill}
         />
       </MotiView>
@@ -220,13 +268,18 @@ export default function DiscoverScreen() {
       >
         {/* ── Page Header ── */}
         <MotiView
-          from={{ opacity: 0, translateY: -10 }}
+          from={{ opacity: 0, translateY: -12 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 500 }}
-          style={{ paddingTop: 4, paddingBottom: 20 }}
+          style={{ paddingTop: 4, paddingBottom: 22 }}
         >
-          <Text style={[styles.pageCode, { color: colors.mutedForeground }]}>Discover</Text>
-          <Text style={[styles.pageTitle, { color: colors.foreground }]}>Explore & Learn</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <View style={{ width: 3, height: 36, borderRadius: 2, backgroundColor: CYAN }} />
+            <View>
+              <Text style={[styles.pageCode, { color: colors.mutedForeground }]}>// DISCOVER</Text>
+              <Text style={[styles.pageTitle, { color: colors.foreground }]}>Explore & Learn</Text>
+            </View>
+          </View>
           <Text style={[styles.pageSub, { color: colors.mutedForeground }]}>
             Tools, templates, and features to supercharge your knowledge vault.
           </Text>
@@ -234,7 +287,7 @@ export default function DiscoverScreen() {
 
         {/* ── Stats strip ── */}
         <MotiView
-          from={{ opacity: 0, translateY: 10 }}
+          from={{ opacity: 0, translateY: 12 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 400, delay: 80 }}
           style={[styles.statsStrip, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -242,17 +295,16 @@ export default function DiscoverScreen() {
           <LinearGradient
             colors={[PURPLE + "0c", "transparent"]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
+            pointerEvents="none"
           />
-          {[
-            { label: "VIDEOS",  value: totalVideos,    color: PURPLE },
-            { label: "AI OUTS", value: totalAiOutputs, color: PINK   },
-            { label: "TOPICS",  value: totalTags,      color: GREEN  },
-            { label: "NOTES",   value: totalNotes,     color: CYAN   },
-          ].map((s, i) => (
+          {statItems.map((s, i) => (
             <React.Fragment key={s.label}>
-              {i > 0 && <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />}
+              {i > 0 && <View style={{ width: StyleSheet.hairlineWidth, height: 36, backgroundColor: colors.border }} />}
               <View style={styles.statItem}>
+                <View style={[styles.statIconBadge, { backgroundColor: s.color + "18", borderColor: s.color + "30" }]}>
+                  <Feather name={s.icon} size={11} color={s.color} />
+                </View>
                 <Text style={[styles.statValue, { color: s.color }]}>{s.value}</Text>
                 <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
               </View>
@@ -262,7 +314,7 @@ export default function DiscoverScreen() {
 
         {/* ── Learning Tools Grid ── */}
         <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="//01_TOOLS" title="Learning Tools" delay={100} />
+          <SectionHead micro="// 01 · TOOLS" title="Learning Tools" delay={100} />
           <View style={styles.toolGrid}>
             {TOOLS.map((tool, i) => (
               <ToolCard key={tool.id} tool={tool} index={i} onPress={() => handleToolPress(tool)} />
@@ -272,101 +324,142 @@ export default function DiscoverScreen() {
 
         {/* ── Template Library ── */}
         <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="//02_EXPORT" title="Template Library" delay={150} />
-          <Text style={[styles.sectionIntro, { color: colors.mutedForeground }]}>
-            Export your AI outputs in 10 professionally designed HTML formats.
-          </Text>
-          <View style={{ gap: 8 }}>
-            {ALL_TEMPLATES.slice(0, 5).map((t, i) => (
+          <SectionHead micro="// 02 · EXPORT" title="Template Library" delay={150} />
+          <MotiView
+            from={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ type: "timing", duration: 350, delay: 160 }}
+            style={[styles.templateIntroCard, { backgroundColor: colors.card, borderColor: AMBER + "28" }]}
+          >
+            <LinearGradient
+              colors={[AMBER + "10", "transparent"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={[StyleSheet.absoluteFill, { borderRadius: 12 }]}
+              pointerEvents="none"
+            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: AMBER + "18", borderWidth: 1, borderColor: AMBER + "30", alignItems: "center", justifyContent: "center" }}>
+                <Feather name="layout" size={18} color={AMBER} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground }}>10 Export Formats</Text>
+                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, lineHeight: 15 }}>
+                  Open a video → generate AI content → tap Export to apply any template.
+                </Text>
+              </View>
+            </View>
+          </MotiView>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            {ALL_TEMPLATES.slice(0, 6).map((t, i) => (
               <TemplateCard key={t.id} template={t} index={i} onPress={() => setShowTemplates(true)} />
             ))}
           </View>
           <TouchableOpacity
             onPress={() => setShowTemplates(true)}
-            style={[styles.viewAllBtn, { borderColor: PURPLE + "45", backgroundColor: PURPLE + "0e" }]}
+            style={[styles.viewAllBtn, { borderColor: PURPLE + "40", backgroundColor: PURPLE + "0e" }]}
             activeOpacity={0.75}
           >
-            <Feather name="layout" size={11} color={PURPLE} />
+            <Feather name="layout" size={12} color={PURPLE} />
             <Text style={[styles.viewAllText, { color: PURPLE }]}>VIEW ALL 10 TEMPLATES</Text>
-            <Feather name="arrow-right" size={11} color={PURPLE} />
+            <Feather name="arrow-right" size={12} color={PURPLE} />
           </TouchableOpacity>
         </View>
 
-        {/* ── Knowledge Graph Promo ── */}
+        {/* ── Knowledge Graph ── */}
         <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="//03_GRAPH" title="Knowledge Graph" delay={200} />
+          <SectionHead micro="// 03 · GRAPH" title="Knowledge Graph" delay={200} />
           <MotiView
             from={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "timing", duration: 350, delay: 250 }}
-            style={[styles.graphCard, { backgroundColor: colors.card, borderColor: GREEN + "35" }]}
+            transition={{ type: "timing", duration: 360, delay: 240 }}
+            style={[styles.graphCard, { backgroundColor: colors.card, borderColor: GREEN + "35", elevation: 0, shadowOpacity: 0 }]}
           >
             <LinearGradient
-              colors={[GREEN + "12", "transparent", CYAN + "08"]}
+              colors={[GREEN + "14", "transparent", CYAN + "08"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
+              style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
+              pointerEvents="none"
             />
-            {/* Top line */}
-            <View style={{ height: 2, backgroundColor: GREEN, width: "30%", borderBottomRightRadius: 2 }} />
-            <View style={{ padding: 20, alignItems: "center", gap: 12 }}>
+            <View style={{ height: 3, backgroundColor: GREEN, width: "35%", borderTopLeftRadius: 16, borderBottomRightRadius: 4 }} />
+            <View style={{ padding: 20, alignItems: "center", gap: 14 }}>
               <View style={[styles.graphIconWrap, { backgroundColor: GREEN + "18", borderColor: GREEN + "35", borderWidth: 1 }]}>
-                <Feather name="share-2" size={24} color={GREEN} />
+                <Feather name="share-2" size={26} color={GREEN} />
               </View>
-              <Text style={[styles.graphTitle, { color: colors.foreground }]}>Concept Map</Text>
+              <View style={{ alignItems: "center", gap: 4 }}>
+                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: GREEN }}>CONCEPT MAP</Text>
+                <Text style={[styles.graphTitle, { color: colors.foreground }]}>Knowledge Graph</Text>
+              </View>
               <Text style={[styles.graphDesc, { color: colors.mutedForeground }]}>
                 See how all your saved videos interconnect through shared topics and tags. Build a visual map of your knowledge.
               </Text>
-              {/* Node visual */}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
+              {/* Animated node visual */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
                 {[PURPLE, CYAN, GREEN, PINK, AMBER].map((c, i) => (
-                  <View
+                  <MotiView
                     key={c}
-                    style={{
-                      width: 18 + i * 5, height: 18 + i * 5,
-                      borderRadius: (18 + i * 5) / 2,
-                      backgroundColor: c + "35", borderWidth: 1.5, borderColor: c,
-                    }}
-                  />
+                    from={{ scale: 0.85, opacity: 0.4 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "timing", duration: 1200, loop: true, delay: i * 200, repeatReverse: true }}
+                  >
+                    <View style={{
+                      width: 16 + i * 5, height: 16 + i * 5,
+                      borderRadius: (16 + i * 5) / 2,
+                      backgroundColor: c + "30", borderWidth: 1.5, borderColor: c,
+                    }} />
+                  </MotiView>
                 ))}
               </View>
-              <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1.5, color: GREEN }}>
-                {totalTags} TOPICS MAPPED
-              </Text>
+              <View style={[styles.graphCountBadge, { backgroundColor: GREEN + "14", borderColor: GREEN + "30" }]}>
+                <Feather name="tag" size={10} color={GREEN} />
+                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 10, letterSpacing: 1, color: GREEN }}>
+                  {totalTags} TOPICS MAPPED
+                </Text>
+              </View>
             </View>
           </MotiView>
         </View>
 
         {/* ── Pro Upgrade Card ── */}
         <View style={{ marginBottom: 24 }}>
-          <SectionHead micro="//04_PRO" title="Upgrade to Pro" delay={250} />
+          <SectionHead micro="// 04 · PRO" title="Upgrade to Pro" delay={250} />
           <MotiView
-            from={{ opacity: 0, translateY: 12 }}
+            from={{ opacity: 0, translateY: 14 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: "timing", duration: 360, delay: 300 }}
-            style={[styles.proCard, { borderColor: AMBER + "40", backgroundColor: colors.card }]}
+            transition={{ type: "timing", duration: 380, delay: 290 }}
+            style={[styles.proCard, { borderColor: AMBER + "45", backgroundColor: colors.card, elevation: 0, shadowOpacity: 0 }]}
           >
             <LinearGradient
-              colors={[AMBER + "14", PURPLE + "10", "transparent"]}
+              colors={[AMBER + "18", PURPLE + "0e", "transparent"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
+              style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
+              pointerEvents="none"
             />
-            <View style={{ height: 2, backgroundColor: AMBER, width: "25%", borderBottomRightRadius: 2 }} />
-            <View style={{ padding: 24, alignItems: "center", gap: 14 }}>
-              <View style={[styles.proIconWrap, { backgroundColor: AMBER + "18", borderColor: AMBER + "35", borderWidth: 1 }]}>
-                <Feather name="zap" size={22} color={AMBER} />
+            <View style={{ height: 3, backgroundColor: AMBER, width: "30%", borderTopLeftRadius: 16, borderBottomRightRadius: 4 }} />
+            <View style={{ padding: 24, alignItems: "center", gap: 16 }}>
+              <View style={[styles.proIconWrap, { backgroundColor: AMBER + "20", borderColor: AMBER + "40", borderWidth: 1 }]}>
+                <Feather name="zap" size={26} color={AMBER} />
               </View>
               <View style={{ alignItems: "center", gap: 6 }}>
-                <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2, color: AMBER }}>Pro Tier</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: AMBER + "16", borderWidth: 1, borderColor: AMBER + "35", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 }}>
+                  <Feather name="star" size={10} color={AMBER} />
+                  <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.5, color: AMBER }}>PRO TIER</Text>
+                </View>
                 <Text style={[styles.proTitle, { color: colors.foreground }]}>Unlock Pro Features</Text>
                 <Text style={[styles.proDesc, { color: colors.mutedForeground }]}>
                   Anki decks, PDF exports, custom templates, Twitter threads, and priority AI processing.
                 </Text>
               </View>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {["Anki Decks", "PDF Export", "Custom Templates", "Priority AI"].map((feat) => (
-                  <View key={feat} style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: AMBER + "12", borderWidth: 1, borderColor: AMBER + "30", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
-                    <Feather name="check" size={9} color={AMBER} />
-                    <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 0.8, color: AMBER }}>{feat}</Text>
+                {[
+                  { label: "Anki Decks",        icon: "layers"     as FeatherIconName },
+                  { label: "PDF Export",         icon: "file-text"  as FeatherIconName },
+                  { label: "Custom Templates",   icon: "layout"     as FeatherIconName },
+                  { label: "Priority AI",        icon: "zap"        as FeatherIconName },
+                  { label: "Unlimited Videos",   icon: "film"       as FeatherIconName },
+                  { label: "API Access",         icon: "code"       as FeatherIconName },
+                ].map((feat) => (
+                  <View key={feat.label} style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: AMBER + "12", borderWidth: 1, borderColor: AMBER + "28", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 }}>
+                    <Feather name={feat.icon} size={9} color={AMBER} />
+                    <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 9, letterSpacing: 0.5, color: AMBER }}>{feat.label}</Text>
                   </View>
                 ))}
               </View>
@@ -376,39 +469,37 @@ export default function DiscoverScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Templates overlay (in-page, works on all platforms) ── */}
+      {/* ── Templates overlay ── */}
       {showTemplates && (
-        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.7)" }]}>
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTemplates(false)} />
           <MotiView
-            from={{ translateY: 80, opacity: 0 }}
+            from={{ translateY: 90, opacity: 0 }}
             animate={{ translateY: 0, opacity: 1 }}
             transition={{ type: "timing", duration: 280 }}
             style={[styles.tmplSheet, { backgroundColor: colors.background, borderColor: AMBER + "35" }]}
           >
-            {/* Handle */}
             <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
-              <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
             </View>
-            {/* Header */}
             <View style={[styles.tmplHeader, { borderBottomColor: colors.border }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <View style={[styles.tmplHeaderIcon, { backgroundColor: AMBER + "18", borderColor: AMBER + "30", borderWidth: 1 }]}>
-                  <Feather name="layout" size={16} color={AMBER} />
+                  <Feather name="layout" size={18} color={AMBER} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Template Library</Text>
-                  <Text style={{ fontFamily: "AlegreyaSansSC_700Bold", fontSize: 18, color: colors.foreground, letterSpacing: -0.2 }}>Export Templates</Text>
+                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>TEMPLATE LIBRARY</Text>
+                  <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 20, color: colors.foreground, letterSpacing: -0.3 }}>Export Templates</Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setShowTemplates(false)} style={{ padding: 6 }}>
-                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+              <TouchableOpacity onPress={() => setShowTemplates(false)} style={{ padding: 4 }}>
+                <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
                   <Feather name="x" size={14} color={colors.mutedForeground} />
                 </View>
               </TouchableOpacity>
             </View>
             <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 11, color: colors.mutedForeground, paddingHorizontal: 16, paddingVertical: 10, lineHeight: 16 }}>
-              Apply these templates when exporting AI outputs from any video. Open a video → generate AI content → tap Export.
+              Apply these templates when exporting AI outputs. Open a video → generate content → tap Export.
             </Text>
             <FlatList
               data={ALL_TEMPLATES}
@@ -418,21 +509,19 @@ export default function DiscoverScreen() {
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => { setShowTemplates(false); router.push("/(tabs)/videos"); }}
-                  style={[styles.tmplRow, { backgroundColor: colors.card, borderColor: t.color + "28" }]}
+                  style={[styles.tmplRow, { backgroundColor: colors.card, borderColor: t.color + "28", elevation: 0, shadowOpacity: 0 }]}
                 >
-                  <LinearGradient colors={[t.color + "0a", "transparent"]} style={StyleSheet.absoluteFill} />
-                  <View style={[styles.tmplRowIcon, { backgroundColor: t.color + "18", borderColor: t.color + "30", borderWidth: 1 }]}>
-                    <Feather name={t.icon} size={16} color={t.color} />
+                  <LinearGradient colors={[t.color + "0a", "transparent"]} style={[StyleSheet.absoluteFill, { borderRadius: 12 }]} pointerEvents="none" />
+                  <View style={{ width: 3, alignSelf: "stretch", backgroundColor: t.color, borderRadius: 2, marginRight: 12 }} />
+                  <View style={[styles.tmplRowIcon, { backgroundColor: t.color + "16", borderColor: t.color + "28", borderWidth: 1 }]}>
+                    <Feather name={t.icon} size={17} color={t.color} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground }}>{t.name}</Text>
                     <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }} numberOfLines={1}>{t.desc}</Text>
                   </View>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <View style={{ backgroundColor: t.color + "14", borderWidth: 1, borderColor: t.color + "30", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 }}>
-                      <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
-                    </View>
-                    <Feather name="arrow-right" size={12} color={t.color + "80"} />
+                  <View style={[styles.tmplCategoryBadge, { backgroundColor: t.color + "14", borderColor: t.color + "28" }]}>
+                    <Text style={{ fontFamily: "Poppins_500Medium", fontSize: 7, letterSpacing: 1, color: t.color }}>{t.category.toUpperCase()}</Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -448,58 +537,88 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 
-  pageCode:  { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 6 },
-  pageTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 36, letterSpacing: -1, lineHeight: 42, marginBottom: 6 },
-  pageSub:   { fontFamily: "Poppins_400Regular", fontSize: 12, lineHeight: 18 },
+  pageCode:  { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 2.5, marginBottom: 2 },
+  pageTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 34, letterSpacing: -1, lineHeight: 38 },
+  pageSub:   { fontFamily: "Poppins_400Regular", fontSize: 12, lineHeight: 18, paddingLeft: 11 },
 
   statsStrip: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    borderRadius: 14, borderWidth: 1, overflow: "hidden",
-    paddingVertical: 14, paddingHorizontal: 8, marginBottom: 28,
+    borderRadius: 16, borderWidth: 1, paddingVertical: 14,
+    marginBottom: 28, overflow: "hidden",
   },
-  statItem:  { alignItems: "center", flex: 1 },
-  statValue: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 24, lineHeight: 28 },
-  statLabel: { fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1.5, marginTop: 2 },
+  statItem:      { flex: 1, alignItems: "center", gap: 4 },
+  statIconBadge: { width: 30, height: 30, borderRadius: 9, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  statValue:     { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 18, letterSpacing: -0.5 },
+  statLabel:     { fontFamily: "Poppins_400Regular", fontSize: 7.5, letterSpacing: 1.2 },
 
-  toolGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  toolGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "space-between" },
   toolCard: {
-    padding: 14, borderRadius: 14, borderWidth: 1, gap: 6,
-    overflow: "hidden", minHeight: 130,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+    minHeight: 170,
   },
-  toolIconWrap: { width: 38, height: 38, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 2 },
-  toolLabel:    { fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 0.1 },
-  toolDesc:     { fontFamily: "Poppins_400Regular", fontSize: 10, lineHeight: 14 },
-  toolBadge:    { alignSelf: "flex-start", borderRadius: 20, borderWidth: 1, paddingHorizontal: 7, paddingVertical: 2, marginTop: 2 },
-  toolBadgeText:{ fontFamily: "Poppins_600SemiBold", fontSize: 7, letterSpacing: 1 },
+  toolIconWrap: {
+    width: 48, height: 48, borderRadius: 14, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 12,
+  },
+  toolLabel: { fontFamily: "Poppins_600SemiBold", fontSize: 13, marginBottom: 4 },
+  toolDesc:  { fontFamily: "Poppins_400Regular",  fontSize: 10, lineHeight: 14 },
+  toolBadge: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1 },
+  toolBadgeText: { fontFamily: "Poppins_600SemiBold", fontSize: 7, letterSpacing: 0.8 },
 
-  sectionIntro: { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 12 },
+  templateIntroCard: {
+    borderRadius: 12, borderWidth: 1, padding: 14, overflow: "hidden",
+  },
   templateCard: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    padding: 12, borderRadius: 12, borderWidth: 1,
+    flexDirection: "row", alignItems: "center",
+    borderRadius: 12, borderWidth: 1, overflow: "hidden",
+    paddingVertical: 12, paddingRight: 12,
   },
-  templateIcon:     { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
-  templateName:     { fontFamily: "Poppins_600SemiBold", fontSize: 12 },
-  templateCategory: { fontFamily: "Poppins_400Regular", fontSize: 7, letterSpacing: 1.4, marginTop: 1 },
+  templateIcon: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center", marginRight: 10 },
+  templateName: { fontFamily: "Poppins_600SemiBold", fontSize: 13 },
+  templateDesc: { fontFamily: "Poppins_400Regular", fontSize: 9.5, lineHeight: 13 },
+  templateCategoryBadge: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, marginLeft: 8 },
+  templateCategoryText:  { fontFamily: "Poppins_600SemiBold", fontSize: 7, letterSpacing: 1 },
+
   viewAllBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    borderRadius: 20, borderWidth: 1, paddingVertical: 11, marginTop: 12,
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, borderWidth: 1, borderRadius: 10,
+    paddingVertical: 12, marginTop: 10,
   },
-  viewAllText: { fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.5 },
+  viewAllText: { fontFamily: "Poppins_600SemiBold", fontSize: 10, letterSpacing: 1.5 },
 
-  graphCard:    { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
-  graphIconWrap:{ width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  graphTitle:   { fontFamily: "AlegreyaSansSC_700Bold", fontSize: 20 },
-  graphDesc:    { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 17, textAlign: "center" },
+  sectionIntro: { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 12, marginTop: -8 },
 
-  proCard:    { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
-  proIconWrap:{ width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  proTitle:   { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -0.5 },
-  proDesc:    { fontFamily: "Poppins_400Regular", fontSize: 11, lineHeight: 17, textAlign: "center" },
+  graphCard: {
+    borderRadius: 16, borderWidth: 1, overflow: "hidden",
+  },
+  graphIconWrap:  { width: 60, height: 60, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  graphTitle:     { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -0.3 },
+  graphDesc:      { fontFamily: "Poppins_400Regular", fontSize: 12, lineHeight: 18, textAlign: "center" },
+  graphCountBadge:{ flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 20, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 6 },
 
-  tmplSheet:      { maxHeight: "82%", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, overflow: "hidden" },
-  tmplHeader:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  tmplHeaderIcon: { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
-  tmplRow:        { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, overflow: "hidden" },
-  tmplRowIcon:    { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  proCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  proIconWrap: { width: 60, height: 60, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  proTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, letterSpacing: -0.3, textAlign: "center" },
+  proDesc:  { fontFamily: "Poppins_400Regular", fontSize: 12, lineHeight: 18, textAlign: "center" },
+
+  tmplSheet: {
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    borderWidth: 1, borderBottomWidth: 0,
+    maxHeight: "85%",
+  },
+  tmplHeader: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  tmplHeaderIcon: { width: 44, height: 44, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  tmplRow: {
+    flexDirection: "row", alignItems: "center",
+    borderRadius: 12, borderWidth: 1, overflow: "hidden",
+    paddingVertical: 12, paddingRight: 12,
+  },
+  tmplRowIcon: { width: 42, height: 42, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  tmplCategoryBadge: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4, marginLeft: 8 },
 });
