@@ -26,9 +26,55 @@ import { TopAppBar } from "@/components/TopAppBar";
 import { AppButton } from "@/components/ui/AppButton";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { EmptyState } from "@/components/EmptyState";
+import { PlaylistImportModal } from "@/components/PlaylistImportModal";
+
+const PURPLE = "#6366f1";
+const CYAN   = "#06b6d4";
+const GREEN  = "#10b981";
+const AMBER  = "#f59e0b";
+const PINK   = "#ec4899";
 
 const FOLDER_COLORS = ["#6366f1", "#2563eb", "#059669", "#d97706", "#dc2626", "#db2777", "#0891b2"];
 
+const SMART_COLLECTIONS = [
+  { type: "starred", label: "Starred",   icon: "heart",   color: PINK,   desc: "Your favorite videos" },
+  { type: "hasAi",   label: "Has AI",    icon: "cpu",     color: PURPLE, desc: "Videos with AI content" },
+  { type: "watched", label: "Watched",   icon: "eye",     color: CYAN,   desc: "Videos you've seen" },
+  { type: "recent",  label: "This Week", icon: "clock",   color: GREEN,  desc: "Saved in last 7 days" },
+] as const;
+
+/* ── Smart Collection Card ── */
+function SmartCard({ col, statVal }: { col: typeof SMART_COLLECTIONS[number]; statVal?: number }) {
+  const colors = useColors();
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => router.push(`/collection?type=${col.type}&label=${encodeURIComponent(col.label)}`)}
+      style={[styles.smartCard, { backgroundColor: colors.card, borderColor: col.color + "28" }]}
+    >
+      <LinearGradient
+        colors={[col.color + "12", "transparent"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={[StyleSheet.absoluteFillObject, { borderRadius: 14 }]}
+        pointerEvents="none"
+      />
+      <View style={{ height: 3, backgroundColor: col.color, borderTopLeftRadius: 14, borderTopRightRadius: 14, position: "absolute", top: 0, left: 0, right: 0 }} />
+      <View style={[styles.smartIconWrap, { backgroundColor: col.color + "1a", borderColor: col.color + "30" }]}>
+        <Feather name={col.icon as any} size={20} color={col.color} />
+      </View>
+      <Text style={[styles.smartLabel, { color: colors.foreground }]}>{col.label}</Text>
+      <Text style={[styles.smartDesc, { color: colors.mutedForeground }]}>{col.desc}</Text>
+      {statVal != null && (
+        <View style={[styles.smartCount, { backgroundColor: col.color + "18", borderColor: col.color + "30" }]}>
+          <Text style={[styles.smartCountText, { color: col.color }]}>{statVal}</Text>
+        </View>
+      )}
+      <Feather name="chevron-right" size={12} color={col.color + "70"} style={{ position: "absolute", bottom: 10, right: 10 }} />
+    </TouchableOpacity>
+  );
+}
+
+/* ── Folder Card ── */
 function FolderCard({ folder, onPress, onDelete, delay }: {
   folder: { id: string; name: string; color?: string | null; videoCount: number };
   onPress: () => void;
@@ -85,14 +131,21 @@ export default function FoldersScreen() {
   const { width } = useWindowDimensions();
   const dialogBtnWidth = Math.min(width - 88, 432);
 
-  const [showModal, setShowModal]         = useState(false);
-  const [folderName, setFolderName]       = useState("");
-  const [selectedColor, setSelectedColor] = useState(FOLDER_COLORS[0]);
-  const [createError, setCreateError]     = useState("");
+  const [showModal, setShowModal]           = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [folderName, setFolderName]         = useState("");
+  const [selectedColor, setSelectedColor]   = useState(FOLDER_COLORS[0]);
+  const [createError, setCreateError]       = useState("");
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["folders"],
     queryFn: () => api.listFolders(),
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ["stats"],
+    queryFn: () => api.getStats(),
+    staleTime: 60_000,
   });
 
   const createMutation = useMutation({
@@ -138,6 +191,72 @@ export default function FoldersScreen() {
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
   const folders = data?.folders ?? [];
 
+  const smartStatMap: Record<string, number | undefined> = {
+    starred: statsData?.totalFavorites,
+    watched: statsData?.totalWatched,
+    hasAi:   undefined,
+    recent:  undefined,
+  };
+
+  /* ── Smart Collections header (used as FlatList ListHeaderComponent) ── */
+  const ListHeader = () => (
+    <View style={{ paddingBottom: 6 }}>
+      {/* Smart Collections section */}
+      <View style={styles.sectionHead}>
+        <View style={[styles.sectionDot, { backgroundColor: PURPLE }]} />
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>SMART COLLECTIONS</Text>
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingRight: 4 }}
+        style={{ marginBottom: 20 }}
+      >
+        {SMART_COLLECTIONS.map((col) => (
+          <SmartCard key={col.type} col={col} statVal={smartStatMap[col.type]} />
+        ))}
+      </ScrollView>
+
+      {/* Import Playlist banner */}
+      <TouchableOpacity
+        activeOpacity={0.82}
+        onPress={() => setShowImportModal(true)}
+        style={[styles.importBanner, { backgroundColor: colors.card, borderColor: CYAN + "35" }]}
+      >
+        <LinearGradient
+          colors={[CYAN + "10", "transparent"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          style={[StyleSheet.absoluteFillObject, { borderRadius: 14 }]}
+          pointerEvents="none"
+        />
+        <View style={[styles.importIconWrap, { backgroundColor: CYAN + "18", borderColor: CYAN + "30" }]}>
+          <Feather name="download-cloud" size={18} color={CYAN} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.importTitle, { color: colors.foreground }]}>Bulk Playlist Import</Text>
+          <Text style={[styles.importSub, { color: colors.mutedForeground }]}>
+            Paste a YouTube playlist URL → save all videos at once
+          </Text>
+        </View>
+        <View style={[styles.importBadge, { backgroundColor: CYAN + "18", borderColor: CYAN + "35" }]}>
+          <Text style={[styles.importBadgeText, { color: CYAN }]}>NEW</Text>
+        </View>
+        <Feather name="chevron-right" size={16} color={CYAN + "80"} />
+      </TouchableOpacity>
+
+      {/* Folders section header */}
+      {folders.length > 0 && (
+        <View style={[styles.sectionHead, { marginTop: 20 }]}>
+          <View style={[styles.sectionDot, { backgroundColor: AMBER }]} />
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>YOUR FOLDERS</Text>
+          <View style={[styles.countBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.countText, { color: colors.mutedForeground }]}>{folders.length}</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
@@ -159,26 +278,31 @@ export default function FoldersScreen() {
       </View>
 
       {isLoading ? (
-        <View style={styles.skeletonGrid}>
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} height={160} style={{ width: (width - 32) / 2 }} borderRadius={colors.radius} />
-          ))}
-        </View>
-      ) : folders.length === 0 ? (
-        <EmptyState
-          icon="folder"
-          title="No folders yet"
-          subtitle="Create folders to organize your video library"
-          actionLabel="Create Folder"
-          onAction={openModal}
-          code="00"
-        />
+        <>
+          <ListHeader />
+          <View style={styles.skeletonGrid}>
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} height={160} style={{ width: (width - 32) / 2 }} borderRadius={colors.radius} />
+            ))}
+          </View>
+        </>
       ) : (
         <FlatList
           data={folders}
           keyExtractor={(item) => item.id}
           numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
+          columnWrapperStyle={folders.length > 0 ? styles.columnWrapper : undefined}
+          ListHeaderComponent={<ListHeader />}
+          ListEmptyComponent={
+            <EmptyState
+              icon="folder"
+              title="No folders yet"
+              subtitle="Create folders to organize your video library"
+              actionLabel="Create Folder"
+              onAction={openModal}
+              code="00"
+            />
+          }
           contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: botInset + 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
@@ -207,6 +331,12 @@ export default function FoldersScreen() {
         <Feather name="folder-plus" size={22} color="#fff" />
       </TouchableOpacity>
 
+      {/* Playlist Import Modal */}
+      <PlaylistImportModal
+        visible={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
+
       {/* ── CENTERED Create Folder Modal ── */}
       <Modal
         visible={showModal}
@@ -227,7 +357,6 @@ export default function FoldersScreen() {
             transition={{ type: "spring", damping: 20, stiffness: 200 }}
             style={[styles.dialog, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            {/* Etch highlight */}
             <LinearGradient
               colors={["rgba(255,255,255,0.06)", "transparent"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -235,7 +364,6 @@ export default function FoldersScreen() {
               pointerEvents="none"
             />
 
-            {/* Header */}
             <View style={styles.dialogHeader}>
               <View style={[styles.dialogIconWrap, { backgroundColor: colors.primary + "20", borderColor: colors.primary + "35" }]}>
                 <Feather name="folder-plus" size={16} color={colors.primary} />
@@ -246,10 +374,8 @@ export default function FoldersScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Divider */}
             <View style={[styles.dialogDivider, { backgroundColor: colors.border }]} />
 
-            {/* Name input */}
             <TextInput
               value={folderName}
               onChangeText={(t) => { setFolderName(t); setCreateError(""); }}
@@ -269,7 +395,6 @@ export default function FoldersScreen() {
               <Text style={[styles.errorText, { color: "#ef4444" }]}>{createError}</Text>
             ) : null}
 
-            {/* Color picker */}
             <Text style={[styles.colorLabel, { color: colors.mutedForeground }]}>FOLDER COLOR</Text>
             <View style={styles.colorRow}>
               {FOLDER_COLORS.map((c) => (
@@ -290,7 +415,6 @@ export default function FoldersScreen() {
               ))}
             </View>
 
-            {/* Preview */}
             {folderName.trim().length > 0 && (
               <View style={[styles.previewRow, { backgroundColor: selectedColor + "12", borderColor: selectedColor + "25" }]}>
                 <View style={[styles.previewIcon, { backgroundColor: selectedColor + "20" }]}>
@@ -302,7 +426,6 @@ export default function FoldersScreen() {
               </View>
             )}
 
-            {/* Create button */}
             <AppButton
               label="CREATE FOLDER"
               icon="folder-plus"
@@ -329,6 +452,73 @@ const styles = StyleSheet.create({
   subHeader: { paddingHorizontal: 10, paddingTop: 4, paddingBottom: 14 },
   subLabel: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 2.5, marginBottom: 6 },
   subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
+
+  sectionHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  sectionDot: { width: 6, height: 6, borderRadius: 3 },
+  sectionLabel: {
+    flex: 1,
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 2.5,
+  },
+  countBadge: {
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 6, borderWidth: 1,
+  },
+  countText: { fontSize: 10, fontFamily: "Eczar_600SemiBold" },
+
+  smartCard: {
+    width: 140,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    paddingTop: 16,
+    gap: 6,
+    position: "relative",
+    overflow: "hidden",
+  },
+  smartIconWrap: {
+    width: 40, height: 40, borderRadius: 12, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 2,
+  },
+  smartLabel: { fontSize: 13, fontFamily: "Eczar_600SemiBold" },
+  smartDesc:  { fontSize: 10, fontFamily: "Eczar_400Regular", lineHeight: 14, opacity: 0.8 },
+  smartCount: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 6, borderWidth: 1,
+    marginTop: 2,
+  },
+  smartCountText: { fontSize: 11, fontFamily: "Eczar_600SemiBold" },
+
+  importBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    overflow: "hidden",
+    position: "relative",
+  },
+  importIconWrap: {
+    width: 44, height: 44, borderRadius: 12, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  importTitle: { fontSize: 14, fontFamily: "Eczar_600SemiBold" },
+  importSub:   { fontSize: 10, fontFamily: "Eczar_400Regular", lineHeight: 14, opacity: 0.8, marginTop: 2 },
+  importBadge: {
+    paddingHorizontal: 7, paddingVertical: 3,
+    borderRadius: 6, borderWidth: 1,
+  },
+  importBadgeText: { fontSize: 8, fontFamily: "Eczar_600SemiBold", letterSpacing: 1 },
 
   skeletonGrid: {
     flexDirection: "row", flexWrap: "wrap",
@@ -366,7 +556,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10,
   },
 
-  /* Centered modal */
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.65)",
@@ -387,40 +576,27 @@ const styles = StyleSheet.create({
     shadowRadius: 40,
     elevation: 24,
   },
-  dialogHeader: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-  },
+  dialogHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   dialogIconWrap: {
     width: 36, height: 36, borderRadius: 10, borderWidth: 1,
     alignItems: "center", justifyContent: "center",
   },
-  dialogTitle: {
-    flex: 1, fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3,
-  },
-  dialogClose: {
-    width: 32, height: 32, borderRadius: 8,
-    alignItems: "center", justifyContent: "center",
-  },
+  dialogTitle: { flex: 1, fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3 },
+  dialogClose: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   dialogDivider: { height: StyleSheet.hairlineWidth, marginHorizontal: -24 },
-
   nameInput: {
     paddingHorizontal: 14, paddingVertical: 13,
     fontSize: 15, fontFamily: "Eczar_400Regular",
     borderWidth: 1, borderRadius: 12,
   },
   errorText: { fontSize: 12, fontFamily: "Eczar_400Regular", marginTop: -8 },
-
-  colorLabel: {
-    fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2,
-    marginBottom: -4,
-  },
+  colorLabel: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2, marginBottom: -4 },
   colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
   colorDot: {
     width: 32, height: 32, borderRadius: 16,
     alignItems: "center", justifyContent: "center",
   },
   colorDotSelected: { borderWidth: 3, transform: [{ scale: 1.1 }] },
-
   previewRow: {
     flexDirection: "row", alignItems: "center", gap: 10,
     paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1,

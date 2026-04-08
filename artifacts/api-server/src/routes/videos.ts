@@ -8,7 +8,7 @@ import {
   notesTable,
   aiOutputsTable,
 } from "@workspace/db";
-import { eq, and, ilike, inArray, sql } from "drizzle-orm";
+import { eq, and, ilike, inArray, sql, gte } from "drizzle-orm";
 import { autoAnalyzeVideo } from "../lib/gemini";
 
 async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: string; title: string; description?: string}>> {
@@ -349,7 +349,7 @@ router.get("/videos", async (req, res) => {
     return;
   }
   const userId = req.user.id;
-  const { folderId, tagId, search, favorites, limit = "20", offset = "0" } = req.query as Record<string, string>;
+  const { folderId, tagId, search, favorites, hasAi, watched, recentDays, limit = "20", offset = "0" } = req.query as Record<string, string>;
 
   const limitN = Math.min(parseInt(limit) || 20, 100);
   const offsetN = parseInt(offset) || 0;
@@ -367,11 +367,33 @@ router.get("/videos", async (req, res) => {
     }
   }
 
+  if (hasAi === "true") {
+    const aiVids = await db
+      .selectDistinct({ videoId: aiOutputsTable.videoId })
+      .from(aiOutputsTable)
+      .where(eq(aiOutputsTable.userId, userId));
+    const aiIds = aiVids.map((r) => r.videoId);
+    if (aiIds.length === 0) {
+      res.json({ videos: [], total: 0 });
+      return;
+    }
+    videoIds = videoIds ? videoIds.filter((id) => aiIds.includes(id)) : aiIds;
+    if (videoIds.length === 0) {
+      res.json({ videos: [], total: 0 });
+      return;
+    }
+  }
+
   const conditions = [eq(videosTable.userId, userId)];
   if (folderId) conditions.push(eq(videosTable.folderId, folderId));
   if (favorites === "true") conditions.push(eq(videosTable.isFavorite, true));
+  if (watched === "true") conditions.push(eq(videosTable.isWatched, true));
   if (search) conditions.push(ilike(videosTable.title, `%${search}%`));
   if (videoIds) conditions.push(inArray(videosTable.id, videoIds));
+  if (recentDays) {
+    const days = parseInt(recentDays) || 7;
+    conditions.push(gte(videosTable.createdAt, new Date(Date.now() - days * 24 * 60 * 60 * 1000)));
+  }
 
   const where = and(...conditions);
 
@@ -530,29 +552,23 @@ router.post("/videos/playlist", async (req, res) => {
       return;
     }
 
-    // Fetch metadata and insert videos
+    // Fast insert: use basic playlist data + derived thumbnail (no per-video API calls)
     const importedVideos = [];
     for (const pv of playlistVideos) {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${pv.id}`;
-        const meta = await fetchVideoMeta(videoUrl);
-
+        const thumbnail = `https://img.youtube.com/vi/${pv.id}/maxresdefault.jpg`;
         const [video] = await db
           .insert(videosTable)
           .values({
             userId,
             url: videoUrl,
-            title: meta.title,
-            thumbnail: meta.thumbnail,
-            duration: meta.duration,
-            channelName: meta.channelName,
-            description: meta.description || pv.description || null,
+            title: pv.title,
+            thumbnail,
+            description: pv.description || null,
             folderId: folder.id,
-            viewCount: meta.viewCount,
-            publishedAt: meta.publishedAt,
           })
           .returning();
-
         importedVideos.push(video);
       } catch {
         // Continue on error for individual videos
@@ -560,13 +576,23 @@ router.post("/videos/playlist", async (req, res) => {
     }
 
     res.status(201).json({
-      folder: {
-        id: folder.id,
-        name: folder.name,
-        videosCount: importedVideos.length,
-      },
-      videos: importedVideos,
+      folder: { id: folder.id, name: folder.name, videosCount: importedVideos.length },
+      imported: importedVideos.length,
+      skipped: playlistVideos.length - importedVideos.length,
+      total: playlistVideos.length,
     });
+
+    // Background: enrich with full metadata (duration, channel, viewCount)
+    for (const v of importedVideos) {
+      fetchVideoMeta(v.url || "").then((meta) => {
+        db.update(videosTable).set({
+          duration: meta.duration,
+          channelName: meta.channelName,
+          viewCount: meta.viewCount,
+          publishedAt: meta.publishedAt,
+        }).where(eq(videosTable.id, v.id)).catch(() => {});
+      }).catch(() => {});
+    }
   } catch (err) {
     req.log.error({ err }, "Playlist import error");
     res.status(500).json({ error: "Failed to import playlist" });
@@ -732,6 +758,65 @@ router.get("/videos/:videoId/transcript", async (req, res) => {
   } catch (err: any) {
     res.status(503).json({ error: "Could not fetch transcript: " + (err.message || "unknown error") });
   }
+});
+
+router.get("/search", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const userId = req.user.id;
+  const { q } = req.query as { q?: string };
+
+  if (!q || q.trim().length < 2) {
+    res.json({ videos: [], notes: [], aiOutputs: [] });
+    return;
+  }
+
+  const term = `%${q.trim()}%`;
+
+  const [videos, notes, aiOutputs] = await Promise.all([
+    db.select({
+      id: videosTable.id,
+      title: videosTable.title,
+      thumbnail: videosTable.thumbnail,
+      channelName: videosTable.channelName,
+      duration: videosTable.duration,
+      folderId: videosTable.folderId,
+      createdAt: videosTable.createdAt,
+    }).from(videosTable)
+      .where(and(eq(videosTable.userId, userId), ilike(videosTable.title, term)))
+      .limit(10),
+
+    db.select({
+      id: notesTable.id,
+      content: notesTable.content,
+      timestamp: notesTable.timestamp,
+      videoId: notesTable.videoId,
+      createdAt: notesTable.createdAt,
+      videoTitle: videosTable.title,
+      videoThumbnail: videosTable.thumbnail,
+    }).from(notesTable)
+      .innerJoin(videosTable, eq(notesTable.videoId, videosTable.id))
+      .where(and(eq(notesTable.userId, userId), ilike(notesTable.content, term)))
+      .limit(8),
+
+    db.select({
+      id: aiOutputsTable.id,
+      type: aiOutputsTable.type,
+      content: aiOutputsTable.content,
+      videoId: aiOutputsTable.videoId,
+      createdAt: aiOutputsTable.createdAt,
+      videoTitle: videosTable.title,
+      videoThumbnail: videosTable.thumbnail,
+    }).from(aiOutputsTable)
+      .innerJoin(videosTable, eq(aiOutputsTable.videoId, videosTable.id))
+      .where(and(eq(aiOutputsTable.userId, userId), ilike(aiOutputsTable.content, term)))
+      .limit(8),
+  ]);
+
+  res.json({
+    videos,
+    notes: notes.map((n) => ({ ...n, snippet: n.content.slice(0, 200) })),
+    aiOutputs: aiOutputs.map((a) => ({ ...a, snippet: a.content.slice(0, 200) })),
+  });
 });
 
 router.post("/videos/:videoId/favorite", async (req, res) => {

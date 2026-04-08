@@ -44,6 +44,8 @@ const TOOLS: Array<{
   { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON", action: "coming-soon"      },
   { id: "sr-review",  icon: "layers",      label: "SR Review",          desc: "Review flashcards with SM-2 spaced repetition algorithm.",  color: PINK,   badge: "NEW",          route: "/review"           },
   { id: "pomodoro",   icon: "clock",       label: "Study Timer",        desc: "Pomodoro focus timer inside any video. 25m focus + 5m break.", color: AMBER, badge: "NEW",         action: "coming-soon"      },
+  { id: "search",     icon: "search",      label: "Global Search",      desc: "Search across video titles, notes, and AI outputs at once.",  color: CYAN,   badge: "NEW",          route: "/search"           },
+  { id: "playlist",   icon: "list",        label: "Playlist Import",    desc: "Paste a YouTube playlist URL and bulk-save all videos.",      color: GREEN,  badge: "NEW",          route: "/(tabs)/folders"   },
 ];
 
 const ALL_TEMPLATES = [

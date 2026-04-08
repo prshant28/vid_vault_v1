@@ -40,12 +40,15 @@ export const api = {
     const res = await fetch(`${BASE_URL}/stats`, { headers: authHeaders() });
     return handleRes(res);
   },
-  async listVideos(params?: { folderId?: string; tagId?: string; search?: string; favorites?: boolean; limit?: number; offset?: number }) {
+  async listVideos(params?: { folderId?: string; tagId?: string; search?: string; favorites?: boolean; hasAi?: boolean; watched?: boolean; recentDays?: number; limit?: number; offset?: number }) {
     const qs = new URLSearchParams();
     if (params?.folderId) qs.set("folderId", params.folderId);
     if (params?.tagId) qs.set("tagId", params.tagId);
     if (params?.search) qs.set("search", params.search);
     if (params?.favorites) qs.set("favorites", "true");
+    if (params?.hasAi) qs.set("hasAi", "true");
+    if (params?.watched) qs.set("watched", "true");
+    if (params?.recentDays != null) qs.set("recentDays", String(params.recentDays));
     if (params?.limit != null) qs.set("limit", String(params.limit));
     if (params?.offset != null) qs.set("offset", String(params.offset));
     const res = await fetch(`${BASE_URL}/videos?${qs}`, { headers: authHeaders() });
@@ -217,6 +220,22 @@ export const api = {
   },
   async getTranscript(videoId: string): Promise<{ ytId: string; lines: Array<{ start: number; dur: number; text: string }> }> {
     const res = await fetch(`${BASE_URL}/videos/${videoId}/transcript`, { headers: authHeaders() });
+    return handleRes(res);
+  },
+  async importPlaylist(url: string, folderName?: string): Promise<{ folder: { id: string; name: string; videosCount: number }; imported: number; skipped: number; total: number }> {
+    const res = await fetch(`${BASE_URL}/videos/playlist`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ url, ...(folderName ? { folderName } : {}) }),
+    });
+    return handleRes(res);
+  },
+  async globalSearch(q: string): Promise<{
+    videos: Array<{ id: string; title: string; thumbnail: string | null; channelName: string | null; duration: string | null; folderId: string | null }>;
+    notes: Array<{ id: string; snippet: string; timestamp: number | null; videoId: string; videoTitle: string; videoThumbnail: string | null }>;
+    aiOutputs: Array<{ id: string; type: string; snippet: string; videoId: string; videoTitle: string; videoThumbnail: string | null }>;
+  }> {
+    const res = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(q)}`, { headers: authHeaders() });
     return handleRes(res);
   },
 };
