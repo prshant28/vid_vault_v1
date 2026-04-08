@@ -267,7 +267,7 @@ export default function DiscoverScreen() {
         />
       </MotiView>
 
-      <TopAppBar />
+      <TopAppBar showImport showTools />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

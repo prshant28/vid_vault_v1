@@ -468,7 +468,7 @@ export default function AIStudioScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
 
-      <TopAppBar />
+      <TopAppBar showImport showTools />
 
       {/* Section header */}
       <View style={styles.studioHeader}>

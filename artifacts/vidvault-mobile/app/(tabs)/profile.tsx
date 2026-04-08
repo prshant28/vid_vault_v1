@@ -382,7 +382,7 @@ export default function ProfileScreen() {
         />
       </MotiView>
 
-      <TopAppBar />
+      <TopAppBar showTools />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: botInset + 100 }} showsVerticalScrollIndicator={false}>
         {/* ── Page header ── */}

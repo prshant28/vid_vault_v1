@@ -250,6 +250,26 @@ export const api = {
     });
     return handleRes(res);
   },
+  async smartImport(url: string, folderName?: string): Promise<{
+    type: "video" | "playlist";
+    video?: { id: string; title: string; thumbnail: string | null; url: string; folderId: string | null; tags: Array<{ id: string; name: string; color: string }> };
+    folder?: { id: string; name: string; videosCount: number };
+    imported?: number;
+    total?: number;
+    suggestedTags: string[];
+    appliedTags: Array<{ id: string; name: string; color: string }>;
+  }> {
+    const res = await fetch(`${BASE_URL}/ai/smart-import`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ url, ...(folderName ? { folderName } : {}) }),
+    });
+    return handleRes(res);
+  },
+  async youtubeSearch(q: string, maxResults = 5): Promise<{ videos: Array<{ youtubeId: string; title: string; channel: string; thumbnail: string; url: string }> }> {
+    const res = await fetch(`${BASE_URL}/youtube/search?q=${encodeURIComponent(q)}&maxResults=${maxResults}`, { headers: authHeaders() });
+    return handleRes(res);
+  },
   async globalSearch(q: string): Promise<{
     videos: Array<{ id: string; title: string; thumbnail: string | null; channelName: string | null; duration: string | null; folderId: string | null }>;
     notes: Array<{ id: string; snippet: string; timestamp: number | null; videoId: string; videoTitle: string; videoThumbnail: string | null }>;

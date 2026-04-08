@@ -261,6 +261,8 @@ export default function FoldersScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <GridBackground />
       <TopAppBar
+        showImport
+        showTools
         rightAction={
           <AppButton
             label="NEW"

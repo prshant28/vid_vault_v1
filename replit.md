@@ -225,11 +225,23 @@ Located at `artifacts/vidvault-mobile/`. Full-featured companion app mirroring t
 - Profile screen: live toggle with Switch, streak display (🔥 Day N), scheduled time shown
 - Home screen: streak count shown in hero + StreakCard with day dots and progress bar
 
+### Universal Import Modal (UniversalImportModal.tsx)
+4-tab bottom sheet accessible via "+" button in TopAppBar from every screen:
+- **Smart Save** — paste any URL, AI detects type, fetches metadata preview, auto-saves + AI-tags (3 tags) + assigns folder
+- **Playlist** — paste playlist URL, imports all videos into auto-named folder (no auto-summary per video)
+- **Discover** — search YouTube by topic keyword, get 5 video cards with one-tap "Add to Vault"
+- **Watch Later** — queue any URL without committing; preview shown first; stored in `vv_watch_later_v1` AsyncStorage
+
+### Tools Menu (ToolsMenu.tsx)
+Animated dropdown panel from the ⊞ grid button in TopAppBar; shows all 12 tools in a 3-column grid plus a "Smart Import" shortcut at top. Accessible from every tab.
+
 ### AI Backend Routes (mobile-facing)
 - `POST /api/ai/global-chat` — AI Studio global chat
 - `POST /api/ai/cross-video` — cross-vault AI (uses all user AI outputs as context)
 - `POST /api/ai/key-terms` — extract recurring concepts from vault
 - `GET /api/preview?url=` — YouTube URL metadata preview (Watch Later)
+- `POST /api/ai/smart-import` — AI-powered URL import: detects video vs playlist, auto-tags video with 3 AI tags (creates tags if needed, applies via video_tags), playlist import creates folder with NO auto-summary per video
+- `GET /api/youtube/search?q=&maxResults=` — YouTube search for Discover mode
 
 ## Notes
 

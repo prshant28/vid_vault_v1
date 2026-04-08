@@ -1260,6 +1260,8 @@ export default function HomeScreen() {
       </MotiView>
 
       <TopAppBar
+        showImport
+        showTools
         rightAction={
           <AppButton
             label="SAVE"

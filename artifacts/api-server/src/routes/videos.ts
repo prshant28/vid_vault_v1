@@ -9,7 +9,7 @@ import {
   aiOutputsTable,
 } from "@workspace/db";
 import { eq, and, ilike, inArray, sql, gte } from "drizzle-orm";
-import { autoAnalyzeVideo } from "../lib/gemini";
+import { autoAnalyzeVideo, generateAiText } from "../lib/gemini";
 
 async function extractPlaylistVideos(playlistId: string): Promise<Array<{id: string; title: string; description?: string}>> {
   const apiKey = process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY;
@@ -597,6 +597,136 @@ router.post("/videos/playlist", async (req, res) => {
     req.log.error({ err }, "Playlist import error");
     res.status(500).json({ error: "Failed to import playlist" });
   }
+});
+
+/* ── Smart Import: AI auto-tag + auto-folder a URL (video OR playlist) ── */
+router.post("/ai/smart-import", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { url, folderName: customFolderName } = req.body as { url: string; folderName?: string };
+  if (!url) { res.status(400).json({ error: "url required" }); return; }
+  const userId = req.user.id;
+
+  const isPlaylist = /youtube\.com\/playlist\?list=|(?:youtube\.com\/watch|youtu\.be).*list=/.test(url);
+
+  if (isPlaylist) {
+    /* ── Playlist path ── */
+    const playlistMatch = url.match(/(?:youtube\.com\/playlist\?list=|youtube\.com\/watch\?.*list=)([a-zA-Z0-9_-]+)/);
+    if (!playlistMatch) { res.status(400).json({ error: "Invalid playlist URL" }); return; }
+    const playlistId = playlistMatch[1];
+
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    let playlistTitle = customFolderName || "Imported Playlist";
+    if (apiKey && !customFolderName) {
+      try {
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/playlists?id=${playlistId}&part=snippet&key=${apiKey}`);
+        if (r.ok) {
+          const d = await r.json() as { items?: Array<{ snippet?: { title?: string } }> };
+          if (d.items?.[0]?.snippet?.title) playlistTitle = d.items[0].snippet!.title!;
+        }
+      } catch {}
+    }
+
+    const [folder] = await db.insert(foldersTable).values({ userId, name: playlistTitle, color: "#6366f1" }).returning();
+    const playlistVideos = await extractPlaylistVideos(playlistId);
+    if (playlistVideos.length === 0) { res.status(400).json({ error: "No videos found or playlist is private" }); return; }
+
+    const importedVideos: string[] = [];
+    for (const pv of playlistVideos) {
+      try {
+        const [v] = await db.insert(videosTable).values({
+          userId, url: `https://www.youtube.com/watch?v=${pv.id}`,
+          title: pv.title, thumbnail: `https://img.youtube.com/vi/${pv.id}/maxresdefault.jpg`,
+          description: pv.description || null, folderId: folder.id,
+        }).returning();
+        importedVideos.push(v.id);
+      } catch {}
+    }
+
+    res.status(201).json({
+      type: "playlist",
+      folder: { id: folder.id, name: folder.name, videosCount: importedVideos.length },
+      imported: importedVideos.length,
+      total: playlistVideos.length,
+      suggestedTags: [],
+      appliedTags: [],
+    });
+
+    /* Background: enrich metadata only, NO auto-summary */
+    for (const id of importedVideos) {
+      db.select({ url: videosTable.url }).from(videosTable).where(eq(videosTable.id, id)).then(([row]) => {
+        if (!row?.url) return;
+        fetchVideoMeta(row.url).then((meta) => {
+          db.update(videosTable).set({
+            duration: meta.duration, channelName: meta.channelName,
+            viewCount: meta.viewCount, publishedAt: meta.publishedAt,
+          }).where(eq(videosTable.id, id)).catch(() => {});
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+    return;
+  }
+
+  /* ── Single video path ── */
+  const meta = await fetchVideoMeta(url);
+  let folderId: string | null = null;
+
+  if (customFolderName) {
+    const existing = await db.select().from(foldersTable)
+      .where(and(eq(foldersTable.userId, userId), ilike(foldersTable.name, customFolderName)))
+      .limit(1);
+    if (existing.length > 0) {
+      folderId = existing[0].id;
+    } else {
+      const [folder] = await db.insert(foldersTable).values({ userId, name: customFolderName, color: "#6366f1" }).returning();
+      folderId = folder.id;
+    }
+  }
+
+  const [video] = await db.insert(videosTable).values({
+    userId, url, title: meta.title, thumbnail: meta.thumbnail,
+    duration: meta.duration, channelName: meta.channelName,
+    description: meta.description, folderId,
+    viewCount: meta.viewCount, publishedAt: meta.publishedAt,
+  }).returning();
+
+  /* AI: suggest 3 tags */
+  let suggestedTagNames: string[] = [];
+  try {
+    const tagPrompt = `Given this YouTube video:
+Title: "${meta.title}"
+Channel: "${meta.channelName || "Unknown"}"
+Description: "${(meta.description || "").slice(0, 300)}"
+
+Suggest exactly 3 short topic tags (2-3 words each) that would help categorize this video in a knowledge vault.
+Return ONLY a JSON array of strings, no markdown, no explanation.
+Example: ["Machine Learning","Python Basics","Data Science"]`;
+    const raw = await generateAiText(tagPrompt);
+    const match = raw.match(/\[[\s\S]*?\]/);
+    if (match) suggestedTagNames = JSON.parse(match[0]).slice(0, 3).map((t: string) => String(t).trim());
+  } catch {}
+
+  /* Create or find each tag, then apply to video */
+  const appliedTags: Array<{ id: string; name: string; color: string }> = [];
+  const TAG_COLORS = ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ec4899"];
+  for (let i = 0; i < suggestedTagNames.length; i++) {
+    const name = suggestedTagNames[i];
+    try {
+      let [tag] = await db.select().from(tagsTable)
+        .where(and(eq(tagsTable.userId, userId), ilike(tagsTable.name, name))).limit(1);
+      if (!tag) {
+        [tag] = await db.insert(tagsTable).values({ userId, name, color: TAG_COLORS[i % TAG_COLORS.length] }).returning();
+      }
+      await db.insert(videoTagsTable).values({ videoId: video.id, tagId: tag.id }).onConflictDoNothing();
+      appliedTags.push({ id: tag.id, name: tag.name, color: tag.color || TAG_COLORS[i % TAG_COLORS.length] });
+    } catch {}
+  }
+
+  res.status(201).json({
+    type: "video",
+    video: { ...video, tags: appliedTags },
+    suggestedTags: suggestedTagNames,
+    appliedTags,
+  });
 });
 
 router.get("/videos/:videoId", async (req, res) => {

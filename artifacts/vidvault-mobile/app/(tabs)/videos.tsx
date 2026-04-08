@@ -404,6 +404,8 @@ export default function VideosScreen() {
       <GridBackground />
 
       <TopAppBar
+        showImport
+        showTools
         rightAction={
           <AppButton label="SAVE" icon="plus" size="sm" variant="primary" onPress={() => setShowSaveModal(true)} />
         }
