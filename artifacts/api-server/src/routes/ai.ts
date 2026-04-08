@@ -403,4 +403,119 @@ router.post("/ai/global-chat", async (req, res) => {
   }
 });
 
+/* ── Cross-Video AI: answer questions using AI content from entire vault ── */
+router.post("/ai/cross-video", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { message, history } = req.body as {
+    message: string; history?: { role: "user" | "assistant"; content: string }[];
+  };
+  if (!message) { res.status(400).json({ error: "Message is required" }); return; }
+  const userId = req.user.id;
+
+  const outputs = await db
+    .select({
+      type: aiOutputsTable.type,
+      content: aiOutputsTable.content,
+      videoTitle: videosTable.title,
+      videoId: videosTable.id,
+    })
+    .from(aiOutputsTable)
+    .innerJoin(videosTable, eq(aiOutputsTable.videoId, videosTable.id))
+    .where(eq(aiOutputsTable.userId, userId))
+    .limit(40);
+
+  if (outputs.length === 0) {
+    res.json({
+      message: "Your vault has no AI-generated content yet. Generate summaries or notes for your saved videos first, then come back to ask cross-video questions!",
+      sourceCount: 0,
+    });
+    return;
+  }
+
+  const uniqueVideoIds = new Set(outputs.map((o) => o.videoId));
+  const context = outputs
+    .map((o) => `Video: "${o.videoTitle}"\n${o.type.replace(/_/g, " ").toUpperCase()}:\n${o.content.slice(0, 600)}`)
+    .join("\n\n---\n\n");
+
+  const historyText = (history || [])
+    .map((h) => `${h.role === "user" ? "User" : "AI"}: ${h.content}`)
+    .join("\n");
+
+  const prompt = `You are VidVault AI — an intelligent assistant that synthesizes knowledge across a user's entire video vault. You have access to AI-generated summaries, notes, and insights from ${outputs.length} AI outputs covering ${uniqueVideoIds.size} different videos.
+
+Your role is to:
+1. Draw connections and patterns across multiple videos
+2. Synthesize insights the user might have missed
+3. Answer questions by cross-referencing what different videos teach about the same topic
+4. Identify recurring concepts, themes, and contradictions
+5. Be specific — cite which videos cover which points
+
+VAULT KNOWLEDGE BASE (${outputs.length} AI outputs from ${uniqueVideoIds.size} videos):
+${context}
+
+${historyText ? `Conversation history:\n${historyText}\n\n` : ""}User: ${message}
+AI:`;
+
+  try {
+    const reply = await generateAiText(prompt);
+    res.json({ message: reply, sourceCount: uniqueVideoIds.size });
+  } catch (err: any) {
+    res.status(503).json({ error: err.message || "AI service not available" });
+  }
+});
+
+/* ── Key Terms Tracker: extract recurring concepts from the entire vault ── */
+router.post("/ai/key-terms", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const userId = req.user.id;
+
+  const outputs = await db
+    .select({
+      type: aiOutputsTable.type,
+      content: aiOutputsTable.content,
+      videoTitle: videosTable.title,
+      videoId: videosTable.id,
+    })
+    .from(aiOutputsTable)
+    .innerJoin(videosTable, eq(aiOutputsTable.videoId, videosTable.id))
+    .where(eq(aiOutputsTable.userId, userId))
+    .limit(30);
+
+  if (outputs.length === 0) {
+    res.json({ terms: [], videoCount: 0 });
+    return;
+  }
+
+  const videoCount = new Set(outputs.map((o) => o.videoId)).size;
+  const context = outputs
+    .map((o) => `[${o.videoTitle} — ${o.type.replace(/_/g, " ")}]: ${o.content.slice(0, 500)}`)
+    .join("\n\n");
+
+  const prompt = `Analyze these AI-generated summaries and notes from a user's video library (${videoCount} videos). Extract the 20 most important and frequently recurring key terms, concepts, or topics.
+
+For each term provide:
+- "term": the concept name (2-5 words max)
+- "definition": a clear 1-2 sentence explanation based on what these videos teach
+- "videoCount": estimated number of videos this concept appears in (integer, 1 to ${videoCount})
+
+Return ONLY a valid JSON array — no markdown fences, no explanation, no extra text. Start with [ and end with ].
+
+Example format:
+[{"term":"Deep Learning","definition":"A subset of ML using neural networks with many layers to learn complex patterns.","videoCount":3}]
+
+KNOWLEDGE BASE:
+${context}
+
+JSON array:`;
+
+  try {
+    const raw = await generateAiText(prompt);
+    const match = raw.match(/\[[\s\S]*\]/);
+    const terms = match ? JSON.parse(match[0]) : [];
+    res.json({ terms, videoCount });
+  } catch {
+    res.json({ terms: [], videoCount });
+  }
+});
+
 export default router;

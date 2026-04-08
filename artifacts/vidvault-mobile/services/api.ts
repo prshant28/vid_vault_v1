@@ -230,6 +230,22 @@ export const api = {
     });
     return handleRes(res);
   },
+  async crossVideoChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>): Promise<{ message: string; sourceCount: number }> {
+    const res = await fetch(`${BASE_URL}/ai/cross-video`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ message, history }),
+    });
+    return handleRes(res);
+  },
+  async getKeyTerms(): Promise<{ terms: Array<{ term: string; definition: string; videoCount: number }>; videoCount: number }> {
+    const res = await fetch(`${BASE_URL}/ai/key-terms`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({}),
+    });
+    return handleRes(res);
+  },
   async globalSearch(q: string): Promise<{
     videos: Array<{ id: string; title: string; thumbnail: string | null; channelName: string | null; duration: string | null; folderId: string | null }>;
     notes: Array<{ id: string; snippet: string; timestamp: number | null; videoId: string; videoTitle: string; videoThumbnail: string | null }>;

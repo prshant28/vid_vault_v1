@@ -185,9 +185,17 @@ Located at `artifacts/vidvault-mobile/`. Full-featured companion app mirroring t
 - `login.tsx` — email/password + JWT auth
 - `(tabs)/index.tsx` — dashboard (stat cards, recent videos, favorites)
 - `(tabs)/videos.tsx` — full library with search + tag/favorites filter, add-video modal
-- `(tabs)/folders.tsx` — folder management
+- `(tabs)/folders.tsx` — folder management + Smart Collections + Playlist Import banner
+- `(tabs)/ai-studio.tsx` — global AI chat with recall + YouTube search + session history
+- `(tabs)/discover.tsx` — tool launcher grid
 - `(tabs)/profile.tsx` — settings + theme toggle
 - `video/[id].tsx` — in-app YouTube player (WebView), AI content cards, timestamped notes
+- `collection.tsx` — Smart Collections (starred/hasAi/watched/recent)
+- `search.tsx` — global search across videos, notes, AI outputs
+- `review.tsx` — spaced repetition flashcard review (SM-2)
+- `chat-history.tsx` — all past AI Studio chats, searchable, expandable inline
+- `cross-video-ai.tsx` — cross-vault AI chat using all AI outputs as context
+- `key-terms.tsx` — AI-generated personal glossary of recurring concepts
 
 ### Auth
 - JWT stored in SecureStore, sent as `Authorization: Bearer <token>` header

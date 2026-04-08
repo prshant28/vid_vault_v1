@@ -44,8 +44,11 @@ const TOOLS: Array<{
   { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON", action: "coming-soon"      },
   { id: "sr-review",  icon: "layers",      label: "SR Review",          desc: "Review flashcards with SM-2 spaced repetition algorithm.",  color: PINK,   badge: "NEW",          route: "/review"           },
   { id: "pomodoro",   icon: "clock",       label: "Study Timer",        desc: "Pomodoro focus timer inside any video. 25m focus + 5m break.", color: AMBER, badge: "NEW",         action: "coming-soon"      },
-  { id: "search",     icon: "search",      label: "Global Search",      desc: "Search across video titles, notes, and AI outputs at once.",  color: CYAN,   badge: "NEW",          route: "/search"           },
-  { id: "playlist",   icon: "list",        label: "Playlist Import",    desc: "Paste a YouTube playlist URL and bulk-save all videos.",      color: GREEN,  badge: "NEW",          route: "/(tabs)/folders"   },
+  { id: "search",       icon: "search",      label: "Global Search",      desc: "Search across video titles, notes, and AI outputs at once.",    color: CYAN,   badge: "NEW",          route: "/search"           },
+  { id: "playlist",    icon: "list",        label: "Playlist Import",    desc: "Paste a YouTube playlist URL and bulk-save all videos.",        color: GREEN,  badge: "NEW",          route: "/(tabs)/folders"   },
+  { id: "chat-hist",   icon: "clock",       label: "Chat History",       desc: "Browse all past AI Studio conversations, searchable.",          color: PURPLE, badge: "NEW",          route: "/chat-history"     },
+  { id: "cross-ai",    icon: "layers",      label: "Cross-Vault AI",     desc: "Ask the AI questions that draw from your entire video vault.",  color: CYAN,   badge: "NEW",          route: "/cross-video-ai"   },
+  { id: "key-terms",   icon: "book-open",   label: "Key Terms Tracker",  desc: "AI extracts recurring concepts and builds your glossary.",      color: AMBER,  badge: "NEW",          route: "/key-terms"        },
 ];
 
 const ALL_TEMPLATES = [
