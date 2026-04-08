@@ -582,45 +582,46 @@ export default function ProfileScreen() {
         </View>
       )}
 
-      {/* ── Folder Manager overlay ── */}
+      {/* ── Folder Manager modal ── */}
       {showFolderManager && (
-        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
-          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowFolderManager(false)} />
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "rgba(0,0,0,0.72)" }]}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowFolderManager(false)} />
           <MotiView
-            from={{ translateY: 80, opacity: 0 }}
-            animate={{ translateY: 0, opacity: 1 }}
-            transition={{ type: "timing", duration: 280 }}
-            style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: AMBER + "30" }]}
+            from={{ scale: 0.93, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 20, stiffness: 260 }}
+            style={[styles.centeredModal, { backgroundColor: colors.background, borderColor: AMBER + "40" }]}
           >
-            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
-              <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
-            </View>
+            <LinearGradient colors={[AMBER + "12", "transparent"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            {/* Top accent bar */}
+            <View style={{ height: 3, backgroundColor: AMBER, width: "30%", borderRadius: 2, marginBottom: 18 }} />
+
             {/* Header */}
-            <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.sheetIconWrap, { backgroundColor: AMBER + "18", borderColor: AMBER + "30", borderWidth: 1 }]}>
-                  <Feather name="folder" size={16} color={AMBER} />
+            <View style={[styles.sheetHeader, { borderBottomColor: colors.border, paddingHorizontal: 0, paddingTop: 0 }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={[styles.sheetIconWrap, { backgroundColor: AMBER + "18", borderColor: AMBER + "35", borderWidth: 1 }]}>
+                  <Feather name="folder" size={17} color={AMBER} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Folder Manager</Text>
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CONTENT</Text>
                   <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Manage Folders</Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setShowFolderManager(false)} style={{ padding: 4 }}>
-                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+              <TouchableOpacity onPress={() => setShowFolderManager(false)} activeOpacity={0.75}>
+                <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
                   <Feather name="x" size={14} color={colors.mutedForeground} />
                 </View>
               </TouchableOpacity>
             </View>
 
             {/* Create folder */}
-            <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW FOLDER</Text>
+            <View style={{ paddingVertical: 14, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1.8, color: colors.mutedForeground }}>CREATE NEW FOLDER</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TextInput
                   value={newFolderName} onChangeText={setNewFolderName} placeholder="Folder name..."
                   placeholderTextColor={colors.mutedForeground + "70"}
-                  style={[styles.tagInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+                  style={[styles.tagInput, { color: colors.foreground, borderColor: AMBER + "45", backgroundColor: colors.card }]}
                   returnKeyType="done" onSubmitEditing={handleCreateFolder}
                 />
                 <TouchableOpacity onPress={handleCreateFolder} disabled={!newFolderName.trim() || createFolderMutation.isPending}
@@ -639,34 +640,35 @@ export default function ProfileScreen() {
 
             {/* Folder list */}
             <FlatList
-              data={folders} keyExtractor={item => item.id} style={{ flex: 1 }}
-              contentContainerStyle={{ paddingBottom: 32 }}
+              data={folders} keyExtractor={item => item.id} style={{ maxHeight: 240 }}
+              contentContainerStyle={{ paddingBottom: 8, paddingTop: 4 }}
+              showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <View style={{ paddingTop: 32, alignItems: "center", gap: 8 }}>
-                  <View style={{ width: 50, height: 50, borderRadius: 14, backgroundColor: AMBER + "14", borderWidth: 1, borderColor: AMBER + "25", alignItems: "center", justifyContent: "center" }}>
-                    <Feather name="folder" size={22} color={AMBER + "80"} />
+                <View style={{ paddingVertical: 28, alignItems: "center", gap: 8 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: AMBER + "14", borderWidth: 1, borderColor: AMBER + "25", alignItems: "center", justifyContent: "center" }}>
+                    <Feather name="folder" size={20} color={AMBER + "80"} />
                   </View>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 13, color: colors.mutedForeground }}>No folders yet</Text>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first folder above</Text>
+                  <Text style={{ fontFamily: "Eczar_500Medium", fontSize: 13, color: colors.mutedForeground }}>No folders yet</Text>
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "55" }}>Create your first folder above</Text>
                 </View>
               }
               renderItem={({ item: folder, index }) => (
                 <View style={[styles.tagRow, { borderBottomColor: colors.border }]}>
-                  <View style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: (folder.color || AMBER) + "18", borderWidth: 1, borderColor: (folder.color || AMBER) + "35", alignItems: "center", justifyContent: "center" }}>
+                  <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: (folder.color || AMBER) + "18", borderWidth: 1, borderColor: (folder.color || AMBER) + "35", alignItems: "center", justifyContent: "center" }}>
                     <Feather name="folder" size={15} color={folder.color || AMBER} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: "Eczar_500Medium", fontSize: 14, color: colors.foreground }}>{folder.name}</Text>
                     <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
-                      FOLDER_{(index + 1).toString().padStart(2, "0")}
+                      {folder.videoCount ?? 0} video{(folder.videoCount ?? 0) !== 1 ? "s" : ""}
                     </Text>
                   </View>
                   <View style={{ backgroundColor: (folder.color || AMBER) + "14", borderRadius: 20, borderWidth: 1, borderColor: (folder.color || AMBER) + "30", paddingHorizontal: 8, paddingVertical: 3 }}>
                     <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 7, letterSpacing: 1, color: folder.color || AMBER }}>
-                      {folder.videoCount ?? 0} VID{(folder.videoCount ?? 0) !== 1 ? "S" : ""}
+                      {(folder.color || AMBER).toUpperCase().slice(1, 4)}
                     </Text>
                   </View>
-                  <TouchableOpacity onPress={() => handleDeleteFolder(folder)} style={{ padding: 6, marginLeft: 4 }} activeOpacity={0.7}>
+                  <TouchableOpacity onPress={() => handleDeleteFolder(folder)} style={{ padding: 8, marginLeft: 2 }} activeOpacity={0.7}>
                     <Feather name="trash-2" size={14} color={RED} />
                   </TouchableOpacity>
                 </View>
@@ -676,45 +678,46 @@ export default function ProfileScreen() {
         </View>
       )}
 
-      {/* ── Tag Manager overlay ── */}
+      {/* ── Tag Manager modal ── */}
       {showTagManager && (
-        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.65)" }]}>
-          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowTagManager(false)} />
+        <View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "rgba(0,0,0,0.72)" }]}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowTagManager(false)} />
           <MotiView
-            from={{ translateY: 80, opacity: 0 }}
-            animate={{ translateY: 0, opacity: 1 }}
-            transition={{ type: "timing", duration: 280 }}
-            style={[styles.tagSheet, { backgroundColor: colors.background, borderColor: PURPLE + "30" }]}
+            from={{ scale: 0.93, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 20, stiffness: 260 }}
+            style={[styles.centeredModal, { backgroundColor: colors.background, borderColor: PURPLE + "40" }]}
           >
-            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 4 }}>
-              <View style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: colors.border }} />
-            </View>
+            <LinearGradient colors={[PURPLE + "12", "transparent"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            {/* Top accent bar */}
+            <View style={{ height: 3, backgroundColor: PURPLE, width: "30%", borderRadius: 2, marginBottom: 18 }} />
+
             {/* Header */}
-            <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.sheetIconWrap, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "30", borderWidth: 1 }]}>
-                  <Feather name="tag" size={16} color={PURPLE} />
+            <View style={[styles.sheetHeader, { borderBottomColor: colors.border, paddingHorizontal: 0, paddingTop: 0 }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={[styles.sheetIconWrap, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "35", borderWidth: 1 }]}>
+                  <Feather name="tag" size={17} color={PURPLE} />
                 </View>
                 <View>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 1 }}>Tag Manager</Text>
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, color: colors.mutedForeground, marginBottom: 2 }}>// CONTENT</Text>
                   <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Manage Tags</Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setShowTagManager(false)} style={{ padding: 4 }}>
-                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+              <TouchableOpacity onPress={() => setShowTagManager(false)} activeOpacity={0.75}>
+                <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
                   <Feather name="x" size={14} color={colors.mutedForeground} />
                 </View>
               </TouchableOpacity>
             </View>
 
             {/* Create tag */}
-            <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1.5, color: colors.mutedForeground }}>CREATE NEW TAG</Text>
+            <View style={{ paddingVertical: 14, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1.8, color: colors.mutedForeground }}>CREATE NEW TAG</Text>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TextInput
                   value={newTagName} onChangeText={setNewTagName} placeholder="Tag name..."
                   placeholderTextColor={colors.mutedForeground + "70"}
-                  style={[styles.tagInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+                  style={[styles.tagInput, { color: colors.foreground, borderColor: PURPLE + "45", backgroundColor: colors.card }]}
                   returnKeyType="done" onSubmitEditing={handleCreateTag}
                 />
                 <TouchableOpacity onPress={handleCreateTag} disabled={!newTagName.trim() || createTagMutation.isPending}
@@ -733,32 +736,35 @@ export default function ProfileScreen() {
 
             {/* Tag list */}
             <FlatList
-              data={tags} keyExtractor={item => item.id} style={{ flex: 1 }}
-              contentContainerStyle={{ paddingBottom: 32 }}
+              data={tags} keyExtractor={item => item.id} style={{ maxHeight: 240 }}
+              contentContainerStyle={{ paddingBottom: 8, paddingTop: 4 }}
+              showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <View style={{ paddingTop: 32, alignItems: "center", gap: 8 }}>
-                  <View style={{ width: 50, height: 50, borderRadius: 14, backgroundColor: PURPLE + "14", borderWidth: 1, borderColor: PURPLE + "25", alignItems: "center", justifyContent: "center" }}>
-                    <Feather name="tag" size={22} color={PURPLE + "80"} />
+                <View style={{ paddingVertical: 28, alignItems: "center", gap: 8 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: PURPLE + "14", borderWidth: 1, borderColor: PURPLE + "25", alignItems: "center", justifyContent: "center" }}>
+                    <Feather name="tag" size={20} color={PURPLE + "80"} />
                   </View>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 13, color: colors.mutedForeground }}>No tags yet</Text>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "60" }}>Create your first tag above</Text>
+                  <Text style={{ fontFamily: "Eczar_500Medium", fontSize: 13, color: colors.mutedForeground }}>No tags yet</Text>
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1, color: colors.mutedForeground + "55" }}>Create your first tag above</Text>
                 </View>
               }
-              renderItem={({ item: tag, index }) => (
+              renderItem={({ item: tag }) => (
                 <View style={[styles.tagRow, { borderBottomColor: colors.border }]}>
-                  <View style={[styles.tagDot, { backgroundColor: tag.color || PURPLE }]} />
+                  <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: (tag.color || PURPLE) + "18", borderWidth: 1, borderColor: (tag.color || PURPLE) + "35", alignItems: "center", justifyContent: "center" }}>
+                    <View style={[styles.tagDot, { backgroundColor: tag.color || PURPLE }]} />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: "Eczar_500Medium", fontSize: 14, color: colors.foreground }}>{tag.name}</Text>
                     <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1, color: colors.mutedForeground, marginTop: 1 }}>
-                      TAG_{(index + 1).toString().padStart(2, "0")}
+                      {tag.videoCount ?? 0} video{(tag.videoCount ?? 0) !== 1 ? "s" : ""}
                     </Text>
                   </View>
-                  <View style={{ backgroundColor: (tag.color || PURPLE) + "14", borderRadius: 20, borderWidth: 1, borderColor: (tag.color || PURPLE) + "30", paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 7, letterSpacing: 1, color: tag.color || PURPLE }}>
-                      {tag.videoCount ?? 0} VID{(tag.videoCount ?? 0) !== 1 ? "S" : ""}
+                  <View style={{ backgroundColor: (tag.color || PURPLE) + "14", borderRadius: 20, borderWidth: 1, borderColor: (tag.color || PURPLE) + "30", paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 8, letterSpacing: 0.8, color: tag.color || PURPLE }}>
+                      TAG
                     </Text>
                   </View>
-                  <TouchableOpacity onPress={() => handleDeleteTag(tag)} style={{ padding: 6, marginLeft: 4 }} activeOpacity={0.7}>
+                  <TouchableOpacity onPress={() => handleDeleteTag(tag)} style={{ padding: 8, marginLeft: 2 }} activeOpacity={0.7}>
                     <Feather name="trash-2" size={14} color={RED} />
                   </TouchableOpacity>
                 </View>
@@ -814,8 +820,8 @@ const styles = StyleSheet.create({
   nameInput: { height: 48, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1.5, fontSize: 16, fontFamily: "Eczar_400Regular" },
   modalBtn:  { height: 40, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
 
-  tagSheet:     { maxHeight: "82%", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, overflow: "hidden" },
-  sheetHeader:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+  centeredModal: { width: "100%", borderRadius: 20, borderWidth: 1, overflow: "hidden", padding: 20 },
+  sheetHeader:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   sheetIconWrap:{ width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   sheetTitle:   { fontSize: 17, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3 },
 
