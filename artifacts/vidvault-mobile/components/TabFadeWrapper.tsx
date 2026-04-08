@@ -1,8 +1,12 @@
 import React, { useRef, useCallback } from "react";
 import { Animated, StyleSheet } from "react-native";
 import { useFocusEffect } from "expo-router";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 export function TabFadeWrapper({ children }: { children: React.ReactNode }) {
+  const { colorScheme } = useThemeContext();
+  const bg = colorScheme === "dark" ? "#09090c" : "#f5f5ff";
+
   const opacity    = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(8)).current;
 
@@ -18,7 +22,7 @@ export function TabFadeWrapper({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, { opacity, transform: [{ translateY }] }]}>
+    <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: bg, opacity, transform: [{ translateY }] }]}>
       {children}
     </Animated.View>
   );

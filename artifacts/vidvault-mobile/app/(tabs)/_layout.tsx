@@ -108,11 +108,13 @@ function IOSTabLayout() {
   const { colorScheme } = useThemeContext();
   const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
+  const sceneBg = isDark ? "#09090c" : "#f5f5ff";
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        sceneStyle: { backgroundColor: sceneBg },
         tabBarActiveTintColor: INDIGO,
         tabBarInactiveTintColor: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.38)",
         tabBarStyle: {
@@ -152,10 +154,12 @@ function IOSTabLayout() {
 
 /* ── Android / Web premium tab ── */
 function PremiumTabLayout() {
+  const { colorScheme } = useThemeContext();
+  const sceneBg = colorScheme === "dark" ? "#09090c" : "#f5f5ff";
   return (
     <Tabs
       tabBar={(props) => <PremiumTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: sceneBg } }}
     >
       {TABS.map(({ name, title }) => (
         <Tabs.Screen key={name} name={name} options={{ title }} />
