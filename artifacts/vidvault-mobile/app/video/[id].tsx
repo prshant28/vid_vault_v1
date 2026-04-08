@@ -136,6 +136,33 @@ function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: stri
   );
 }
 
+/* ── Discover-Style Section Heading (matches discover.tsx SectionHead) ── */
+function SectionHead({
+  micro, title, right, delay = 0,
+}: { micro: string; title: string; right?: React.ReactNode; delay?: number }) {
+  const { colors } = useTheme();
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: -10 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: "timing", duration: 360, delay }}
+      style={{ marginBottom: 14 }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <View style={{ width: 3, height: 14, borderRadius: 1.5, backgroundColor: PURPLE }} />
+        <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8.5, color: colors.mutedForeground, letterSpacing: 2.5 }}>
+          {micro}
+        </Text>
+        <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+        {right}
+      </View>
+      <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, letterSpacing: -0.3, paddingLeft: 11 }}>
+        {title}
+      </Text>
+    </MotiView>
+  );
+}
+
 /* ── Quick Action Pill ── */
 function QuickPill({ label, icon, color, onPress }: { label: string; icon: FeatherIconName; color: string; onPress: () => void }) {
   const h = 34;
@@ -1050,12 +1077,23 @@ export default function VideoDetailScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: botInset + 28 }}>
 
-        {/* Player */}
-        {useWebView ? (
-          <YouTubePlayer ytId={ytId!} onOpenExternal={handleOpenYouTube} />
-        ) : (
-          <ThumbnailPlayer thumbnail={video.thumbnail} ytId={ytId} onOpenExternal={handleOpenYouTube} />
-        )}
+        {/* Player — premium bordered frame */}
+        <View style={styles.playerFrame}>
+          <View style={styles.playerFrameInner}>
+            {useWebView ? (
+              <YouTubePlayer ytId={ytId!} onOpenExternal={handleOpenYouTube} />
+            ) : (
+              <ThumbnailPlayer thumbnail={video.thumbnail} ytId={ytId} onOpenExternal={handleOpenYouTube} />
+            )}
+          </View>
+          {/* Subtle bottom reflection */}
+          <LinearGradient
+            colors={[PURPLE + "00", PURPLE + "18"]}
+            start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }}
+            style={{ height: 4, marginHorizontal: 12, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
+            pointerEvents="none"
+          />
+        </View>
 
         {/* Info block */}
         <View style={[styles.infoBlock, { borderBottomColor: colors.border }]}>
@@ -1121,12 +1159,17 @@ export default function VideoDetailScreen() {
               </View>
             )}
 
-            {/* Saved date */}
+            {/* Saved date + time */}
             {video.createdAt && (
               <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Feather name="calendar" size={12} color={colors.mutedForeground} />
                 <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>
                   {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </Text>
+                <View style={{ width: 1, height: 10, backgroundColor: colors.border }} />
+                <Feather name="clock" size={11} color={colors.mutedForeground + "80"} />
+                <Text style={[styles.metaChipText, { color: colors.mutedForeground + "80" }]}>
+                  {new Date(video.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
                 </Text>
               </View>
             )}
@@ -1191,24 +1234,26 @@ export default function VideoDetailScreen() {
         </View>
 
         
-        {/* Study Timer */}
-        <StudyTimer />
+        {/* Study Timer — with horizontal margin */}
+        <View style={{ marginHorizontal: 12, marginTop: 4 }}>
+          <StudyTimer />
+        </View>
 
-        {/* ── Video Stats Strip ── */}
-        <View style={[styles.statsStrip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {/* ── Video Stats Strip — 5 cards below timer ── */}
+        <View style={[styles.statsStrip, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12, marginHorizontal: 12, borderRadius: 14 }]}>
           {[
-            { icon: "cpu" as FeatherIconName,      label: "AI",       value: aiCount,                       color: PURPLE },
-            { icon: "edit-3" as FeatherIconName,   label: "Notes",    value: video.notes?.length ?? 0,      color: CYAN   },
-            { icon: "heart" as FeatherIconName,    label: "Favorite", value: video.isFavorite ? "Yes" : "No", color: PINK },
-            { icon: "check" as FeatherIconName,    label: "Watched",  value: (video as any).isWatched ? "Yes" : "No", color: GREEN },
-            { icon: "tag" as FeatherIconName,      label: "Tags",     value: video.tags?.length ?? 0,       color: ORANGE },
+            { icon: "cpu" as FeatherIconName,      label: "AI",       value: aiCount,                           color: PURPLE },
+            { icon: "edit-3" as FeatherIconName,   label: "Notes",    value: video.notes?.length ?? 0,          color: CYAN   },
+            { icon: "heart" as FeatherIconName,    label: "Fav",      value: video.isFavorite ? "Yes" : "No",   color: PINK   },
+            { icon: "check-circle" as FeatherIconName, label: "Done", value: (video as any).isWatched ? "Yes" : "No", color: GREEN },
+            { icon: "tag" as FeatherIconName,      label: "Tags",     value: video.tags?.length ?? 0,           color: ORANGE },
           ].map((s, i, arr) => (
             <React.Fragment key={s.label}>
-              <View style={styles.statItem}>
+              <View style={[styles.statItem, { paddingVertical: 14 }]}>
                 <View style={[styles.statIconBadge, { backgroundColor: s.color + "16", borderColor: s.color + "30" }]}>
                   <Feather name={s.icon} size={13} color={s.color} />
                 </View>
-                <Text style={[styles.statVal, { color: colors.foreground }]}>{s.value}</Text>
+                <Text style={[styles.statVal, { color: s.color }]}>{s.value}</Text>
                 <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
               </View>
               {i < arr.length - 1 && <View style={[styles.statDivider, { backgroundColor: colors.border }]} />}
@@ -1288,35 +1333,81 @@ export default function VideoDetailScreen() {
                   </TouchableOpacity>
                 )}
 
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-                  <View>
-                    <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Tools</Text>
-                    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                      {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
+                {/* Discover-style SectionHead for AI Tools */}
+                <SectionHead
+                  micro="VAULT TOOLS"
+                  title={aiCount > 0 ? `${aiCount} Generated` : "AI Tools"}
+                  right={
+                    <View style={{ flexDirection: "row", gap: 5 }}>
+                      {(["en", "hi"] as const).map(l => (
+                        <TouchableOpacity
+                          key={l}
+                          onPress={() => changeLang(l)}
+                          activeOpacity={0.75}
+                          style={{
+                            flexDirection: "row", alignItems: "center", gap: 4,
+                            paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
+                            borderColor: lang === l ? PURPLE + "88" : colors.border,
+                            backgroundColor: lang === l ? PURPLE + "18" : colors.secondary,
+                          }}
+                        >
+                          <Feather name="globe" size={8} color={lang === l ? PURPLE : colors.mutedForeground} />
+                          <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
+                            {l === "en" ? "EN" : "हिं"}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  }
+                />
+
+                {/* Generated Quick Access — Summary & Key Insights at top of AI section */}
+                {(aiOutputMap["summary"] || aiOutputMap["key_insights"]) && (
+                  <View style={{ gap: 8, marginBottom: 16 }}>
+                    <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, color: colors.mutedForeground, letterSpacing: 2, textTransform: "uppercase", marginBottom: 2 }}>
+                      QUICK ACCESS
                     </Text>
+                    {(["summary", "key_insights"] as const)
+                      .filter(t => aiOutputMap[t])
+                      .map(t => {
+                        const tool = AI_TOOLS.find(x => x.type === t)!;
+                        const out  = aiOutputMap[t]!;
+                        const preview = out.content.trim().split("\n").find(l => l.length > 20)?.slice(0, 90) ?? "";
+                        return (
+                          <TouchableOpacity
+                            key={t}
+                            onPress={() => setViewingOutput({ output: out, tool })}
+                            activeOpacity={0.82}
+                            style={{
+                              flexDirection: "row", alignItems: "center", gap: 12,
+                              borderWidth: 1, borderColor: tool.color + "40", borderRadius: 14,
+                              padding: 14, backgroundColor: tool.color + "09", overflow: "hidden",
+                            }}
+                          >
+                            <LinearGradient
+                              colors={[tool.color + "16", "transparent"]}
+                              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                              style={StyleSheet.absoluteFill}
+                              pointerEvents="none"
+                            />
+                            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: tool.color + "1c", borderWidth: 1, borderColor: tool.color + "35", alignItems: "center", justifyContent: "center" }}>
+                              <Feather name={tool.icon} size={18} color={tool.color} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 13, color: tool.color, letterSpacing: 0.2 }}>{tool.label}</Text>
+                              {preview ? (
+                                <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 2, lineHeight: 15 }} numberOfLines={2}>
+                                  {preview}
+                                </Text>
+                              ) : null}
+                            </View>
+                            <ToolBadge label="VIEW" icon="arrow-right" color={tool.color} />
+                          </TouchableOpacity>
+                        );
+                      })
+                    }
                   </View>
-                  {/* Language toggle — matches QuickPill style */}
-                  <View style={{ flexDirection: "row", gap: 5 }}>
-                    {(["en", "hi"] as const).map(l => (
-                      <TouchableOpacity
-                        key={l}
-                        onPress={() => changeLang(l)}
-                        activeOpacity={0.75}
-                        style={{
-                          flexDirection: "row", alignItems: "center", gap: 4,
-                          paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
-                          borderColor: lang === l ? PURPLE + "88" : colors.border,
-                          backgroundColor: lang === l ? PURPLE + "18" : colors.secondary,
-                        }}
-                      >
-                        <Feather name="globe" size={8} color={lang === l ? PURPLE : colors.mutedForeground} />
-                        <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
-                          {l === "en" ? "EN" : "हिं"}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
+                )}
                 <View style={styles.toolGrid}>
                   {Array.from({ length: Math.ceil(AI_TOOLS.length / 2) }, (_, rowIdx) => rowIdx * 2).map((rowStart) => (
                     <View key={rowStart} style={styles.toolRow}>
@@ -1363,8 +1454,7 @@ export default function VideoDetailScreen() {
         {/* ── Chat Tab ── */}
         {activeTab === "chat" && (
           <View style={[styles.section, { minHeight: 400 }]}>
-            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Chat</Text>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Chat About This Video</Text>
+            <SectionHead micro="AI CHAT" title="Chat About This Video" />
 
             {/* Chat messages */}
             <View style={{ gap: 10, marginBottom: 12 }}>
@@ -1447,22 +1537,20 @@ export default function VideoDetailScreen() {
         {/* ── Transcript Tab ── */}
         {activeTab === "transcript" && (
           <View style={styles.section}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <View>
-                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>Read-Along</Text>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Transcript</Text>
-              </View>
-              {transcriptError && (
+            <SectionHead
+              micro="READ-ALONG"
+              title="Transcript"
+              right={transcriptError ? (
                 <TouchableOpacity
                   onPress={() => fetchTranscript()}
-                  style={[styles.tabBtn, { borderColor: CYAN + "40", backgroundColor: CYAN + "10", paddingHorizontal: 10 }]}
+                  style={[styles.tabBtn, { borderColor: CYAN + "40", backgroundColor: CYAN + "10", paddingHorizontal: 10, paddingVertical: 6 }]}
                   activeOpacity={0.8}
                 >
-                  <Feather name="refresh-cw" size={12} color={CYAN} />
+                  <Feather name="refresh-cw" size={11} color={CYAN} />
                   <Text style={[styles.tabBtnText, { color: CYAN }]}>RETRY</Text>
                 </TouchableOpacity>
-              )}
-            </View>
+              ) : undefined}
+            />
 
             {transcriptLoading ? (
               <View style={{ gap: 8 }}>
@@ -1547,6 +1635,7 @@ export default function VideoDetailScreen() {
         {/* ── Notes Tab ── */}
         {activeTab === "notes" && (
           <View style={styles.section}>
+            <SectionHead micro="TIMESTAMPED" title="Study Notes" />
             <View style={[styles.noteInputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <TextInput
                 value={newNote} onChangeText={setNewNote}
@@ -1769,6 +1858,16 @@ const styles = StyleSheet.create({
     textAlign: "center", letterSpacing: -0.2,
   },
 
+  /* Player — premium frame */
+  playerFrame: {
+    marginHorizontal: 12, marginTop: 10, marginBottom: 0,
+  },
+  playerFrameInner: {
+    borderRadius: 14, overflow: "hidden",
+    borderWidth: 1.5, borderColor: "rgba(99,102,241,0.3)",
+    shadowColor: "#6366f1", shadowOpacity: 0.2, shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 }, elevation: 8,
+  },
   /* Player */
   player: { width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000", position: "relative" },
   ytExtBtn: {
@@ -1845,10 +1944,10 @@ const styles = StyleSheet.create({
 
   /* Section */
   section: { padding: 16, gap: 12 },
-  sectionEyebrow: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2.5 },
+  sectionEyebrow: { fontSize: 8.5, fontFamily: "Eczar_400Regular", letterSpacing: 2.5 },
   sectionTitle: {
-    fontSize: 14, fontFamily: "AlegreyaSansSC_800ExtraBold",
-    letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
+    fontSize: 22, fontFamily: "AlegreyaSansSC_800ExtraBold",
+    letterSpacing: -0.3, marginTop: 2, marginBottom: 8,
   },
 
   /* Tool grid — exact etched-slab from web CSS */

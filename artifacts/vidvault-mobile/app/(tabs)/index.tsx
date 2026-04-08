@@ -99,6 +99,39 @@ const AI_TYPE_META: Record<
   chat: { label: "AI Chat", icon: "message-circle", color: "#6366f1" },
 };
 
+/* ── Discover-style section head (purple bar + micro + hairline + big title) ── */
+function SectionHead({
+  micro, title, right, delay = 0,
+}: {
+  micro: string; title: string; right?: React.ReactNode; delay?: number;
+}) {
+  const { colors } = useColors();
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: -10 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: "timing", duration: 380, delay }}
+      style={{ marginBottom: 14 }}
+    >
+      {/* micro label row */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <View style={{ width: 3, height: 14, borderRadius: 2, backgroundColor: PURPLE }} />
+        <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8.5, letterSpacing: 2.5, color: colors.mutedForeground, textTransform: "uppercase" }}>
+          {micro}
+        </Text>
+        <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+      </View>
+      {/* title row */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, letterSpacing: -0.3, paddingLeft: 11 }}>
+          {title}
+        </Text>
+        {right ?? null}
+      </View>
+    </MotiView>
+  );
+}
+
 /* ── Animated number counter ── */
 function AnimatedNumber({ value, color }: { value: number; color: string }) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -1560,23 +1593,16 @@ export default function HomeScreen() {
         {/* ── Recent AI Activity ── */}
         {recentAiOutputs.length > 0 && (
           <View style={styles.section}>
-            <MotiView
-              from={{ opacity: 0, translateX: -8 }}
-              animate={{ opacity: 1, translateX: 0 }}
-              transition={{ type: "timing", duration: 380, delay: 150 }}
-              style={styles.sectionHeader2}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                  <Feather name="cpu" size={10} color={PURPLE} />
-                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>RECENT</Text>
-                </View>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>AI Activity</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push("/(tabs)/ai-studio")} activeOpacity={0.7}>
-                <Text style={[styles.viewAll, { color: PURPLE }]}>STUDIO →</Text>
-              </TouchableOpacity>
-            </MotiView>
+            <SectionHead
+              micro="RECENT"
+              title="AI Activity"
+              delay={150}
+              right={
+                <TouchableOpacity onPress={() => router.push("/(tabs)/ai-studio")} activeOpacity={0.7}>
+                  <Text style={[styles.viewAll, { color: PURPLE }]}>STUDIO →</Text>
+                </TouchableOpacity>
+              }
+            />
             <View style={{ gap: 8 }}>
               {recentAiOutputs.slice(0, 5).map((output, i) => (
                 <RecentAiItemCard key={output.id} output={output} index={i} />
@@ -1587,23 +1613,16 @@ export default function HomeScreen() {
 
         {/* ── Recent Captures — vertical full-width ── */}
         <View style={styles.section}>
-          <MotiView
-            from={{ opacity: 0, translateX: -8 }}
-            animate={{ opacity: 1, translateX: 0 }}
-            transition={{ type: "timing", duration: 380, delay: 200 }}
-            style={styles.sectionHeader2}
-          >
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                <Feather name="film" size={10} color={CYAN} />
-                <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>VIDVAULT</Text>
-              </View>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Latest Captures</Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
-              <Text style={[styles.viewAll, { color: PURPLE }]}>VIEW ALL →</Text>
-            </TouchableOpacity>
-          </MotiView>
+          <SectionHead
+            micro="VIDVAULT"
+            title="Latest Captures"
+            delay={200}
+            right={
+              <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
+                <Text style={[styles.viewAll, { color: PURPLE }]}>VIEW ALL →</Text>
+              </TouchableOpacity>
+            }
+          />
 
           {isLoading ? (
             <View style={{ gap: 10 }}>
@@ -1692,23 +1711,16 @@ export default function HomeScreen() {
         {/* ── Favorites ── */}
         {favoriteVideos.length > 0 && (
           <View style={styles.section}>
-            <MotiView
-              from={{ opacity: 0, translateX: -8 }}
-              animate={{ opacity: 1, translateX: 0 }}
-              transition={{ type: "timing", duration: 380, delay: 350 }}
-              style={styles.sectionHeader2}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                  <Feather name="heart" size={10} color={PINK} />
-                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>STARRED</Text>
-                </View>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Favorites</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
-                <Text style={[styles.viewAll, { color: PINK }]}>VIEW ALL →</Text>
-              </TouchableOpacity>
-            </MotiView>
+            <SectionHead
+              micro="STARRED"
+              title="Favorites"
+              delay={350}
+              right={
+                <TouchableOpacity onPress={() => router.push("/(tabs)/videos")} activeOpacity={0.7}>
+                  <Text style={[styles.viewAll, { color: PINK }]}>VIEW ALL →</Text>
+                </TouchableOpacity>
+              }
+            />
             <View style={{ gap: 0 }}>
               {favoriteVideos.slice(0, 4).map((video: Video, index) => (
                 <MotiView
