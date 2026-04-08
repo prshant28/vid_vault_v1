@@ -36,6 +36,7 @@ import { YouTubePlayer } from "@/components/YouTubeEmbed";
 import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { GridBackground } from "@/components/GridBackground";
+import { StudyTimer } from "@/components/StudyTimer";
 import type { Video, Note, Tag, AiOutput } from "@/types/api";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
@@ -647,7 +648,16 @@ export default function VideoDetailScreen() {
   const qc = useQueryClient();
   const colors = useColors();
 
-  const [activeTab, setActiveTab] = useState<"ai" | "notes" | "chat">("ai");
+  const [activeTab, setActiveTab] = useState<"ai" | "notes" | "chat" | "transcript">("ai");
+  const [transcriptEnabled, setTranscriptEnabled] = useState(false);
+
+  const { data: transcriptData, isLoading: transcriptLoading, error: transcriptError, refetch: fetchTranscript } = useQuery({
+    queryKey: ["transcript", id],
+    queryFn: () => api.getTranscript(id!),
+    enabled: transcriptEnabled && !!id,
+    retry: false,
+    staleTime: 60 * 60 * 1000,
+  });
   const [generatingType, setGeneratingType] = useState<string | null>(null);
   const [viewingOutput, setViewingOutput] = useState<{ output: AiOutput; tool: typeof AI_TOOLS[0] } | null>(null);
   const [lang, setLang] = useState<"en" | "hi">("en");
@@ -1134,20 +1144,31 @@ export default function VideoDetailScreen() {
           ))}
         </View>
 
+        {/* Study Timer */}
+        <StudyTimer />
+
         {/* Tabs */}
-        <View style={[styles.tabRow, { borderBottomColor: colors.border }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={[styles.tabRow, { borderBottomColor: colors.border }]}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+        >
           {([
-            { key: "ai",    label: `AI TOOLS${aiCount > 0 ? ` (${aiCount})` : ""}`, icon: "cpu"       },
-            { key: "chat",  label: "AI CHAT",    icon: "message-circle" },
-            { key: "notes", label: `NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`, icon: "edit-3" },
+            { key: "ai",         label: `AI${aiCount > 0 ? ` (${aiCount})` : ""}`, icon: "cpu"            },
+            { key: "chat",       label: "CHAT",         icon: "message-circle"  },
+            { key: "notes",      label: `NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`, icon: "edit-3" },
+            { key: "transcript", label: "TRANSCRIPT",   icon: "align-left"      },
           ] as const).map(({ key, label, icon }) => (
             <TouchableOpacity
               key={key}
-              onPress={() => setActiveTab(key)}
+              onPress={() => {
+                setActiveTab(key);
+                if (key === "transcript" && !transcriptEnabled) setTranscriptEnabled(true);
+              }}
               style={[styles.tabBtn, {
                 backgroundColor: activeTab === key ? PURPLE + "18" : colors.card,
                 borderColor: activeTab === key ? PURPLE + "40" : colors.border,
-                flex: 1,
               }]}
               activeOpacity={0.75}
             >
@@ -1159,7 +1180,7 @@ export default function VideoDetailScreen() {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
         {/* ── AI Tab ── */}
         {activeTab === "ai" && (
@@ -1351,6 +1372,106 @@ export default function VideoDetailScreen() {
                 <Feather name="send" size={14} color="#fff" />
               </TouchableOpacity>
             </View>
+          </View>
+        )}
+
+        {/* ── Transcript Tab ── */}
+        {activeTab === "transcript" && (
+          <View style={styles.section}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <View>
+                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>Read-Along</Text>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Transcript</Text>
+              </View>
+              {transcriptError && (
+                <TouchableOpacity
+                  onPress={() => fetchTranscript()}
+                  style={[styles.tabBtn, { borderColor: CYAN + "40", backgroundColor: CYAN + "10", paddingHorizontal: 10 }]}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="refresh-cw" size={12} color={CYAN} />
+                  <Text style={[styles.tabBtnText, { color: CYAN }]}>RETRY</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {transcriptLoading ? (
+              <View style={{ gap: 8 }}>
+                {[1,2,3,4,5].map(i => (
+                  <View key={i} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
+                    <MotiView from={{ opacity: 0.3 }} animate={{ opacity: 1 }} transition={{ type: "timing", duration: 800, loop: true }}>
+                      <View style={{ width: 42, height: 14, borderRadius: 4, backgroundColor: colors.card }} />
+                    </MotiView>
+                    <MotiView from={{ opacity: 0.3 }} animate={{ opacity: 1 }} transition={{ type: "timing", duration: 800, loop: true, delay: 80 }}>
+                      <View style={{ height: 14, width: 240, borderRadius: 4, backgroundColor: colors.card }} />
+                    </MotiView>
+                  </View>
+                ))}
+                <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 11, color: colors.mutedForeground, textAlign: "center", marginTop: 10 }}>
+                  Fetching transcript…
+                </Text>
+              </View>
+            ) : transcriptError ? (
+              <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Feather name="alert-circle" size={24} color={colors.mutedForeground + "60"} />
+                <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>No Transcript Available</Text>
+                <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>
+                  {(transcriptError as any)?.message || "This video may not have captions enabled."}
+                </Text>
+                <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 11, color: colors.mutedForeground, textAlign: "center", marginTop: 4 }}>
+                  Try videos with auto-generated captions on YouTube.
+                </Text>
+              </View>
+            ) : !transcriptData ? (
+              <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: CYAN + "25" }]}>
+                <LinearGradient colors={[CYAN + "0a", "transparent"]} style={StyleSheet.absoluteFill} />
+                <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: CYAN + "14", borderWidth: 1, borderColor: CYAN + "25", alignItems: "center", justifyContent: "center" }}>
+                  <Feather name="align-left" size={22} color={CYAN + "80"} />
+                </View>
+                <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>Read the Transcript</Text>
+                <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>
+                  Tap below to load the video transcript. Tap any line to seek to that timestamp on YouTube.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setTranscriptEnabled(true)}
+                  style={[styles.tabBtn, { borderColor: CYAN + "45", backgroundColor: CYAN + "12", paddingHorizontal: 18, paddingVertical: 10, marginTop: 4 }]}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="download" size={13} color={CYAN} />
+                  <Text style={[styles.tabBtnText, { color: CYAN }]}>LOAD TRANSCRIPT</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={{ gap: 2 }}>
+                <View style={[{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8, paddingHorizontal: 4 }]}>
+                  <Feather name="info" size={11} color={colors.mutedForeground} />
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground }}>
+                    {transcriptData.lines.length} lines · Tap a line to open at that timestamp
+                  </Text>
+                </View>
+                {transcriptData.lines.map((line, idx) => {
+                  const mins  = Math.floor(line.start / 60);
+                  const secs  = Math.floor(line.start % 60);
+                  const tsStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+                  const seekUrl = video?.url
+                    ? video.url.replace(/[&?]t=\d+/g, "") + (video.url.includes("?") ? "&" : "?") + `t=${Math.floor(line.start)}`
+                    : null;
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => { if (seekUrl) Linking.openURL(seekUrl); }}
+                      activeOpacity={0.7}
+                      style={[styles.transcriptRow, { borderBottomColor: colors.border }]}
+                    >
+                      <View style={[styles.transcriptTs, { backgroundColor: CYAN + "14", borderColor: CYAN + "25" }]}>
+                        <Text style={[styles.transcriptTsText, { color: CYAN }]}>{tsStr}</Text>
+                      </View>
+                      <Text style={[styles.transcriptText, { color: colors.foreground }]}>{line.text}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
 
@@ -1641,11 +1762,17 @@ const styles = StyleSheet.create({
 
   /* Tabs */
   tabRow: {
-    flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, gap: 8,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  tabBtn: { flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 8, borderWidth: 1 },
+  tabBtn: { paddingVertical: 10, paddingHorizontal: 14, alignItems: "center", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 5 },
   tabBtnText: { fontSize: 10, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.1 },
+
+  /* Transcript */
+  transcriptRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth },
+  transcriptTs:  { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, borderWidth: 1, minWidth: 40, alignItems: "center" },
+  transcriptTsText: { fontFamily: "Eczar_600SemiBold", fontSize: 10, letterSpacing: 0.5 },
+  transcriptText: { fontFamily: "Eczar_400Regular", fontSize: 13, lineHeight: 20, flex: 1 },
 
   /* Section */
   section: { padding: 16, gap: 12 },

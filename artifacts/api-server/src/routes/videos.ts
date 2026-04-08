@@ -678,6 +678,62 @@ router.post("/videos/:videoId/watch", async (req, res) => {
   res.json({ isWatched: newWatched });
 });
 
+/* ── Transcript: proxy YouTube timedtext for a saved video ── */
+router.get("/videos/:videoId/transcript", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { videoId } = req.params;
+
+  const [video] = await db
+    .select({ url: videosTable.url })
+    .from(videosTable)
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.user.id)));
+
+  if (!video) { res.status(404).json({ error: "Video not found" }); return; }
+
+  function extractYtId(url: string): string | null {
+    if (!url) return null;
+    for (const p of [/[?&]v=([a-zA-Z0-9_-]{11})/, /youtu\.be\/([a-zA-Z0-9_-]{11})/, /embed\/([a-zA-Z0-9_-]{11})/, /shorts\/([a-zA-Z0-9_-]{11})/]) {
+      const m = url.match(p);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  const ytId = extractYtId(video.url || "");
+  if (!ytId) { res.status(400).json({ error: "No YouTube ID found for this video" }); return; }
+
+  try {
+    const langs = ["en", "en-US", "en-GB", "a.en"];
+    let lines: Array<{ start: number; dur: number; text: string }> = [];
+
+    for (const lang of langs) {
+      const url = `https://www.youtube.com/api/timedtext?v=${ytId}&lang=${lang}&fmt=json3`;
+      const r = await fetch(url, { headers: { "Accept-Language": "en-US,en;q=0.9" } });
+      if (!r.ok) continue;
+      const data: any = await r.json();
+      const events = data?.events ?? [];
+      lines = events
+        .filter((e: any) => e.segs)
+        .map((e: any) => ({
+          start: (e.tStartMs ?? 0) / 1000,
+          dur:   (e.dDurationMs ?? 3000) / 1000,
+          text:  (e.segs as any[]).map((s: any) => s.utf8 ?? "").join("").replace(/\n/g, " ").trim(),
+        }))
+        .filter((l: any) => l.text);
+      if (lines.length > 0) break;
+    }
+
+    if (lines.length === 0) {
+      res.status(404).json({ error: "No transcript available for this video. Try a video with captions enabled." });
+      return;
+    }
+
+    res.json({ ytId, lines });
+  } catch (err: any) {
+    res.status(503).json({ error: "Could not fetch transcript: " + (err.message || "unknown error") });
+  }
+});
+
 router.post("/videos/:videoId/favorite", async (req, res) => {
   if (!req.isAuthenticated()) {
     res.status(401).json({ error: "Unauthorized" });

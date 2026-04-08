@@ -42,6 +42,8 @@ const TOOLS: Array<{
   { id: "folders",    icon: "folder",      label: "Folders",            desc: "Organize your vault into custom collections.",              color: GREEN,  badge: null,          route: "/(tabs)/folders"   },
   { id: "templates",  icon: "layout",      label: "Template Library",   desc: "Export AI outputs in 10 professional HTML formats.",        color: AMBER,  badge: "10 FREE",     action: "templates"        },
   { id: "study-plan", icon: "target",      label: "AI Study Plan",      desc: "Personalized sessions based on your entire vault.",         color: BLUE,   badge: "COMING SOON", action: "coming-soon"      },
+  { id: "sr-review",  icon: "layers",      label: "SR Review",          desc: "Review flashcards with SM-2 spaced repetition algorithm.",  color: PINK,   badge: "NEW",          route: "/review"           },
+  { id: "pomodoro",   icon: "clock",       label: "Study Timer",        desc: "Pomodoro focus timer inside any video. 25m focus + 5m break.", color: AMBER, badge: "NEW",         action: "coming-soon"      },
 ];
 
 const ALL_TEMPLATES = [

@@ -215,4 +215,8 @@ export const api = {
     });
     return handleRes(res);
   },
+  async getTranscript(videoId: string): Promise<{ ytId: string; lines: Array<{ start: number; dur: number; text: string }> }> {
+    const res = await fetch(`${BASE_URL}/videos/${videoId}/transcript`, { headers: authHeaders() });
+    return handleRes(res);
+  },
 };
