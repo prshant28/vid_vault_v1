@@ -125,7 +125,10 @@ function RootLayoutNav() {
         backgroundColor="transparent"
         animated
       />
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: isDark ? "#09090c" : "#f5f5ff" },
+      }}>
         <Stack.Screen name="splash" options={{ headerShown: false, animation: "none" }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen name="login" options={{ headerShown: false, animation: "fade" }} />
