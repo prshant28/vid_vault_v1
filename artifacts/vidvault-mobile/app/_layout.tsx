@@ -40,6 +40,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider, useThemeContext } from "@/contexts/ThemeContext";
 import { setApiToken, setOnUnauthorized } from "@/services/api";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
+import { updateStreak, getReminderSettings, scheduleDaily } from "@/lib/notifications";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -82,6 +83,12 @@ function RootLayoutNav() {
     if (isLoading) return;
     if (user) {
       router.replace("/(tabs)");
+      updateStreak().then(async (streak) => {
+        const settings = await getReminderSettings();
+        if (settings.enabled) {
+          await scheduleDaily(settings.hour, settings.minute, streak.count);
+        }
+      }).catch(() => {});
     } else {
       if (Platform.OS === "web") {
         router.replace("/login");

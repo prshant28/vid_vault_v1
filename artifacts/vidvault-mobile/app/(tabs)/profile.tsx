@@ -20,6 +20,11 @@ import { api } from "@/services/api";
 import * as Haptics from "expo-haptics";
 import type { ComponentProps } from "react";
 import { TabFadeWrapper } from "@/components/TabFadeWrapper";
+import {
+  getReminderSettings, saveReminderSettings, requestNotificationPermission,
+  checkNotificationPermission, scheduleDaily, cancelDaily, getStreak,
+  type ReminderSettings, type StreakData,
+} from "@/lib/notifications";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -147,6 +152,9 @@ export default function ProfileScreen() {
   const [editNameVal, setEditNameVal]     = useState("");
   const [showTagManager, setShowTagManager]       = useState(false);
   const [showFolderManager, setShowFolderManager] = useState(false);
+  const [reminder, setReminder]   = useState<ReminderSettings | null>(null);
+  const [streak, setStreak]       = useState<StreakData>({ lastDate: "", count: 0 });
+  const [notifGranted, setNotifGranted] = useState(false);
   const [newTagName, setNewTagName]           = useState("");
   const [selectedColor, setSelectedColor]     = useState(TAG_COLORS[0]);
   const [newFolderName, setNewFolderName]     = useState("");
@@ -170,6 +178,31 @@ export default function ProfileScreen() {
       setNameOverride(dn || null);
     });
   }, []);
+
+  /* ── Load notification settings + streak ── */
+  useEffect(() => {
+    getReminderSettings().then(setReminder);
+    getStreak().then(setStreak);
+    checkNotificationPermission().then(setNotifGranted);
+  }, []);
+
+  const toggleReminder = async (enabled: boolean) => {
+    const granted = notifGranted || (await requestNotificationPermission());
+    setNotifGranted(granted);
+    if (enabled && !granted) {
+      Alert.alert("Permission Needed", "Please allow notifications in your device settings to enable daily reminders.");
+      return;
+    }
+    const settings: ReminderSettings = { ...(reminder ?? { hour: 8, minute: 0 }), enabled };
+    setReminder(settings);
+    await saveReminderSettings(settings);
+    if (enabled) {
+      await scheduleDaily(settings.hour, settings.minute, streak.count);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      await cancelDaily();
+    }
+  };
 
   const initials = (displayName || "??").slice(0, 2).toUpperCase();
 
@@ -532,7 +565,42 @@ export default function ProfileScreen() {
         <SettingGroup title="//ACCOUNT">
           <SettingRow icon="user"  label="Email"       value={user?.email ?? "—"}        delay={420} />
           <SettingRow icon="lock"  label="Change Password" onPress={() => Alert.alert("Password", "Password change is managed through your account portal.")} delay={440} color={CYAN} />
-          <SettingRow icon="bell"  label="Notifications"   onPress={() => Alert.alert("Notifications", "Notification settings coming soon.")} delay={460} />
+          <MotiView
+            from={{ opacity: 0, translateX: -6 }}
+            animate={{ opacity: 1, translateX: 0 }}
+            transition={{ type: "timing", duration: 300, delay: 460 }}
+          >
+            <View style={[styles.row, { borderBottomColor: colors.border }]}>
+              <View style={[styles.rowIcon, { backgroundColor: AMBER + "15", borderColor: AMBER + "28", borderWidth: 1 }]}>
+                <Feather name="bell" size={16} color={AMBER} />
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[styles.rowLabel, { color: colors.foreground }]}>Daily Reminder</Text>
+                {streak.count > 0 && (
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: AMBER }}>
+                    🔥 Day {streak.count} streak
+                  </Text>
+                )}
+                {reminder?.enabled && Platform.OS !== "web" && (
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground }}>
+                    Daily at {String(reminder.hour).padStart(2, "0")}:{String(reminder.minute).padStart(2, "0")}
+                  </Text>
+                )}
+                {Platform.OS === "web" && (
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground }}>
+                    Available on native app
+                  </Text>
+                )}
+              </View>
+              <Switch
+                value={reminder?.enabled ?? false}
+                onValueChange={toggleReminder}
+                disabled={Platform.OS === "web"}
+                trackColor={{ false: colors.border, true: AMBER + "70" }}
+                thumbColor={reminder?.enabled ? AMBER : colors.mutedForeground}
+              />
+            </View>
+          </MotiView>
           <SettingRow icon="globe" label="Language"         onPress={() => Alert.alert("Language", "English and Hindi supported in AI output generation.")} delay={480} color={GREEN} />
         </SettingGroup>
 

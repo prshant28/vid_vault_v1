@@ -49,6 +49,7 @@ const TOOLS: Array<{
   { id: "chat-hist",   icon: "clock",       label: "Chat History",       desc: "Browse all past AI Studio conversations, searchable.",          color: PURPLE, badge: "NEW",          route: "/chat-history"     },
   { id: "cross-ai",    icon: "layers",      label: "Cross-Vault AI",     desc: "Ask the AI questions that draw from your entire video vault.",  color: CYAN,   badge: "NEW",          route: "/cross-video-ai"   },
   { id: "key-terms",   icon: "book-open",   label: "Key Terms Tracker",  desc: "AI extracts recurring concepts and builds your glossary.",      color: AMBER,  badge: "NEW",          route: "/key-terms"        },
+  { id: "watch-later", icon: "bookmark",    label: "Watch Later",        desc: "Queue videos you intend to save before committing to vault.",   color: CYAN,   badge: "NEW",          route: "/watch-later"      },
 ];
 
 const ALL_TEMPLATES = [

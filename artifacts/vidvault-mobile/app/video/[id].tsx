@@ -37,7 +37,29 @@ import { api } from "@/services/api";
 import { Skeleton } from "@/components/SkeletonLoader";
 import { GridBackground } from "@/components/GridBackground";
 import { StudyTimer } from "@/components/StudyTimer";
+import { ShareCard } from "@/components/ShareCard";
+import type { ShareCardRef } from "@/components/ShareCard";
 import type { Video, Note, Tag, AiOutput } from "@/types/api";
+
+function extractInsight(content: string, type: string): string {
+  const lines = content.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (["key_insights", "notes"].includes(type)) {
+    const bullet = lines.find((l) => /^[-•*]\s+/.test(l) || /^\d+[.)]\s+/.test(l));
+    if (bullet) return bullet.replace(/^[-•*\d]+[.)]\s+/, "").slice(0, 200);
+  }
+  if (type === "flashcards") {
+    const qi = lines.findIndex((l) => /^Q:/i.test(l));
+    const ai = lines.findIndex((l) => /^A:/i.test(l));
+    if (qi >= 0 && ai > qi) return `${lines[qi]}\n${lines[ai]}`;
+  }
+  const first = lines.find((l) => l.length >= 40);
+  if (first) {
+    const dot = first.search(/[.!?]/);
+    if (dot > 40 && dot <= 180) return first.slice(0, dot + 1);
+    return first.slice(0, 180) + (first.length > 180 ? "…" : "");
+  }
+  return lines[0]?.slice(0, 140) ?? "Key insight from this video";
+}
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -290,6 +312,8 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   const [copied, setCopied] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const cardRef = React.useRef<ShareCardRef>(null);
   const wordCount = output.content.trim().split(/\s+/).filter(Boolean).length;
   const readMins = Math.max(1, Math.round(wordCount / 200));
   const generatedDate = new Date(output.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -384,13 +408,19 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
     }
   };
 
+  const handleShareCard = () => {
+    setShowExportSheet(false);
+    setTimeout(() => setShowCardModal(true), 300);
+  };
+
   const EXPORT_OPTIONS = [
-    { icon: "copy" as FeatherIconName,      label: "Copy to Clipboard",  desc: "Paste anywhere instantly",         color: "#22c55e", action: handleCopy },
-    { icon: "share-2" as FeatherIconName,   label: "Share as Text",      desc: "Send via WhatsApp, Messages…",     color: tool.color, action: handleShareText },
-    { icon: "file-text" as FeatherIconName, label: "Share as Markdown",  desc: "Export formatted .md content",     color: "#06b6d4", action: handleShareMarkdown },
-    { icon: "code" as FeatherIconName,      label: "Save as HTML",       desc: "Pick a template, then export",     color: "#8b5cf6", action: handleSaveHtml },
-    { icon: "file" as FeatherIconName,      label: "Save as PDF",        desc: "Print-ready PDF document",         color: "#ec4899", action: handleSavePdf },
-    { icon: "mail" as FeatherIconName,      label: "Send via Email",     desc: "Open mail app with content",       color: "#f59e0b", action: handleEmail },
+    { icon: "copy" as FeatherIconName,      label: "Copy to Clipboard",  desc: "Paste anywhere instantly",                color: "#22c55e", action: handleCopy },
+    { icon: "share-2" as FeatherIconName,   label: "Share as Text",      desc: "Send via WhatsApp, Messages…",            color: tool.color, action: handleShareText },
+    { icon: "image" as FeatherIconName,     label: "Share as Card",      desc: "Export a visual quote card image",        color: "#ec4899", action: handleShareCard },
+    { icon: "file-text" as FeatherIconName, label: "Share as Markdown",  desc: "Export formatted .md content",            color: "#06b6d4", action: handleShareMarkdown },
+    { icon: "code" as FeatherIconName,      label: "Save as HTML",       desc: "Pick a template, then export",            color: "#8b5cf6", action: handleSaveHtml },
+    { icon: "file" as FeatherIconName,      label: "Save as PDF",        desc: "Print-ready PDF document",                color: "#ec4899", action: handleSavePdf },
+    { icon: "mail" as FeatherIconName,      label: "Send via Email",     desc: "Open mail app with content",              color: "#f59e0b", action: handleEmail },
   ];
 
   return (
@@ -400,6 +430,44 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       transition={{ type: "timing", duration: 280 }}
       style={{ flex: 1, backgroundColor: colors.background }}
     >
+      {/* ── Share Card Modal ── */}
+      <Modal
+        visible={showCardModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCardModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.88)", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>SHARE CARD PREVIEW</Text>
+          <View style={{ borderRadius: 20, overflow: "hidden", shadowColor: tool.color, shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: 8 } }}>
+            <ShareCard
+              ref={cardRef}
+              insight={extractInsight(output.content, output.type)}
+              videoTitle={videoTitle || "Video"}
+              toolLabel={tool.label}
+              accentColor={tool.color}
+            />
+          </View>
+          <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
+            <TouchableOpacity
+              onPress={() => setShowCardModal(false)}
+              style={{ paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }}
+              activeOpacity={0.75}
+            >
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontFamily: "Eczar_400Regular" }}>Close</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); cardRef.current?.capture(); }}
+              style={{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10, backgroundColor: tool.color, flexDirection: "row", alignItems: "center", gap: 8 }}
+              activeOpacity={0.8}
+            >
+              <Feather name="share-2" size={14} color="#fff" />
+              <Text style={{ color: "#fff", fontFamily: "AlegreyaSansSC_700Bold", fontSize: 14 }}>Share Card</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* ── Export bottom sheet ── */}
       <Modal
         visible={showExportSheet}

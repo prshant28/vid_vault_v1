@@ -230,6 +230,10 @@ export const api = {
     });
     return handleRes(res);
   },
+  async previewVideo(url: string): Promise<{ title?: string; channelName?: string; thumbnail?: string; duration?: number; youtubeId?: string }> {
+    const res = await fetch(`${BASE_URL}/preview?url=${encodeURIComponent(url)}`, { headers: authHeaders() });
+    return handleRes(res);
+  },
   async crossVideoChat(message: string, history?: Array<{ role: "user" | "assistant"; content: string }>): Promise<{ message: string; sourceCount: number }> {
     const res = await fetch(`${BASE_URL}/ai/cross-video`, {
       method: "POST",
