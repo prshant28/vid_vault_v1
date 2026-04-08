@@ -105,7 +105,7 @@ function SectionHead({
 }: {
   micro: string; title: string; right?: React.ReactNode; delay?: number;
 }) {
-  const { colors } = useColors();
+  const colors = useColors();
   return (
     <MotiView
       from={{ opacity: 0, translateX: -10 }}
