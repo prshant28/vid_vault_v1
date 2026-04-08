@@ -129,7 +129,6 @@ export interface UpdateNoteRequest {
 
 export interface GenerateAiContentRequest {
   type: AiOutputType;
-  language?: string;
 }
 
 export type AiChatRequestHistoryItem = {
@@ -147,48 +146,12 @@ export interface AiChatResponse {
   message: string;
 }
 
-export interface RecentAiOutput {
-  id: string;
-  type: string;
-  videoId: string;
-  createdAt: string;
-  videoTitle: string;
-  videoThumbnail?: string | null;
-  channelName?: string | null;
-}
-
-export interface AiOutputByType {
-  type: string;
-  count: number;
-}
-
-export interface DailyActivity {
-  day: string;
-  date: string;
-  videos: number;
-  ai: number;
-}
-
 export interface DashboardStats {
   totalVideos: number;
   totalFolders: number;
   totalTags: number;
-  totalFavorites: number;
-  totalWatched: number;
-  totalNotes: number;
-  totalAiOutputs: number;
   recentVideos: Video[];
   favoriteVideos: Video[];
-  recentAiOutputs: RecentAiOutput[];
-  aiOutputsByType: AiOutputByType[];
-  dailyActivity: DailyActivity[];
-  level: number;
-  levelTitle: string;
-  levelColor: string;
-  xp: number;
-  nextLevelXP: number;
-  progressPct: number;
-  isMaxLevel: boolean;
 }
 
 export interface ErrorResponse {
