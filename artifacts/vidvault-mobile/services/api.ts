@@ -110,6 +110,14 @@ export const api = {
     });
     return handleRes(res);
   },
+  async updateFolder(folderId: string, data: { name?: string; color?: string }) {
+    const res = await fetch(`${BASE_URL}/folders/${folderId}`, {
+      method: "PATCH",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleRes(res);
+  },
   async listNotes(videoId: string) {
     const res = await fetch(`${BASE_URL}/videos/${videoId}/notes`, { headers: authHeaders() });
     return handleRes(res);

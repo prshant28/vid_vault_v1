@@ -11,6 +11,8 @@ import {
   Alert,
   ScrollView,
   useWindowDimensions,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -124,6 +126,201 @@ function FolderCard({ folder, onPress, onDelete, delay }: {
   );
 }
 
+/* ── Folder Detail Sheet ── */
+type FolderInfo = { id: string; name: string; color?: string | null; videoCount: number };
+
+function FolderDetailSheet({
+  folder,
+  onClose,
+  onDeleted,
+}: {
+  folder: FolderInfo | null;
+  onClose: () => void;
+  onDeleted: () => void;
+}) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const qc = useQueryClient();
+  const [renaming, setRenaming] = useState(false);
+  const [newName, setNewName]   = useState("");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["folder-videos", folder?.id],
+    queryFn: () => api.listVideos({ folderId: folder!.id }),
+    enabled: !!folder,
+  });
+
+  const renameMutation = useMutation({
+    mutationFn: () => api.updateFolder(folder!.id, { name: newName.trim() }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["folder-videos", folder?.id] });
+      setRenaming(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.deleteFolder(folder!.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      onDeleted();
+    },
+  });
+
+  const confirmDelete = () => {
+    Alert.alert(
+      "Delete Folder",
+      `Delete "${folder?.name}"? Videos inside will not be deleted.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete", style: "destructive",
+          onPress: () => deleteMutation.mutate(),
+        },
+      ],
+    );
+  };
+
+  const color = folder?.color || PURPLE;
+  const videos = data?.videos ?? [];
+
+  if (!folder) return null;
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
+      <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
+        <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={onClose} />
+
+        <View style={[
+          sheetStyles.sheet,
+          { backgroundColor: colors.card, borderColor: color + "30", paddingBottom: insets.bottom + 20 },
+        ]}>
+          <LinearGradient
+            colors={[color + "12", "transparent"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={[StyleSheet.absoluteFillObject, { borderTopLeftRadius: 24, borderTopRightRadius: 24 }]}
+            pointerEvents="none"
+          />
+
+          {/* Handle */}
+          <View style={[sheetStyles.handle, { backgroundColor: colors.border }]} />
+
+          {/* Header */}
+          <View style={sheetStyles.sheetHeader}>
+            <View style={[sheetStyles.folderIconWrap, { backgroundColor: color + "1a", borderColor: color + "35" }]}>
+              <Feather name="folder" size={22} color={color} />
+            </View>
+            <View style={{ flex: 1 }}>
+              {renaming ? (
+                <TextInput
+                  value={newName}
+                  onChangeText={setNewName}
+                  autoFocus
+                  style={[sheetStyles.renameInput, { color: colors.foreground, borderColor: color + "50", backgroundColor: colors.background }]}
+                  onBlur={() => { if (!newName.trim()) setRenaming(false); }}
+                />
+              ) : (
+                <Text style={[sheetStyles.sheetTitle, { color: colors.foreground }]} numberOfLines={1}>
+                  {folder.name}
+                </Text>
+              )}
+              <Text style={[sheetStyles.sheetSub, { color: colors.mutedForeground }]}>
+                {folder.videoCount} {folder.videoCount === 1 ? "video" : "videos"}
+              </Text>
+            </View>
+
+            {renaming ? (
+              <TouchableOpacity
+                onPress={() => { if (newName.trim()) renameMutation.mutate(); else setRenaming(false); }}
+                style={[sheetStyles.iconBtn, { backgroundColor: color + "18", borderColor: color + "30" }]}
+              >
+                {renameMutation.isPending
+                  ? <ActivityIndicator size="small" color={color} />
+                  : <Feather name="check" size={16} color={color} />
+                }
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => { setNewName(folder.name); setRenaming(true); }}
+                style={[sheetStyles.iconBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+              >
+                <Feather name="edit-2" size={14} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              onPress={confirmDelete}
+              style={[sheetStyles.iconBtn, { backgroundColor: "#ef444414", borderColor: "#ef444430" }]}
+            >
+              <Feather name="trash-2" size={14} color="#ef4444" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onClose} style={[sheetStyles.iconBtn, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <Feather name="x" size={16} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Accent */}
+          <View style={[sheetStyles.sheetAccent, { backgroundColor: color }]} />
+
+          {/* Videos */}
+          {isLoading ? (
+            <View style={{ paddingVertical: 32, alignItems: "center" }}>
+              <ActivityIndicator color={color} />
+            </View>
+          ) : videos.length === 0 ? (
+            <View style={sheetStyles.emptySheet}>
+              <View style={[sheetStyles.emptyIconWrap, { backgroundColor: color + "14", borderColor: color + "25" }]}>
+                <Feather name="film" size={28} color={color} />
+              </View>
+              <Text style={[sheetStyles.emptyTitle, { color: colors.foreground }]}>No videos here yet</Text>
+              <Text style={[sheetStyles.emptySub, { color: colors.mutedForeground }]}>
+                Add videos to "{folder.name}" from the Videos tab
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={videos}
+              keyExtractor={(v) => v.id}
+              style={{ maxHeight: 420 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingTop: 8 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => { onClose(); router.push(`/video/${item.id}`); }}
+                  activeOpacity={0.82}
+                  style={[sheetStyles.videoRow, { backgroundColor: colors.background, borderColor: colors.border }]}
+                >
+                  {item.thumbnail ? (
+                    <Image source={{ uri: item.thumbnail }} style={sheetStyles.thumb} />
+                  ) : (
+                    <View style={[sheetStyles.thumb, { backgroundColor: color + "18", alignItems: "center", justifyContent: "center" }]}>
+                      <Feather name="film" size={14} color={color} />
+                    </View>
+                  )}
+                  <View style={{ flex: 1, gap: 3 }}>
+                    <Text style={[sheetStyles.videoTitle, { color: colors.foreground }]} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.channelName && (
+                      <Text style={[sheetStyles.videoChannel, { color: colors.mutedForeground }]} numberOfLines={1}>
+                        {item.channelName}
+                      </Text>
+                    )}
+                  </View>
+                  <Feather name="chevron-right" size={14} color={colors.mutedForeground} />
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function FoldersScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -136,6 +333,7 @@ export default function FoldersScreen() {
   const [folderName, setFolderName]         = useState("");
   const [selectedColor, setSelectedColor]   = useState(FOLDER_COLORS[0]);
   const [createError, setCreateError]       = useState("");
+  const [selectedFolder, setSelectedFolder] = useState<FolderInfo | null>(null);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["folders"],
@@ -313,7 +511,7 @@ export default function FoldersScreen() {
             <FolderCard
               folder={item}
               delay={index * 60}
-              onPress={() => router.push(`/folder/${item.id}?name=${encodeURIComponent(item.name)}`)}
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedFolder(item); }}
               onDelete={() => handleDelete(item)}
             />
           )}
@@ -337,6 +535,13 @@ export default function FoldersScreen() {
       <PlaylistImportModal
         visible={showImportModal}
         onClose={() => setShowImportModal(false)}
+      />
+
+      {/* Inline Folder Detail Sheet */}
+      <FolderDetailSheet
+        folder={selectedFolder}
+        onClose={() => setSelectedFolder(null)}
+        onDeleted={() => setSelectedFolder(null)}
       />
 
       {/* ── CENTERED Create Folder Modal ── */}
@@ -605,4 +810,58 @@ const styles = StyleSheet.create({
   },
   previewIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   previewName: { flex: 1, fontSize: 13, fontFamily: "Eczar_600SemiBold" },
+});
+
+/* Folder Detail Sheet styles */
+const sheetStyles = StyleSheet.create({
+  sheet: {
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    borderWidth: 1, overflow: "hidden",
+    shadowColor: "#000", shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.35, shadowRadius: 24, elevation: 24,
+  },
+  handle: {
+    width: 40, height: 4, borderRadius: 2,
+    alignSelf: "center", marginTop: 12, marginBottom: 4,
+  },
+  sheetAccent: {
+    height: 2, marginHorizontal: 16, borderRadius: 2, marginTop: 10, marginBottom: 4,
+  },
+  sheetHeader: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingHorizontal: 16, paddingTop: 6, paddingBottom: 4,
+  },
+  folderIconWrap: {
+    width: 46, height: 46, borderRadius: 14, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  sheetTitle: { fontSize: 18, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.3 },
+  sheetSub: { fontSize: 11, fontFamily: "Eczar_400Regular", marginTop: 1 },
+  renameInput: {
+    fontSize: 15, fontFamily: "Eczar_400Regular",
+    borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, marginBottom: 2,
+  },
+  iconBtn: {
+    width: 34, height: 34, borderRadius: 10, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
+  },
+  videoRow: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    borderWidth: 1, borderRadius: 12, padding: 10,
+  },
+  thumb: {
+    width: 72, height: 46, borderRadius: 8,
+  },
+  videoTitle: { fontSize: 12, fontFamily: "Eczar_600SemiBold", lineHeight: 17 },
+  videoChannel: { fontSize: 10, fontFamily: "Eczar_400Regular" },
+  emptySheet: {
+    paddingVertical: 32, paddingHorizontal: 24, alignItems: "center", gap: 10,
+  },
+  emptyIconWrap: {
+    width: 60, height: 60, borderRadius: 18, borderWidth: 1,
+    alignItems: "center", justifyContent: "center", marginBottom: 4,
+  },
+  emptyTitle: { fontSize: 16, fontFamily: "AlegreyaSansSC_700Bold" },
+  emptySub: { fontSize: 12, fontFamily: "Eczar_400Regular", textAlign: "center", lineHeight: 18, opacity: 0.8 },
 });

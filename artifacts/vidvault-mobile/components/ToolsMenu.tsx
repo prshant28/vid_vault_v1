@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, Modal,
-  ScrollView, Animated, Platform, Pressable,
+  ScrollView, Animated, Platform, Pressable, useWindowDimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,8 +50,12 @@ interface Props {
 export function ToolsMenu({ visible, onClose, onImportPress }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-20)).current;
+
+  const panelWidth = screenWidth - 24;
+  const cellWidth = Math.floor((panelWidth - 20 - 16) / 3);
 
   useEffect(() => {
     if (visible) {
@@ -161,13 +165,13 @@ export function ToolsMenu({ visible, onClose, onImportPress }: Props) {
         {/* Divider */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        {/* Tool grid */}
+        {/* Tool grid — 3 exact columns */}
         <View style={styles.toolGrid}>
           {ALL_TOOLS.map((tool) => (
             <TouchableOpacity
               key={tool.id}
               onPress={() => handleTool(tool)}
-              style={[styles.toolCell, { backgroundColor: tool.color + "0e", borderColor: tool.color + "25" }]}
+              style={[styles.toolCell, { width: cellWidth, backgroundColor: tool.color + "0e", borderColor: tool.color + "25" }]}
               activeOpacity={0.72}
             >
               <View style={[styles.toolCellIcon, { backgroundColor: tool.color + "18" }]}>
@@ -228,7 +232,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingBottom: 14, gap: 8,
   },
   toolCell: {
-    width: "30%", flexGrow: 1, borderRadius: 12, borderWidth: 1,
+    borderRadius: 12, borderWidth: 1,
     alignItems: "center", paddingVertical: 12, gap: 6,
   },
   toolCellIcon: {
