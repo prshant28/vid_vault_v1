@@ -58,7 +58,7 @@ function PremiumTabIcon({
       <Animated.View style={[S.iconBg, { backgroundColor: bgColor, transform: [{ scale }] }]}>
         <Feather name={name} size={22} color={iconColor} />
       </Animated.View>
-      <Text style={[S.iconLabel, { color: iconColor, fontFamily: focused ? "Poppins_600SemiBold" : "Poppins_400Regular" }]}>
+      <Text style={[S.iconLabel, { color: iconColor, fontFamily: focused ? "Eczar_600SemiBold" : "Eczar_400Regular" }]}>
         {label}
       </Text>
     </View>
@@ -126,7 +126,7 @@ function IOSTabLayout() {
           <BlurView intensity={100} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
         ),
         tabBarLabelStyle: {
-          fontFamily: "Poppins_500Medium",
+          fontFamily: "Eczar_500Medium",
           fontSize: 9,
           letterSpacing: 0.2,
           marginTop: 2,

@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   tapLabel: {
     color: "rgba(255,255,255,0.75)",
     fontSize: 11,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
     letterSpacing: 0.5,
   },
   badge: {
@@ -164,6 +164,6 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "rgba(255,255,255,0.9)",
     fontSize: 10,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
   },
 });

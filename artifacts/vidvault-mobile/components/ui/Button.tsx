@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   label: {
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
   },
 });

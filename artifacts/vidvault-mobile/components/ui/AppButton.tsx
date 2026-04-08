@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 0.6,
   },
 });

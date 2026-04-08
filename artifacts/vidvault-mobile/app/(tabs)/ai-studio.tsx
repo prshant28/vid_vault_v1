@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   headerLeft: { gap: 2 },
-  headerEyebrow: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 2.5, marginBottom: 4 },
+  headerEyebrow: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 2.5, marginBottom: 4 },
   headerTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   statusPill: {
@@ -769,8 +769,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
   },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
-  statusText: { fontSize: 9, fontFamily: "Poppins_600SemiBold", letterSpacing: 1.2 },
-  statsHint: { fontSize: 8, fontFamily: "Poppins_400Regular", letterSpacing: 1 },
+  statusText: { fontSize: 9, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.2 },
+  statsHint: { fontSize: 8, fontFamily: "Eczar_400Regular", letterSpacing: 1 },
 
   modelRow: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
@@ -780,13 +780,13 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, borderWidth: 1,
   },
-  modelText: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
-  msgCount: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 1 },
+  modelText: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
+  msgCount: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 1 },
   clearBtn: {
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, borderWidth: 1,
   },
-  clearText: { fontSize: 10, fontFamily: "Poppins_500Medium" },
+  clearText: { fontSize: 10, fontFamily: "Eczar_500Medium" },
 
   listContent: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 12, gap: 14 },
 
@@ -809,13 +809,13 @@ const styles = StyleSheet.create({
   },
 
   bubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16 },
-  bubbleText: { fontSize: 14, lineHeight: 21, fontFamily: "Poppins_400Regular" },
+  bubbleText: { fontSize: 14, lineHeight: 21, fontFamily: "Eczar_400Regular" },
 
   bubbleFooter: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 2 },
-  timeLabel: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.3 },
+  timeLabel: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.3 },
   copyBtn: { padding: 2 },
 
-  resultsLabel: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 1.5, marginBottom: 2 },
+  resultsLabel: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 1.5, marginBottom: 2 },
 
   /* Suggestions */
   suggestionsRow: { flexDirection: "column", gap: 5 },
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 6,
     borderRadius: 8, borderWidth: 1,
   },
-  suggestionText: { fontSize: 12, fontFamily: "Poppins_400Regular", flex: 1 },
+  suggestionText: { fontSize: 12, fontFamily: "Eczar_400Regular", flex: 1 },
 
   /* Typing indicator */
   typingBubble: {
@@ -834,7 +834,7 @@ const styles = StyleSheet.create({
   },
   dotsRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   dot: { width: 5, height: 5, borderRadius: 3 },
-  typingLabel: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
+  typingLabel: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
 
   /* Scroll FAB */
   scrollFab: {
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 7,
     borderRadius: 20, borderWidth: 1,
   },
-  promptChipText: { fontSize: 12, fontFamily: "Poppins_500Medium" },
+  promptChipText: { fontSize: 12, fontFamily: "Eczar_500Medium" },
 
   /* Input bar */
   inputBar: {
@@ -880,14 +880,14 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   textInput: {
-    flex: 1, fontSize: 14, fontFamily: "Poppins_400Regular",
+    flex: 1, fontSize: 14, fontFamily: "Eczar_400Regular",
     paddingVertical: 6, paddingHorizontal: 6,
     maxHeight: 100, minHeight: 32,
     includeFontPadding: false,
   },
   inputFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 2 },
-  inputHint: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
-  charCount: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
+  inputHint: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
+  charCount: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
 
   /* Video cards */
   videoCard: {
@@ -903,18 +903,18 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.75)", borderRadius: 3,
     paddingHorizontal: 4, paddingVertical: 1,
   },
-  durationText: { fontSize: 8, fontFamily: "Poppins_600SemiBold", color: "#fff", letterSpacing: 0.3 },
+  durationText: { fontSize: 8, fontFamily: "Eczar_600SemiBold", color: "#fff", letterSpacing: 0.3 },
   videoInfo: { flex: 1, gap: 3 },
   videoMeta: { flexDirection: "row", alignItems: "center", gap: 4 },
-  videoTitle: { fontSize: 12, lineHeight: 17, fontFamily: "Poppins_600SemiBold" },
-  videoChannel: { fontSize: 10, fontFamily: "Poppins_400Regular" },
-  dateSaved: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.3 },
+  videoTitle: { fontSize: 12, lineHeight: 17, fontFamily: "Eczar_600SemiBold" },
+  videoChannel: { fontSize: 10, fontFamily: "Eczar_400Regular" },
+  dateSaved: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.3 },
   importBtn: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
   libraryBadge: {
     alignSelf: "flex-start", paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: 4, borderWidth: 1,
   },
-  libraryBadgeText: { fontSize: 8, fontFamily: "Poppins_600SemiBold", letterSpacing: 1 },
+  libraryBadgeText: { fontSize: 8, fontFamily: "Eczar_600SemiBold", letterSpacing: 1 },
 });
 
 const histStyles = StyleSheet.create({
@@ -931,13 +931,13 @@ const histStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.5, shadowRadius: 24, elevation: 20,
   },
   panelHeader: { flexDirection: "row", alignItems: "flex-start", marginBottom: 12 },
-  panelEye: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 2, marginBottom: 3 },
+  panelEye: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2, marginBottom: 3 },
   panelTitle: { fontSize: 24, fontFamily: "AlegreyaSansSC_700Bold", letterSpacing: -0.5 },
   panelClose: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: -20, marginBottom: 12 },
 
   empty: { alignItems: "center", gap: 10, paddingVertical: 40 },
-  emptyText: { fontSize: 13, fontFamily: "Poppins_400Regular" },
+  emptyText: { fontSize: 13, fontFamily: "Eczar_400Regular" },
 
   sessionRow: {
     flexDirection: "row", alignItems: "center", gap: 12,
@@ -947,6 +947,6 @@ const histStyles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 10, borderWidth: 1,
     alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  sessionPreview: { fontSize: 13, fontFamily: "Poppins_500Medium", lineHeight: 18 },
-  sessionDate: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.3, marginTop: 3 },
+  sessionPreview: { fontSize: 13, fontFamily: "Eczar_500Medium", lineHeight: 18 },
+  sessionDate: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.3, marginTop: 3 },
 });

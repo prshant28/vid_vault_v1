@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.72)", borderRadius: 2,
     paddingHorizontal: 4, paddingVertical: 1,
   },
-  durationText: { color: "#fff", fontSize: 9, fontFamily: "Poppins_400Regular" },
+  durationText: { color: "#fff", fontSize: 9, fontFamily: "Eczar_400Regular" },
   watchedBadge: {
     position: "absolute", top: 3, left: 3,
     backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 10,
@@ -212,12 +212,12 @@ const styles = StyleSheet.create({
   },
 
   content: { flex: 1, gap: 3 },
-  title:   { fontSize: 13, fontFamily: "Poppins_600SemiBold", lineHeight: 18 },
-  channel: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.3 },
+  title:   { fontSize: 13, fontFamily: "Eczar_600SemiBold", lineHeight: 18 },
+  channel: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.3 },
 
   metaRow: { flexDirection: "row", gap: 8, marginTop: 1 },
   metaBadge: { flexDirection: "row", alignItems: "center", gap: 3 },
-  metaText: { fontSize: 9, fontFamily: "Poppins_400Regular" },
+  metaText: { fontSize: 9, fontFamily: "Eczar_400Regular" },
 
   tagsRow: { flexDirection: "row", gap: 4, flexWrap: "wrap", marginTop: 3 },
   tagPill: {
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, borderWidth: 1,
   },
   tagDot:  { width: 4, height: 4, borderRadius: 2 },
-  tagText: { fontSize: 8, fontFamily: "Poppins_400Regular", letterSpacing: 0.3 },
+  tagText: { fontSize: 8, fontFamily: "Eczar_400Regular", letterSpacing: 0.3 },
 
   actions: { flexShrink: 0, alignItems: "center", gap: 8 },
   favBtn:  { padding: 5, borderRadius: 6 },

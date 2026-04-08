@@ -130,7 +130,7 @@ function QuickPill({ label, icon, color, onPress }: { label: string; icon: Feath
         </Svg>
         <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 }]}>
           <Feather name={icon} size={10} color="#fff" />
-          <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.2, color: "#fff" }}>{label}</Text>
+          <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.2, color: "#fff" }}>{label}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -272,7 +272,7 @@ function ToolBadge({ label, icon, color, dimmed }: { label: string; icon: Feathe
       </Svg>
       <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4 }}>
         <Feather name={icon} size={8} color={dimmed ? color + "99" : color} />
-        <Text style={{ fontSize: 8, fontFamily: "Poppins_600SemiBold", color: dimmed ? color + "99" : color, letterSpacing: 1 }}>{label}</Text>
+        <Text style={{ fontSize: 8, fontFamily: "Eczar_600SemiBold", color: dimmed ? color + "99" : color, letterSpacing: 1 }}>{label}</Text>
       </View>
     </View>
   );
@@ -428,8 +428,8 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
               <Feather name="download" size={15} color={tool.color} />
             </View>
             <View>
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: tool.color }}>Export Options</Text>
-              <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }}>{tool.label} · {wordCount} words</Text>
+              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: tool.color }}>Export Options</Text>
+              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }}>{tool.label} · {wordCount} words</Text>
             </View>
           </View>
           {/* Options */}
@@ -451,8 +451,8 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
                   <Feather name={opt.icon} size={16} color={opt.color} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 13, color: colors.foreground, marginBottom: 1 }}>{opt.label}</Text>
-                  <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 10, color: colors.mutedForeground, letterSpacing: 0.3 }}>{opt.desc}</Text>
+                  <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 13, color: colors.foreground, marginBottom: 1 }}>{opt.label}</Text>
+                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground, letterSpacing: 0.3 }}>{opt.desc}</Text>
                 </View>
                 <Feather name="chevron-right" size={14} color={opt.color + "80"} />
               </TouchableOpacity>
@@ -536,7 +536,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
                 backgroundColor: lang === l ? tool.color + "18" : colors.secondary,
               }}
             >
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : colors.mutedForeground }}>
+              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : colors.mutedForeground }}>
                 {l === "en" ? "EN" : "हिं"}
               </Text>
             </TouchableOpacity>
@@ -608,13 +608,13 @@ function NoteItem({ note, onDelete, onUpdate }: {
               onPress={() => { onUpdate(editContent.trim(), editTs.trim() ? parseTs(editTs) : null); setEditing(false); }}
               style={[styles.noteActionBtn, { backgroundColor: PURPLE }]}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "Poppins_600SemiBold" }}>Save</Text>
+              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "Eczar_600SemiBold" }}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setEditing(false)}
               style={[styles.noteActionBtn, { backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }]}
             >
-              <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Poppins_500Medium" }}>Cancel</Text>
+              <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Eczar_500Medium" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -906,7 +906,7 @@ export default function VideoDetailScreen() {
           <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, textAlign: "center" }}>
             {isError ? "Failed to load" : "Video not found"}
           </Text>
-          <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 13, color: colors.mutedForeground, textAlign: "center", lineHeight: 20 }}>
+          <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 13, color: colors.mutedForeground, textAlign: "center", lineHeight: 20 }}>
             {isError
               ? "Could not fetch this video. Check your connection and try again."
               : "This video may have been deleted or belongs to a different account."}
@@ -1220,7 +1220,7 @@ export default function VideoDetailScreen() {
                         }}
                       >
                         <Feather name="globe" size={8} color={lang === l ? PURPLE : colors.mutedForeground} />
-                        <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
+                        <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
                           {l === "en" ? "EN" : "हिं"}
                         </Text>
                       </TouchableOpacity>
@@ -1291,7 +1291,7 @@ export default function VideoDetailScreen() {
                         style={[styles.chatSuggestion, { backgroundColor: PURPLE + "12", borderColor: PURPLE + "30" }]}
                         activeOpacity={0.75}
                       >
-                        <Text style={{ color: PURPLE, fontSize: 11, fontFamily: "Poppins_500Medium" }}>{q}</Text>
+                        <Text style={{ color: PURPLE, fontSize: 11, fontFamily: "Eczar_500Medium" }}>{q}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -1310,7 +1310,7 @@ export default function VideoDetailScreen() {
                   {msg.role === "assistant" && (
                     <View style={styles.chatAiLabel}>
                       <Feather name="cpu" size={9} color={CYAN} />
-                      <Text style={{ color: CYAN, fontSize: 8, fontFamily: "Poppins_400Regular", letterSpacing: 1 }}>GEMINI</Text>
+                      <Text style={{ color: CYAN, fontSize: 8, fontFamily: "Eczar_400Regular", letterSpacing: 1 }}>GEMINI</Text>
                     </View>
                   )}
                   <Text style={[styles.chatBubbleText, { color: msg.role === "user" ? "#fff" : colors.foreground }]}>
@@ -1326,7 +1326,7 @@ export default function VideoDetailScreen() {
                   style={[styles.chatBubble, { alignSelf: "flex-start", backgroundColor: colors.card, borderColor: PURPLE + "30" }]}
                 >
                   <Feather name="cpu" size={12} color={PURPLE} />
-                  <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Poppins_400Regular" }}>Thinking…</Text>
+                  <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Eczar_400Regular" }}>Thinking…</Text>
                 </MotiView>
               )}
             </View>
@@ -1575,7 +1575,7 @@ const styles = StyleSheet.create({
   },
   navBtn: { padding: 10, width: 44, alignItems: "center" },
   navTitle: {
-    flex: 1, fontSize: 15, fontFamily: "Poppins_600SemiBold",
+    flex: 1, fontSize: 15, fontFamily: "Eczar_600SemiBold",
     textAlign: "center", letterSpacing: -0.2,
   },
 
@@ -1588,7 +1588,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  ytExtText: { color: "rgba(255,255,255,0.9)", fontSize: 10, fontFamily: "Poppins_600SemiBold" },
+  ytExtText: { color: "rgba(255,255,255,0.9)", fontSize: 10, fontFamily: "Eczar_600SemiBold" },
   thumbCenter: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" },
   playCircle: {
     width: 60, height: 60, borderRadius: 30, backgroundColor: "rgba(139,92,246,0.85)",
@@ -1602,15 +1602,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  watchOnYtText: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontFamily: "Poppins_600SemiBold" },
-  embedErrTitle: { color: "#fff", fontSize: 14, fontFamily: "Poppins_600SemiBold" },
-  embedErrSub: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Poppins_400Regular", textAlign: "center", marginTop: 4 },
+  watchOnYtText: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontFamily: "Eczar_600SemiBold" },
+  embedErrTitle: { color: "#fff", fontSize: 14, fontFamily: "Eczar_600SemiBold" },
+  embedErrSub: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Eczar_400Regular", textAlign: "center", marginTop: 4 },
   embedErrBtn: {
     flexDirection: "row", alignItems: "center", gap: 8,
     paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#ef4444",
     borderRadius: 6, marginTop: 12,
   },
-  embedErrBtnText: { color: "#fff", fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 1.2 },
+  embedErrBtnText: { color: "#fff", fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 1.2 },
 
   /* Info */
   infoBlock: { padding: 16, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
@@ -1627,17 +1627,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5,
     borderRadius: 6, borderWidth: 1,
   },
-  metaChipText: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
+  metaChipText: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
   tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   tagPill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 5, borderWidth: 1 },
-  tagPillText: { fontSize: 10, fontFamily: "Poppins_500Medium", letterSpacing: 0.3 },
+  tagPillText: { fontSize: 10, fontFamily: "Eczar_500Medium", letterSpacing: 0.3 },
 
   /* Quick pills */
   quickPill: {
     flexDirection: "row", alignItems: "center", gap: 5,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1,
   },
-  quickPillText: { fontSize: 9, fontFamily: "Poppins_600SemiBold", letterSpacing: 1.2 },
+  quickPillText: { fontSize: 9, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.2 },
 
   /* Tabs */
   tabRow: {
@@ -1645,11 +1645,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   tabBtn: { flex: 1, paddingVertical: 10, alignItems: "center", borderRadius: 8, borderWidth: 1 },
-  tabBtnText: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 1.1 },
+  tabBtnText: { fontSize: 10, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.1 },
 
   /* Section */
   section: { padding: 16, gap: 12 },
-  sectionEyebrow: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 2.5 },
+  sectionEyebrow: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2.5 },
   sectionTitle: {
     fontSize: 14, fontFamily: "AlegreyaSansSC_800ExtraBold",
     letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
@@ -1675,15 +1675,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", marginBottom: 10,
   },
   toolNum: {
-    fontSize: 9, fontFamily: "Poppins_400Regular",
+    fontSize: 9, fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5, color: "rgba(255,255,255,0.2)",
   },
   toolLabel: {
-    fontSize: 11, fontFamily: "Poppins_600SemiBold",
+    fontSize: 11, fontFamily: "Eczar_600SemiBold",
     letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 5,
   },
   toolDesc: {
-    fontSize: 9, fontFamily: "Poppins_400Regular",
+    fontSize: 9, fontFamily: "Eczar_400Regular",
     color: "#505060", lineHeight: 14, letterSpacing: 0.2,
   },
   toolCardFooter: { paddingTop: 8 },
@@ -1701,18 +1701,18 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 6, borderWidth: 1,
   },
-  generatingPillText: { fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
+  generatingPillText: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
   viewBtn: {
     flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5,
     backgroundColor: PURPLE + "18", borderRadius: 6, borderWidth: 1, borderColor: PURPLE + "30",
   },
-  viewBtnText: { fontSize: 10, fontFamily: "Poppins_400Regular", color: PURPLE },
+  viewBtnText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: PURPLE },
   genBtn: {
     flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
     paddingHorizontal: 10, paddingVertical: 5, backgroundColor: PURPLE, borderRadius: 6,
   },
-  genBtnText: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "#fff" },
+  genBtnText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "#fff" },
 
   /* Generating banner */
   generatingBanner: {
@@ -1720,7 +1720,7 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE + "12", borderWidth: 1, borderColor: PURPLE + "30",
     borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
   },
-  generatingText: { fontSize: 12, fontFamily: "Poppins_500Medium", color: PURPLE },
+  generatingText: { fontSize: 12, fontFamily: "Eczar_500Medium", color: PURPLE },
 
   /* Output Panel — full-screen */
   outputFullHeader: {
@@ -1729,7 +1729,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.07)",
   },
   outputBackRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  outputBackLabel: { fontSize: 10, fontFamily: "Poppins_600SemiBold", letterSpacing: 1.5 },
+  outputBackLabel: { fontSize: 10, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.5 },
   outputIconBtn: {
     width: 34, height: 34, borderRadius: 8,
     backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.09)",
@@ -1744,43 +1744,43 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 12,
     alignItems: "center", justifyContent: "center", borderWidth: 1,
   },
-  outputToolName: { fontSize: 17, fontFamily: "Poppins_600SemiBold", color: "#fff" },
-  outputToolSub: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.3)", marginTop: 2 },
+  outputToolName: { fontSize: 17, fontFamily: "Eczar_600SemiBold", color: "#fff" },
+  outputToolSub: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.3)", marginTop: 2 },
   outputStatChip: {
     borderWidth: 1, borderRadius: 5,
     paddingHorizontal: 8, paddingVertical: 3,
   },
-  outputStatText: { fontSize: 9, fontFamily: "Poppins_600SemiBold", letterSpacing: 0.5 },
+  outputStatText: { fontSize: 9, fontFamily: "Eczar_600SemiBold", letterSpacing: 0.5 },
   outputDateStrip: {
     flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 20, paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.04)",
   },
-  outputDateText: { fontSize: 9, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.22)", letterSpacing: 0.4 },
-  outputFullText: { fontSize: 13.5, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.84)", lineHeight: 23, letterSpacing: 0.2 },
+  outputDateText: { fontSize: 9, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.22)", letterSpacing: 0.4 },
+  outputFullText: { fontSize: 13.5, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.84)", lineHeight: 23, letterSpacing: 0.2 },
 
   outputBottomBar: {
     borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)",
     backgroundColor: "#0d0d12", paddingHorizontal: 16, paddingTop: 12,
     flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap",
   },
-  outputBottomLabel: { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.3)", textTransform: "uppercase" },
+  outputBottomLabel: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.3)", textTransform: "uppercase" },
   langToggleRow: { flexDirection: "row", gap: 2, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 6, padding: 2, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" },
   langBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
   langBtnActive: { backgroundColor: "#6366f1" },
-  langBtnText: { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.4)" },
+  langBtnText: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.4)" },
   langBtnTextActive: { color: "#fff" },
   regenBottomBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, backgroundColor: "rgba(167,139,250,0.08)", borderWidth: 1, borderColor: "rgba(167,139,250,0.2)", marginLeft: "auto" as any },
-  regenBottomText: { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 0.3, color: "#a78bfa", textTransform: "uppercase" as any },
+  regenBottomText: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "#a78bfa", textTransform: "uppercase" as any },
 
   /* Notes */
   noteInputCard: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
-  noteInput: { fontFamily: "Poppins_400Regular", fontSize: 14, lineHeight: 21, minHeight: 56, textAlignVertical: "top" },
+  noteInput: { fontFamily: "Eczar_400Regular", fontSize: 14, lineHeight: 21, minHeight: 56, textAlignVertical: "top" },
   noteInputFooter: { flexDirection: "row", alignItems: "center", gap: 10 },
   tsInput: {
     flex: 1, borderRadius: 8, borderWidth: 1,
     paddingHorizontal: 10, paddingVertical: 8,
-    fontSize: 12, fontFamily: "Poppins_400Regular",
+    fontSize: 12, fontFamily: "Eczar_400Regular",
   },
   noteAddBtn: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
 
@@ -1794,12 +1794,12 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE + "15", borderRadius: 5,
     paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: PURPLE + "25",
   },
-  noteTsText: { fontSize: 10, fontFamily: "Poppins_400Regular", color: PURPLE },
-  noteContent: { fontSize: 13, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.8)", lineHeight: 20 },
+  noteTsText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: PURPLE },
+  noteContent: { fontSize: 13, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.8)", lineHeight: 20 },
   noteFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
-  noteDate: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "rgba(255,255,255,0.25)" },
+  noteDate: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.25)" },
   noteEditInput: {
-    color: "#fff", fontFamily: "Poppins_400Regular", fontSize: 13,
+    color: "#fff", fontFamily: "Eczar_400Regular", fontSize: 13,
     backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, padding: 10,
     minHeight: 60, textAlignVertical: "top", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
   },
@@ -1809,8 +1809,8 @@ const styles = StyleSheet.create({
     width: 52, height: 52, borderRadius: 26, borderWidth: 1,
     alignItems: "center", justifyContent: "center", marginBottom: 12,
   },
-  emptyNoteText: { fontSize: 14, fontFamily: "Poppins_600SemiBold" },
-  emptyNoteSub: { fontSize: 11, fontFamily: "Poppins_400Regular", marginTop: 4 },
+  emptyNoteText: { fontSize: 14, fontFamily: "Eczar_600SemiBold" },
+  emptyNoteSub: { fontSize: 11, fontFamily: "Eczar_400Regular", marginTop: 4 },
 
   iconActionBtn: {
     width: 34, height: 34, borderRadius: 6,
@@ -1822,15 +1822,15 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 12, padding: 14,
     marginBottom: 14, overflow: "hidden",
   },
-  quickAnalyzeTitle: { fontSize: 13, fontFamily: "Poppins_600SemiBold", letterSpacing: -0.2 },
-  quickAnalyzeSub: { fontSize: 11, fontFamily: "Poppins_400Regular", marginTop: 1 },
+  quickAnalyzeTitle: { fontSize: 13, fontFamily: "Eczar_600SemiBold", letterSpacing: -0.2 },
+  quickAnalyzeSub: { fontSize: 11, fontFamily: "Eczar_400Regular", marginTop: 1 },
 
   chatEmptyCard: {
     borderRadius: 14, borderWidth: 1, padding: 24,
     alignItems: "center", gap: 8,
   },
-  chatEmptyTitle: { fontSize: 14, fontFamily: "Poppins_600SemiBold", textAlign: "center" },
-  chatEmptySub: { fontSize: 11, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 17 },
+  chatEmptyTitle: { fontSize: 14, fontFamily: "Eczar_600SemiBold", textAlign: "center" },
+  chatEmptySub: { fontSize: 11, fontFamily: "Eczar_400Regular", textAlign: "center", lineHeight: 17 },
   chatSuggestion: {
     borderRadius: 20, borderWidth: 1,
     paddingHorizontal: 12, paddingVertical: 6,
@@ -1840,12 +1840,12 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "transparent",
   },
   chatAiLabel: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 2 },
-  chatBubbleText: { fontSize: 13, fontFamily: "Poppins_400Regular", lineHeight: 20 },
+  chatBubbleText: { fontSize: 13, fontFamily: "Eczar_400Regular", lineHeight: 20 },
   chatInputRow: {
     flexDirection: "row", alignItems: "flex-end", gap: 10,
     borderRadius: 14, borderWidth: 1, padding: 10,
   },
-  chatInput: { flex: 1, fontSize: 13, fontFamily: "Poppins_400Regular", maxHeight: 120, lineHeight: 20 },
+  chatInput: { flex: 1, fontSize: 13, fontFamily: "Eczar_400Regular", maxHeight: 120, lineHeight: 20 },
   chatSendBtn: {
     width: 34, height: 34, borderRadius: 10,
     alignItems: "center", justifyContent: "center",
@@ -1867,14 +1867,14 @@ const styles = StyleSheet.create({
     width: 32, height: 32, borderRadius: 8, borderWidth: 1,
     alignItems: "center", justifyContent: "center",
   },
-  folderPickerTitle: { fontSize: 14, fontFamily: "Poppins_600SemiBold", letterSpacing: -0.2 },
+  folderPickerTitle: { fontSize: 14, fontFamily: "Eczar_600SemiBold", letterSpacing: -0.2 },
   folderPickerItem: {
     flexDirection: "row", alignItems: "center", gap: 12,
     paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  folderPickerItemText: { fontSize: 14, fontFamily: "Poppins_500Medium", flex: 1 },
+  folderPickerItemText: { fontSize: 14, fontFamily: "Eczar_500Medium", flex: 1 },
   folderColorDot: { width: 10, height: 10, borderRadius: 5 },
-  folderPickerEmpty: { fontSize: 13, fontFamily: "Poppins_400Regular", textAlign: "center", lineHeight: 20 },
+  folderPickerEmpty: { fontSize: 13, fontFamily: "Eczar_400Regular", textAlign: "center", lineHeight: 20 },
 
   /* Premium centered modals (folder + tag) */
   premiumModal: {
@@ -1889,7 +1889,7 @@ const styles = StyleSheet.create({
     width: 38, height: 38, borderRadius: 11, borderWidth: 1,
     alignItems: "center", justifyContent: "center",
   },
-  premiumModalMicro: { fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2, marginBottom: 1 },
+  premiumModalMicro: { fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, marginBottom: 1 },
   premiumModalTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 18, letterSpacing: -0.3 },
   premiumModalClose: {
     width: 30, height: 30, borderRadius: 8, borderWidth: 1,
@@ -1900,7 +1900,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 12,
     paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  premiumPickerItemText: { fontSize: 14, fontFamily: "Poppins_500Medium", flex: 1 },
+  premiumPickerItemText: { fontSize: 14, fontFamily: "Eczar_500Medium", flex: 1 },
   premiumColorDot: { width: 11, height: 11, borderRadius: 6 },
   premiumPickerCheck: {
     width: 26, height: 26, borderRadius: 8, borderWidth: 1,
@@ -1916,6 +1916,6 @@ const styles = StyleSheet.create({
   statItem:     { flex: 1, alignItems: "center", gap: 4 },
   statIconBadge:{ width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   statVal:      { fontSize: 13, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -0.3 },
-  statLbl:      { fontSize: 7.5, fontFamily: "Poppins_400Regular", letterSpacing: 1, textTransform: "uppercase" },
+  statLbl:      { fontSize: 7.5, fontFamily: "Eczar_400Regular", letterSpacing: 1, textTransform: "uppercase" },
   statDivider:  { width: 1, height: 32, borderRadius: 1 },
 });

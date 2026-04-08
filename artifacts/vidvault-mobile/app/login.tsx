@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   logoSub: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 10,
     color: MUTED,
     letterSpacing: 0.2,
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   versionText: {
-    fontFamily: "Poppins_700Bold",
+    fontFamily: "Eczar_700Bold",
     fontSize: 8,
     color: "#a78bfa",
     letterSpacing: 0.5,
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabText: {
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     fontSize: 12,
     color: MUTED,
   },
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     lineHeight: 46,
   },
   subheading: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 13,
     color: MUTED,
     lineHeight: 20,
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   label: {
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
     fontSize: 11,
     color: MUTED,
     letterSpacing: 0.2,
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     flex: 1,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 14,
     color: WHITE,
     padding: 0,
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
 
   /* Forgot */
   forgotText: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 12,
     color: PURPLE,
     letterSpacing: 0.1,
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     flex: 1,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 12,
     color: ERROR_COLOR,
     lineHeight: 18,
@@ -804,13 +804,13 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   footerText: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 12,
     color: MUTED,
     textAlign: "center",
   },
   footerLink: {
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     color: PURPLE,
   },
 
@@ -828,7 +828,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(99,102,241,0.12)",
   },
   decorText: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 10,
     color: MUTED2,
     letterSpacing: 0.5,

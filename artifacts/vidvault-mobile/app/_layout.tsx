@@ -1,10 +1,10 @@
 import "../global.css";
 import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-} from "@expo-google-fonts/poppins";
+  Eczar_400Regular,
+  Eczar_500Medium,
+  Eczar_600SemiBold,
+  Eczar_700Bold,
+} from "@expo-google-fonts/eczar";
 import {
   AlegreyaSansSC_400Regular,
   AlegreyaSansSC_700Bold,
@@ -111,7 +111,7 @@ function RootLayoutNav() {
           <VidVaultLogo size={88} />
         </View>
         <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 26, color: "#ffffff", letterSpacing: -0.5 }}>VidVault</Text>
-        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
+        <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
   }
@@ -139,10 +139,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+    Eczar_400Regular,
+    Eczar_500Medium,
+    Eczar_600SemiBold,
+    Eczar_700Bold,
     JetBrainsMono_400Regular,
     JetBrainsMono_600SemiBold,
     // On Android, Raleway renders cleanly for display headings;
@@ -185,7 +185,7 @@ export default function RootLayout() {
           <VidVaultLogo size={72} />
         </View>
         <Text style={{ fontSize: 24, color: "#ffffff", fontWeight: "900", letterSpacing: -0.5 }}>VidVault</Text>
-        <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
+        <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2.5, marginTop: 4 }}>AI KNOWLEDGE VAULT</Text>
       </View>
     );
   }

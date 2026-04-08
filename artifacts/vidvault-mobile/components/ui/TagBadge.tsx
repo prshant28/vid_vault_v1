@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
   },
 });

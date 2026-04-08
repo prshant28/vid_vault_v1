@@ -489,9 +489,9 @@ const styles = StyleSheet.create({
   logoRow:    { flexDirection: "row", alignItems: "center", gap: 8 },
   logoName:   { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 18 },
   aiBadge:    { borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
-  aiBadgeText:{ fontFamily: "Poppins_700Bold", fontSize: 8, color: "#818cf8", letterSpacing: 0.3 },
+  aiBadgeText:{ fontFamily: "Eczar_700Bold", fontSize: 8, color: "#818cf8", letterSpacing: 0.3 },
   skipBtn:    { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
-  skipText:   { fontFamily: "Poppins_500Medium", fontSize: 12 },
+  skipText:   { fontFamily: "Eczar_500Medium", fontSize: 12 },
 
   illustrationWrap: {
     flex: 1,
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   badgeDot:  { width: 5, height: 5, borderRadius: 3 },
-  badgeText: { fontFamily: "Poppins_600SemiBold", fontSize: 10, letterSpacing: 0.2 },
+  badgeText: { fontFamily: "Eczar_600SemiBold", fontSize: 10, letterSpacing: 0.2 },
 
   title: {
     fontFamily: "AlegreyaSansSC_800ExtraBold",
@@ -541,14 +541,14 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 13.5,
     lineHeight: 22,
     maxWidth: W - 48,
   },
 
   hintRow:    { alignSelf: "center" },
-  signInHint: { fontFamily: "Poppins_400Regular", fontSize: 12, textAlign: "center" },
-  signInLink: { fontFamily: "Poppins_600SemiBold", color: PURPLE },
-  hintLine:   { fontFamily: "Poppins_400Regular", fontSize: 11 },
+  signInHint: { fontFamily: "Eczar_400Regular", fontSize: 12, textAlign: "center" },
+  signInLink: { fontFamily: "Eczar_600SemiBold", color: PURPLE },
+  hintLine:   { fontFamily: "Eczar_400Regular", fontSize: 11 },
 });

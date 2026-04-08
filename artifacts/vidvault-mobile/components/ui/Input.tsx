@@ -44,7 +44,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           placeholderTextColor={colors.mutedForeground}
           style={[
             styles.input,
-            { color: colors.foreground, fontFamily: "Poppins_400Regular" },
+            { color: colors.foreground, fontFamily: "Eczar_400Regular" },
             style,
           ]}
           {...props}
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
   },
   inputRow: {
     flexDirection: "row",
@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: 12,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
   },
 });

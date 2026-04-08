@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   brandSub: {
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     fontSize: 7,
     letterSpacing: 2.5,
     textTransform: "uppercase",

@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     marginTop: 2,
   },
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   urlInput: {
     flex: 1,
     fontSize: 13,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
   },
   previewCard: {
     borderWidth: 1,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   previewDomain: {
     color: "rgba(255,255,255,0.55)",
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1,
     marginTop: 2,
   },
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5,
   },
   titleSection: {
@@ -544,18 +544,18 @@ const styles = StyleSheet.create({
   },
   titleLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
   },
   editLink: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     color: "#6366f1",
   },
   titleInput: {
     fontSize: 14,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   },
   titleDisplay: {
     fontSize: 14,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
     lineHeight: 20,
   },
   folderSection: {
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   folderLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
   },
   folderScroll: {
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   },
   folderChipText: {
     fontSize: 11,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
   },
   aiHint: {
     flexDirection: "row",
@@ -612,13 +612,13 @@ const styles = StyleSheet.create({
   },
   aiHintText: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5,
     color: "#6366f1",
   },
   errorText: {
     fontSize: 12,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     textAlign: "center",
   },
   modalFooter: {
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontSize: 11,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
   },
   saveBtn: {
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   saveBtnText: {
     color: "#fff",
     fontSize: 11,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     fontWeight: "700",
   },

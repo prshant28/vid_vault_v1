@@ -832,7 +832,7 @@ function RecentAiItemCard({
                 <Text
                   style={{
                     fontSize: 9,
-                    fontFamily: "Poppins_600SemiBold",
+                    fontFamily: "Eczar_600SemiBold",
                     color: meta.color,
                     letterSpacing: 0.3,
                   }}
@@ -843,7 +843,7 @@ function RecentAiItemCard({
               <Text
                 style={{
                   fontSize: 9,
-                  fontFamily: "Poppins_400Regular",
+                  fontFamily: "Eczar_400Regular",
                   color: colors.mutedForeground + "60",
                   letterSpacing: 0.3,
                 }}
@@ -857,7 +857,7 @@ function RecentAiItemCard({
               numberOfLines={2}
               style={{
                 fontSize: 12.5,
-                fontFamily: "Poppins_600SemiBold",
+                fontFamily: "Eczar_600SemiBold",
                 lineHeight: 17,
                 color: colors.foreground,
               }}
@@ -885,7 +885,7 @@ function RecentAiItemCard({
                 <Text
                   style={{
                     fontSize: 9.5,
-                    fontFamily: "Poppins_400Regular",
+                    fontFamily: "Eczar_400Regular",
                     color: colors.mutedForeground,
                     flex: 1,
                   }}
@@ -1016,7 +1016,7 @@ function WelcomeHero({
         {/* Date row */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 }}>
           <Text style={{ fontSize: 14 }}>{emoji}</Text>
-          <Text style={{ fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 2.5, color: colors.mutedForeground, textTransform: "uppercase" }}>
+          <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2.5, color: colors.mutedForeground, textTransform: "uppercase" }}>
             {today}
           </Text>
           {streak > 0 && (
@@ -1027,14 +1027,14 @@ function WelcomeHero({
               paddingHorizontal: 7, paddingVertical: 2,
             }}>
               <Text style={{ fontSize: 10 }}>🔥</Text>
-              <Text style={{ fontFamily: "Poppins_700Bold", fontSize: 10, color: AMBER }}>{streak}</Text>
+              <Text style={{ fontFamily: "Eczar_700Bold", fontSize: 10, color: AMBER }}>{streak}</Text>
             </View>
           )}
         </View>
 
         {/* Greeting label: "Good Evening," */}
         <Text style={{
-          fontFamily: "Poppins_400Regular",
+          fontFamily: "Eczar_400Regular",
           fontSize: 11, letterSpacing: 1.8,
           color: colors.mutedForeground,
           marginBottom: 2,
@@ -1056,7 +1056,7 @@ function WelcomeHero({
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: totalVideos > 0 ? 14 : 0 }}>
           <View style={{ width: 28, height: 2, borderRadius: 1, backgroundColor: accent }} />
           <Text style={{
-            fontFamily: "Poppins_400Regular", fontSize: 11,
+            fontFamily: "Eczar_400Regular", fontSize: 11,
             color: colors.mutedForeground, flex: 1,
           }}>
             {sub}
@@ -1073,7 +1073,7 @@ function WelcomeHero({
               paddingHorizontal: 10, paddingVertical: 5,
             }}>
               <Feather name="film" size={10} color={PURPLE} />
-              <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, color: PURPLE }}>
+              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 11, color: PURPLE }}>
                 {totalVideos} {totalVideos === 1 ? "video" : "videos"}
               </Text>
             </View>
@@ -1085,7 +1085,7 @@ function WelcomeHero({
                 paddingHorizontal: 10, paddingVertical: 5,
               }}>
                 <Feather name="cpu" size={10} color={CYAN} />
-                <Text style={{ fontFamily: "Poppins_600SemiBold", fontSize: 11, color: CYAN }}>
+                <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 11, color: CYAN }}>
                   {totalAi} AI
                 </Text>
               </View>
@@ -1341,7 +1341,7 @@ export default function HomeScreen() {
                 <View style={{ gap: 4 }}>
                   <Text
                     style={{
-                      fontFamily: "Poppins_400Regular",
+                      fontFamily: "Eczar_400Regular",
                       fontSize: 9,
                       letterSpacing: 2,
                       color: PURPLE,
@@ -1360,7 +1360,7 @@ export default function HomeScreen() {
                   </Text>
                   <Text
                     style={{
-                      fontFamily: "Poppins_400Regular",
+                      fontFamily: "Eczar_400Regular",
                       fontSize: 12,
                       color: colors.mutedForeground,
                       lineHeight: 18,
@@ -1419,7 +1419,7 @@ export default function HomeScreen() {
                       </View>
                       <Text
                         style={{
-                          fontFamily: "Poppins_400Regular",
+                          fontFamily: "Eczar_400Regular",
                           fontSize: 12,
                           color: colors.desc,
                           flex: 1,
@@ -1763,7 +1763,7 @@ const styles = StyleSheet.create({
   },
   greetingLabel: {
     fontSize: 10,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2.5,
   },
   greetingName: {
@@ -1775,7 +1775,7 @@ const styles = StyleSheet.create({
   },
   greetingSub: {
     fontSize: 10,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5,
   },
 
@@ -1793,7 +1793,7 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusText: {
     fontSize: 9,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 1.5,
   },
 
@@ -1823,13 +1823,13 @@ const styles = StyleSheet.create({
   },
   quickBtnLabel: {
     fontSize: 10.5,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 0.1,
     textAlign: "center",
   },
   quickBtnSub: {
     fontSize: 8,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.3,
     textAlign: "center",
   },
@@ -1853,12 +1853,12 @@ const styles = StyleSheet.create({
   sectionLine: { flex: 1, height: 1 },
   sectionLabel: {
     fontSize: 10,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
   },
   sectionMicro: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     marginBottom: 3,
   },
@@ -1869,7 +1869,7 @@ const styles = StyleSheet.create({
   },
   viewAll: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5,
     paddingBottom: 3,
   },
@@ -1895,13 +1895,13 @@ const styles = StyleSheet.create({
   },
   etchedCode: {
     fontSize: 8,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.5,
     color: "rgba(255,255,255,0.2)",
   },
   etchedLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     marginBottom: 4,
     textTransform: "uppercase",
@@ -1938,12 +1938,12 @@ const styles = StyleSheet.create({
   intelDot: { width: 7, height: 7, borderRadius: 3.5 },
   intelLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1.8,
   },
   intelCount: {
     fontSize: 11,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 0.5,
   },
   intelTrack: {
@@ -1955,7 +1955,7 @@ const styles = StyleSheet.create({
   intelFill: { height: "100%", borderRadius: 2, overflow: "hidden" },
   intelSub: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.3,
   },
 
@@ -1992,12 +1992,12 @@ const styles = StyleSheet.create({
   },
   activityTitle: {
     fontSize: 12,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     lineHeight: 17,
   },
   activityChannel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.3,
     marginTop: 1,
   },
@@ -2005,7 +2005,7 @@ const styles = StyleSheet.create({
   newPillText: {
     color: "#fff",
     fontSize: 7,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 1,
   },
 
@@ -2018,7 +2018,7 @@ const styles = StyleSheet.create({
   },
   taglineText: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2.5,
   },
 
@@ -2035,7 +2035,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, marginBottom: 10,
   },
   sectionInlineTitle: {
-    fontFamily: "Poppins_600SemiBold", fontSize: 13, letterSpacing: 0.1,
+    fontFamily: "Eczar_600SemiBold", fontSize: 13, letterSpacing: 0.1,
   },
 
   /* Streak card */
@@ -2047,7 +2047,7 @@ const styles = StyleSheet.create({
   streakLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   streakFlame: { fontSize: 28 },
   streakNum: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 32, lineHeight: 36 },
-  streakLabel: { fontFamily: "Poppins_400Regular", fontSize: 8, letterSpacing: 1.5 },
+  streakLabel: { fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 1.5 },
   streakDays: { flexDirection: "row", gap: 5 },
   streakDayWrap: { alignItems: "center", gap: 3 },
   streakDayDot: {
@@ -2055,11 +2055,11 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     shadowOffset: { width: 0, height: 0 },
   },
-  streakDayLabel: { fontFamily: "Poppins_400Regular", fontSize: 8 },
+  streakDayLabel: { fontFamily: "Eczar_400Regular", fontSize: 8 },
   streakGoal: { gap: 7 },
   streakGoalRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  streakGoalLabel: { fontFamily: "Poppins_400Regular", fontSize: 9, letterSpacing: 1.5 },
-  streakGoalVal: { fontFamily: "Poppins_600SemiBold", fontSize: 10 },
+  streakGoalLabel: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1.5 },
+  streakGoalVal: { fontFamily: "Eczar_600SemiBold", fontSize: 10 },
   streakTrack: { height: 5, borderRadius: 3, overflow: "hidden" },
   streakFill: { height: "100%", borderRadius: 3, overflow: "hidden" },
 
@@ -2076,9 +2076,9 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center", borderWidth: 1,
     shadowOffset: { width: 0, height: 0 },
   },
-  tipLabel: { fontFamily: "Poppins_600SemiBold", fontSize: 9, letterSpacing: 1.2 },
-  tipDate:  { fontFamily: "Poppins_400Regular",  fontSize: 9, marginTop: 1 },
-  tipText:  { fontFamily: "Poppins_400Regular",  fontSize: 12.5, lineHeight: 20 },
+  tipLabel: { fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.2 },
+  tipDate:  { fontFamily: "Eczar_400Regular",  fontSize: 9, marginTop: 1 },
+  tipText:  { fontFamily: "Eczar_400Regular",  fontSize: 12.5, lineHeight: 20 },
 
   levelCard: {
     borderRadius: 14,
@@ -2099,7 +2099,7 @@ const styles = StyleSheet.create({
   },
   levelLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
     marginBottom: 8,
   },
@@ -2119,12 +2119,12 @@ const styles = StyleSheet.create({
   },
   levelTitle: {
     fontSize: 13,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 0.2,
   },
   levelSub: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.5,
   },
   xpBlock: { alignItems: "flex-end" },
@@ -2136,7 +2136,7 @@ const styles = StyleSheet.create({
   },
   xpLabel: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 2,
   },
   xpTrack: { height: 6, borderRadius: 3, overflow: "hidden", marginBottom: 6 },
@@ -2144,7 +2144,7 @@ const styles = StyleSheet.create({
   xpMeta: { flexDirection: "row", justifyContent: "space-between" },
   xpMetaText: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.5,
   },
 
@@ -2168,17 +2168,17 @@ const styles = StyleSheet.create({
   },
   aiCardType: {
     fontSize: 8,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
     letterSpacing: 1.5,
   },
   aiCardTitle: {
     fontSize: 12,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
     lineHeight: 17,
   },
   aiCardTime: {
     fontSize: 9,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 0.3,
     marginTop: 2,
   },

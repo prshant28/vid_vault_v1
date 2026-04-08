@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     lineHeight: 50,
   },
   tagline: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 9,
     color: MUTED,
     letterSpacing: 3,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     bottom: 56,
   },
   versionText: {
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     fontSize: 9,
     color: MUTED,
     letterSpacing: 0.5,

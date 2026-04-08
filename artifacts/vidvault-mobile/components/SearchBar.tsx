@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     padding: 0,
     margin: 0,
     includeFontPadding: false,

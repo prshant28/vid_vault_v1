@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   codeLabel: {
     fontSize: 10,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     letterSpacing: 1,
     marginBottom: 12,
   },
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Eczar_400Regular",
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 28,

@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
 
   subHeader: { paddingHorizontal: 10, paddingTop: 4, paddingBottom: 14 },
-  subLabel: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 2.5, marginBottom: 6 },
+  subLabel: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 2.5, marginBottom: 6 },
   subTitle: { fontSize: 40, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -1, lineHeight: 48 },
 
   skeletonGrid: {
@@ -353,8 +353,8 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   folderMeta: { flexDirection: "row", alignItems: "center", gap: 5 },
-  folderName: { fontSize: 13, fontFamily: "Poppins_600SemiBold", textAlign: "center", lineHeight: 19 },
-  folderCount: { fontSize: 10, fontFamily: "Poppins_400Regular", letterSpacing: 0.5 },
+  folderName: { fontSize: 13, fontFamily: "Eczar_600SemiBold", textAlign: "center", lineHeight: 19 },
+  folderCount: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
   deleteBtn: { position: "absolute", top: 8, right: 8, padding: 4 },
 
   fab: {
@@ -405,13 +405,13 @@ const styles = StyleSheet.create({
 
   nameInput: {
     paddingHorizontal: 14, paddingVertical: 13,
-    fontSize: 15, fontFamily: "Poppins_400Regular",
+    fontSize: 15, fontFamily: "Eczar_400Regular",
     borderWidth: 1, borderRadius: 12,
   },
-  errorText: { fontSize: 12, fontFamily: "Poppins_400Regular", marginTop: -8 },
+  errorText: { fontSize: 12, fontFamily: "Eczar_400Regular", marginTop: -8 },
 
   colorLabel: {
-    fontSize: 9, fontFamily: "Poppins_400Regular", letterSpacing: 2,
+    fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2,
     marginBottom: -4,
   },
   colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
@@ -426,5 +426,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1,
   },
   previewIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  previewName: { flex: 1, fontSize: 13, fontFamily: "Poppins_600SemiBold" },
+  previewName: { flex: 1, fontSize: 13, fontFamily: "Eczar_600SemiBold" },
 });

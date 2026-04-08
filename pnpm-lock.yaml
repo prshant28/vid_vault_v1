@@ -429,6 +429,9 @@ importers:
       '@expo-google-fonts/alegreya-sans-sc':
         specifier: ^0.4.1
         version: 0.4.1
+      '@expo-google-fonts/eczar':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo-google-fonts/jetbrains-mono':
         specifier: ^0.4.1
         version: 0.4.1
@@ -1216,6 +1219,9 @@ packages:
 
   '@expo-google-fonts/alegreya-sans-sc@0.4.1':
     resolution: {integrity: sha512-4tTRNjMM1WAga5ex06A+17bFxmrVluGYsmgKyxBvOuJKs4qiPdtOPpk7sVYmHDVGH+Vu80L0DWJcMD6/cRMVyg==}
+
+  '@expo-google-fonts/eczar@0.4.1':
+    resolution: {integrity: sha512-xwTiBLycLkSDpE5rszukP8UyxHKPmpcLw4PrY/krqjQT+D07n+sFDUQExejOOBSISrzxPjhw0qbBrtAfC+Ru1A==}
 
   '@expo-google-fonts/inter@0.4.2':
     resolution: {integrity: sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==}
@@ -6676,6 +6682,8 @@ snapshots:
     optional: true
 
   '@expo-google-fonts/alegreya-sans-sc@0.4.1': {}
+
+  '@expo-google-fonts/eczar@0.4.1': {}
 
   '@expo-google-fonts/inter@0.4.2': {}
 

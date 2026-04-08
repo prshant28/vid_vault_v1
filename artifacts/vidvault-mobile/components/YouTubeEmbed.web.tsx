@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   tapToPlay: {
     color: "rgba(255,255,255,0.75)",
     fontSize: 11,
-    fontFamily: "Poppins_500Medium",
+    fontFamily: "Eczar_500Medium",
     letterSpacing: 0.5,
   },
   watchBadge: {
@@ -184,6 +184,6 @@ const styles = StyleSheet.create({
   watchBadgeText: {
     color: "rgba(255,255,255,0.9)",
     fontSize: 10,
-    fontFamily: "Poppins_600SemiBold",
+    fontFamily: "Eczar_600SemiBold",
   },
 });
