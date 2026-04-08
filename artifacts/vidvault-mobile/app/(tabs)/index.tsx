@@ -32,6 +32,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { VideoCard } from "@/components/VideoCard";
 import { SaveToVaultModal } from "@/components/SaveToVaultModal";
 import { TabFadeWrapper } from "@/components/TabFadeWrapper";
+import { getStreak, updateStreak } from "@/lib/notifications";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
 
@@ -128,6 +129,7 @@ function EtchedStatCard({
   icon,
   accent,
   delay,
+  onPress,
 }: {
   label: string;
   code: string;
@@ -135,6 +137,7 @@ function EtchedStatCard({
   icon: FeatherIconName;
   accent: string;
   delay: number;
+  onPress?: () => void;
 }) {
   const { colors, isDark } = useTheme();
   const pulse = useRef(new Animated.Value(0.08)).current;
@@ -161,50 +164,60 @@ function EtchedStatCard({
       from={{ opacity: 0, translateY: 16 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "timing", duration: 400, delay }}
-      style={[
-        styles.etchedCard,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: isDark ? "#000" : accent,
-          shadowOpacity: isDark ? 0.4 : 0.10,
-          shadowRadius: isDark ? 12 : 8,
-          elevation: isDark ? 8 : 2,
-        },
-      ]}
     >
-      {/* Etch highlight overlay */}
-      <LinearGradient
-        colors={isDark
-          ? ["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.3)"]
-          : ["rgba(255,255,255,0.9)", "transparent", "rgba(0,0,0,0.02)"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-        pointerEvents="none"
-      />
-      <View style={styles.etchedTop}>
-        <Text
-          style={[styles.etchedCode, { color: colors.mutedForeground + "55" }]}
+      <TouchableOpacity onPress={onPress} activeOpacity={onPress ? 0.78 : 1} disabled={!onPress}>
+        <View
+          style={[
+            styles.etchedCard,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              shadowColor: isDark ? "#000" : accent,
+              shadowOpacity: isDark ? 0.4 : 0.10,
+              shadowRadius: isDark ? 12 : 8,
+              elevation: isDark ? 8 : 2,
+            },
+          ]}
         >
-          {code}
-        </Text>
-        <Feather
-          name={icon}
-          size={14}
-          color={accent}
-          style={{ opacity: 0.6 }}
-        />
-      </View>
-      <Text style={[styles.etchedLabel, { color: accent + "99" }]}>
-        {label.toUpperCase()}
-      </Text>
-      <Text style={[styles.etchedValue, { color: colors.foreground }]}>
-        {value.toString().padStart(2, "0")}
-      </Text>
-      <Animated.View
-        style={[styles.etchedGlow, { backgroundColor: accent, opacity: pulse }]}
-      />
+          {/* Etch highlight overlay */}
+          <LinearGradient
+            colors={isDark
+              ? ["rgba(255,255,255,0.07)", "transparent", "rgba(0,0,0,0.3)"]
+              : ["rgba(255,255,255,0.9)", "transparent", "rgba(0,0,0,0.02)"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          />
+          <View style={styles.etchedTop}>
+            <Text
+              style={[styles.etchedCode, { color: colors.mutedForeground + "55" }]}
+            >
+              {code}
+            </Text>
+            <Feather
+              name={icon}
+              size={14}
+              color={accent}
+              style={{ opacity: 0.6 }}
+            />
+          </View>
+          <Text style={[styles.etchedLabel, { color: accent + "99" }]}>
+            {label.toUpperCase()}
+          </Text>
+          <Text style={[styles.etchedValue, { color: colors.foreground }]}>
+            {value.toString().padStart(2, "0")}
+          </Text>
+          {onPress && (
+            <View style={{ position: "absolute", bottom: 10, right: 10, opacity: 0.35 }}>
+              <Feather name="chevron-right" size={10} color={accent} />
+            </View>
+          )}
+          <Animated.View
+            style={[styles.etchedGlow, { backgroundColor: accent, opacity: pulse }]}
+          />
+        </View>
+      </TouchableOpacity>
     </MotiView>
   );
 }
@@ -1209,26 +1222,10 @@ export default function HomeScreen() {
   const displayName = rawName;
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
-  // ── Streak tracking (local, AsyncStorage) ──
+  // ── Streak tracking (unified with notifications.ts) ──
   const [streak, setStreak] = useState(0);
   useEffect(() => {
-    (async () => {
-      try {
-        const today = new Date().toDateString();
-        const lastDate = await AsyncStorage.getItem("vv_streak_date");
-        const saved = parseInt((await AsyncStorage.getItem("vv_streak")) || "0", 10);
-        if (lastDate === today) {
-          setStreak(saved);
-        } else {
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const next = lastDate === yesterday.toDateString() ? saved + 1 : 1;
-          await AsyncStorage.setItem("vv_streak", String(next));
-          await AsyncStorage.setItem("vv_streak_date", today);
-          setStreak(next);
-        }
-      } catch (_) {}
-    })();
+    updateStreak().then(d => setStreak(d.count)).catch(() => getStreak().then(d => setStreak(d.count)));
   }, []);
   const recentVideos: Video[] = stats?.recentVideos ?? [];
   const favoriteVideos: Video[] = stats?.favoriteVideos ?? [];
@@ -1445,7 +1442,37 @@ export default function HomeScreen() {
           </MotiView>
         )}
 
-        {/* ── Stats 2×2 grid ── */}
+        {/* ── Quick Actions (horizontal scroll, 7 items) ── */}
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "spring", damping: 18, stiffness: 180, delay: 80 }}
+          style={{ marginBottom: 20 }}
+        >
+          <View style={styles.sectionHeaderInline}>
+            <Feather name="grid" size={13} color={PURPLE} style={{ marginTop: 1 }} />
+            <Text style={[styles.sectionInlineTitle, { color: colors.foreground }]}>Quick Access</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          >
+            {[
+              { icon: "plus-circle" as FeatherIconName, label: "Save Video",    sublabel: "Add to vault",   accent: PURPLE, onPress: () => setShowSaveModal(true) },
+              { icon: "cpu"         as FeatherIconName, label: "AI Studio",     sublabel: "Generate AI",    accent: CYAN,   onPress: () => router.push("/(tabs)/ai-studio") },
+              { icon: "bookmark"    as FeatherIconName, label: "Watch Later",   sublabel: "Queue videos",   accent: "#06b6d4", onPress: () => router.push("/watch-later") },
+              { icon: "search"      as FeatherIconName, label: "Search",        sublabel: "Find anything",  accent: GREEN,  onPress: () => router.push("/search") },
+              { icon: "layers"      as FeatherIconName, label: "SR Review",     sublabel: "Flashcards",     accent: PINK,   onPress: () => router.push("/review") },
+              { icon: "folder"      as FeatherIconName, label: "Folders",       sublabel: "Organize",       accent: AMBER,  onPress: () => router.push("/(tabs)/folders") },
+              { icon: "compass"     as FeatherIconName, label: "Discover",      sublabel: "All tools",      accent: GREEN,  onPress: () => router.push("/(tabs)/discover") },
+            ].map((qa, i) => (
+              <QuickAction key={qa.label} {...qa} delay={60 + i * 50} />
+            ))}
+          </ScrollView>
+        </MotiView>
+
+        {/* ── Stats 2×3 grid ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Feather name="bar-chart-2" size={12} color={PURPLE} />
@@ -1471,49 +1498,32 @@ export default function HomeScreen() {
             </View>
           ) : (
             <View style={styles.statsGrid}>
-              {STAT_CONFIG.map((cfg, i) => (
-                <View key={cfg.code} style={{ width: (screenWidth - 50) / 2 }}>
-                  <EtchedStatCard
-                    code={cfg.code}
-                    label={cfg.label}
-                    icon={cfg.icon}
-                    accent={cfg.accent}
-                    delay={i * 80}
-                    value={(stats as any)?.[cfg.key] ?? 0}
-                  />
-                </View>
-              ))}
+              {STAT_CONFIG.map((cfg, i) => {
+                const statRoutes: Record<string, (() => void) | undefined> = {
+                  "01": () => router.push("/(tabs)/videos"),
+                  "02": () => router.push("/(tabs)/folders"),
+                  "03": () => router.push("/(tabs)/videos"),
+                  "04": () => router.push("/(tabs)/ai-studio"),
+                  "05": () => router.push("/(tabs)/videos"),
+                  "06": () => router.push("/(tabs)/videos"),
+                };
+                return (
+                  <View key={cfg.code} style={{ width: (screenWidth - 50) / 2 }}>
+                    <EtchedStatCard
+                      code={cfg.code}
+                      label={cfg.label}
+                      icon={cfg.icon}
+                      accent={cfg.accent}
+                      delay={i * 80}
+                      value={(stats as any)?.[cfg.key] ?? 0}
+                      onPress={statRoutes[cfg.code]}
+                    />
+                  </View>
+                );
+              })}
             </View>
           )}
         </View>
-
-        {/* ── Quick Actions (horizontal scroll, 5 items) ── */}
-        <MotiView
-          from={{ opacity: 0, translateY: 10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "spring", damping: 18, stiffness: 180, delay: 80 }}
-          style={{ marginBottom: 20 }}
-        >
-          <View style={styles.sectionHeaderInline}>
-            <Feather name="grid" size={13} color={PURPLE} style={{ marginTop: 1 }} />
-            <Text style={[styles.sectionInlineTitle, { color: colors.foreground }]}>Quick Actions</Text>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-          >
-            {[
-              { icon: "plus-circle" as FeatherIconName, label: "Save Video",  sublabel: "Add to vault",   accent: PURPLE, onPress: () => setShowSaveModal(true) },
-              { icon: "cpu"         as FeatherIconName, label: "AI Studio",   sublabel: "Generate AI",    accent: CYAN,   onPress: () => router.push("/(tabs)/ai-studio") },
-              { icon: "folder"      as FeatherIconName, label: "Folders",     sublabel: "Organize",       accent: AMBER,  onPress: () => router.push("/(tabs)/folders") },
-              { icon: "heart"       as FeatherIconName, label: "Favorites",   sublabel: "Starred",        accent: PINK,   onPress: () => router.push("/(tabs)/videos") },
-              { icon: "compass"     as FeatherIconName, label: "Discover",    sublabel: "Explore",        accent: GREEN,  onPress: () => router.push("/(tabs)/discover") },
-            ].map((qa, i) => (
-              <QuickAction key={qa.label} {...qa} delay={60 + i * 50} />
-            ))}
-          </ScrollView>
-        </MotiView>
 
         {/* ── Level / XP Card ── */}
         {!isLoading && (
@@ -1633,35 +1643,48 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* ── Activity Timeline ── */}
-        {recentVideos.length > 0 && (
-          <View style={styles.section}>
-            <MotiView
-              from={{ opacity: 0, translateX: -8 }}
-              animate={{ opacity: 1, translateX: 0 }}
-              transition={{ type: "timing", duration: 380, delay: 300 }}
-              style={styles.sectionHeader2}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                  <Feather name="activity" size={10} color={AMBER} />
-                  <Text style={[styles.sectionMicro, { color: colors.mutedForeground }]}>ACTIVITY</Text>
-                </View>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Timeline</Text>
-              </View>
-            </MotiView>
-            <View style={{ paddingLeft: 4 }}>
-              {recentVideos.slice(0, 5).map((video, index) => (
-                <ActivityNode
-                  key={video.id}
-                  video={video}
-                  index={index}
-                  onPress={() => router.push(`/video/${video.id}`)}
-                />
-              ))}
-            </View>
+        {/* ── Explore AI Tools shortcut hub ── */}
+        <MotiView
+          from={{ opacity: 0, translateY: 8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 400, delay: 200 }}
+          style={{ marginHorizontal: 20, marginBottom: 20 }}
+        >
+          <View style={[styles.sectionHeader, { marginBottom: 12 }]}>
+            <Feather name="cpu" size={12} color={CYAN} />
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>AI TOOLS</Text>
+            <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+            <TouchableOpacity onPress={() => router.push("/(tabs)/discover")} activeOpacity={0.7}>
+              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 1.5, color: CYAN }}>ALL →</Text>
+            </TouchableOpacity>
           </View>
-        )}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            {[
+              { icon: "book-open" as FeatherIconName, label: "Key Terms", color: AMBER, route: "/key-terms" },
+              { icon: "message-circle" as FeatherIconName, label: "Cross-Vault AI", color: CYAN, route: "/cross-video-ai" },
+              { icon: "clock" as FeatherIconName, label: "Chat History", color: PURPLE, route: "/chat-history" },
+              { icon: "layers" as FeatherIconName, label: "SR Review", color: PINK, route: "/review" },
+              { icon: "layout" as FeatherIconName, label: "Templates", color: AMBER, route: "/(tabs)/discover" },
+            ].map((tool, i) => (
+              <TouchableOpacity
+                key={tool.label}
+                onPress={() => router.push(tool.route as any)}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: "row", alignItems: "center", gap: 7,
+                  backgroundColor: colors.card, borderWidth: 1,
+                  borderColor: tool.color + "30", borderRadius: 12,
+                  paddingHorizontal: 12, paddingVertical: 10,
+                }}
+              >
+                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: tool.color + "18", alignItems: "center", justifyContent: "center" }}>
+                  <Feather name={tool.icon} size={13} color={tool.color} />
+                </View>
+                <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 12, color: colors.foreground }}>{tool.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </MotiView>
 
         {/* ── Favorites ── */}
         {favoriteVideos.length > 0 && (
@@ -1707,12 +1730,22 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* ── Daily AI Tip ── */}
+        <View style={styles.section}>
+          <View style={[styles.sectionHeader, { marginBottom: 12 }]}>
+            <Feather name="zap" size={12} color={PURPLE} />
+            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>DAILY TIP</Text>
+            <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+          </View>
+          <DailyTipCard />
+        </View>
+
         {/* ── Vault tagline ── */}
         <MotiView
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ type: "timing", duration: 600, delay: 800 }}
-          style={styles.tagline}
+          style={[styles.tagline, { marginBottom: 10 }]}
         >
           <LinearGradient
             colors={[PURPLE + "00", PURPLE + "15", PURPLE + "00"]}
@@ -1720,6 +1753,9 @@ export default function HomeScreen() {
             end={{ x: 1, y: 0 }}
             style={[StyleSheet.absoluteFill, { borderRadius: 8 }]}
           />
+          <Text style={[styles.taglineText, { color: colors.mutedForeground + "50" }]}>
+            VidVault AI · Knowledge Amplified
+          </Text>
         </MotiView>
       </ScrollView>
 

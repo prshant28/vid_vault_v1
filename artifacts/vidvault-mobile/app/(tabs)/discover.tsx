@@ -319,11 +319,31 @@ export default function DiscoverScreen() {
           ))}
         </MotiView>
 
-        {/* ── Learning Tools Grid ── */}
-        <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="// 01 · TOOLS" title="Learning Tools" delay={100} />
+        {/* ── Core Tools ── */}
+        <View style={{ marginBottom: 28 }}>
+          <SectionHead micro="// 01 · CORE" title="Core Vault" delay={100} />
           <View style={styles.toolGrid}>
-            {TOOLS.map((tool, i) => (
+            {TOOLS.filter(t => ["ai-studio","videos","notes","folders"].includes(t.id)).map((tool, i) => (
+              <ToolCard key={tool.id} tool={tool} index={i} onPress={() => handleToolPress(tool)} />
+            ))}
+          </View>
+        </View>
+
+        {/* ── AI Power Tools ── */}
+        <View style={{ marginBottom: 28 }}>
+          <SectionHead micro="// 02 · AI POWER" title="AI Intelligence" delay={120} />
+          <View style={styles.toolGrid}>
+            {TOOLS.filter(t => ["key-terms","cross-ai","chat-hist","study-plan"].includes(t.id)).map((tool, i) => (
+              <ToolCard key={tool.id} tool={tool} index={i} onPress={() => handleToolPress(tool)} />
+            ))}
+          </View>
+        </View>
+
+        {/* ── Study & Learning ── */}
+        <View style={{ marginBottom: 28 }}>
+          <SectionHead micro="// 03 · STUDY" title="Study & Practice" delay={140} />
+          <View style={styles.toolGrid}>
+            {TOOLS.filter(t => ["sr-review","pomodoro","watch-later","search","playlist","templates"].includes(t.id)).map((tool, i) => (
               <ToolCard key={tool.id} tool={tool} index={i} onPress={() => handleToolPress(tool)} />
             ))}
           </View>
@@ -331,7 +351,7 @@ export default function DiscoverScreen() {
 
         {/* ── Template Library ── */}
         <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="// 02 · EXPORT" title="Template Library" delay={150} />
+          <SectionHead micro="// 04 · EXPORT" title="Template Library" delay={150} />
           <MotiView
             from={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ type: "timing", duration: 350, delay: 160 }}
@@ -373,7 +393,7 @@ export default function DiscoverScreen() {
 
         {/* ── Knowledge Graph ── */}
         <View style={{ marginBottom: 32 }}>
-          <SectionHead micro="// 03 · GRAPH" title="Knowledge Graph" delay={200} />
+          <SectionHead micro="// 05 · GRAPH" title="Knowledge Graph" delay={200} />
           <MotiView
             from={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -178,34 +178,58 @@ Located at `artifacts/vidvault-mobile/`. Full-featured companion app mirroring t
 - **Etched-slab stat cards**: code numbers "01/02/03", accent radial glow, Raleway_900Black values
 - **PolygonButton**: clip-path polygon CTA button used in login + onboarding
 
+### Design System — AlegreyaSansSC + Eczar
+- **Fonts**: AlegreyaSansSC (all headers/titles), Eczar (all body/labels/buttons)
+- **Palette**: `#09090c` dark bg, `#f5f5ff` light bg, `#6366f1` purple, `#06b6d4` cyan, `#10b981` green, `#f59e0b` amber, `#ec4899` pink
+- **Cards**: borderRadius 14–18, thin 1px borders with color + opacity suffix, subtle gradient washes
+- **Tab bar**: Custom premium bar on Android/web; native BlurView on iOS; NativeTabs on iOS 26+
+
 ### Key Screens
-- `_layout.tsx` — branded loading screen (logo + SVG grid) while auth restores
+- `_layout.tsx` — branded loading + auth restore; streak tracking on login; reminder rescheduling
 - `splash.tsx` — native animated splash
-- `onboarding.tsx` — brutalist onboarding with slides, big decorative code numbers
+- `onboarding.tsx` — onboarding with slides
 - `login.tsx` — email/password + JWT auth
-- `(tabs)/index.tsx` — dashboard (stat cards, recent videos, favorites)
-- `(tabs)/videos.tsx` — full library with search + tag/favorites filter, add-video modal
-- `(tabs)/folders.tsx` — folder management + Smart Collections + Playlist Import banner
+- `(tabs)/index.tsx` — home dashboard: streak card, quick access (7 items), clickable stats grid, XP/level, AI tools hub, recent AI, latest captures, favorites, daily tip
+- `(tabs)/videos.tsx` — full library with search + tag/folder/favorites filter, add-video modal
+- `(tabs)/folders.tsx` — folder management + Smart Collections + Playlist Import
 - `(tabs)/ai-studio.tsx` — global AI chat with recall + YouTube search + session history
-- `(tabs)/discover.tsx` — tool launcher grid
-- `(tabs)/profile.tsx` — settings + theme toggle
-- `video/[id].tsx` — in-app YouTube player (WebView), AI content cards, timestamped notes
+- `(tabs)/discover.tsx` — categorized tool launcher: Core Vault, AI Intelligence, Study & Practice, Templates, Knowledge Graph
+- `(tabs)/profile.tsx` — settings + daily reminder toggle + streak display + theme toggle + achievements
+- `video/[id].tsx` — in-app YouTube player, AI output panel with 7 export options (Copy, Share Text, Share Card, Markdown, HTML, PDF, Email), timestamped notes, study timer
 - `collection.tsx` — Smart Collections (starred/hasAi/watched/recent)
 - `search.tsx` — global search across videos, notes, AI outputs
-- `review.tsx` — spaced repetition flashcard review (SM-2)
+- `review.tsx` — spaced repetition flashcard review (SM-2 algorithm)
 - `chat-history.tsx` — all past AI Studio chats, searchable, expandable inline
 - `cross-video-ai.tsx` — cross-vault AI chat using all AI outputs as context
 - `key-terms.tsx` — AI-generated personal glossary of recurring concepts
+- `watch-later.tsx` — queue videos via URL preview before committing to vault
 
 ### Auth
 - JWT stored in SecureStore, sent as `Authorization: Bearer <token>` header
 - `setApiToken(token)` in `services/api.ts` wires the token to all requests
 
-### Key Dependencies Added
+### Key Dependencies
 - `react-native-webview` — in-app YouTube embed player
 - `react-native-svg` — SVG grid backgrounds
-- `expo-haptics` — haptic feedback
+- `expo-haptics` — haptic feedback on all interactive elements
+- `expo-blur` — BlurView tab bar on iOS
 - `expo-secure-store` — secure JWT storage
+- `expo-notifications` — daily reminders with streak messages
+- `expo-print` + `expo-file-system` + `expo-sharing` — PDF/HTML export pipeline
+- `expo-clipboard` — clipboard copy for AI outputs
+- `react-native-view-shot` — ShareCard image capture + share
+
+### Notification & Streak System
+- `lib/notifications.ts` — unified streak tracking (key: `vv_streak_v1`), daily notification scheduling
+- Streak updates on every app launch via `updateStreak()` in `_layout.tsx`
+- Profile screen: live toggle with Switch, streak display (🔥 Day N), scheduled time shown
+- Home screen: streak count shown in hero + StreakCard with day dots and progress bar
+
+### AI Backend Routes (mobile-facing)
+- `POST /api/ai/global-chat` — AI Studio global chat
+- `POST /api/ai/cross-video` — cross-vault AI (uses all user AI outputs as context)
+- `POST /api/ai/key-terms` — extract recurring concepts from vault
+- `GET /api/preview?url=` — YouTube URL metadata preview (Watch Later)
 
 ## Notes
 
