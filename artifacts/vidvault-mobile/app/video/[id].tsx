@@ -42,9 +42,14 @@ import type { ShareCardRef } from "@/components/ShareCard";
 import type { Video, Note, Tag, AiOutput } from "@/types/api";
 
 function extractInsight(content: string, type: string): string {
-  const lines = content.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = content
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
   if (["key_insights", "notes"].includes(type)) {
-    const bullet = lines.find((l) => /^[-•*]\s+/.test(l) || /^\d+[.)]\s+/.test(l));
+    const bullet = lines.find(
+      (l) => /^[-•*]\s+/.test(l) || /^\d+[.)]\s+/.test(l),
+    );
     if (bullet) return bullet.replace(/^[-•*\d]+[.)]\s+/, "").slice(0, 200);
   }
   if (type === "flashcards") {
@@ -66,32 +71,138 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 const CARD_GAP = 10;
 
 const PURPLE = "#6366f1";
-const CYAN   = "#06b6d4";
-const GREEN  = "#10b981";
+const CYAN = "#06b6d4";
+const GREEN = "#10b981";
 const ORANGE = "#f59e0b";
-const PINK   = "#ec4899";
-const BLUE   = "#3b82f6";
+const PINK = "#ec4899";
+const BLUE = "#3b82f6";
 
 const AI_TOOLS: Array<{
-  type: string; label: string; icon: FeatherIconName; color: string; desc: string;
+  type: string;
+  label: string;
+  icon: FeatherIconName;
+  color: string;
+  desc: string;
 }> = [
-  { type: "summary",        label: "Summary",        icon: "file-text",    color: CYAN,   desc: "Concise overview of the video content" },
-  { type: "key_insights",   label: "Key Insights",   icon: "zap",          color: ORANGE, desc: "Most important takeaways" },
-  { type: "mcq",            label: "Quiz (MCQ)",     icon: "check-circle", color: GREEN,  desc: "Test your knowledge with 10 MCQs" },
-  { type: "flashcards",     label: "Flashcards",     icon: "layers",       color: PINK,   desc: "15 spaced-repetition cards" },
-  { type: "notes",          label: "Study Notes",    icon: "book-open",    color: PURPLE, desc: "Organised bullet study notes" },
-  { type: "mindmap",        label: "Mind Map",       icon: "share-2",      color: CYAN,   desc: "Visual concept tree of key ideas" },
-  { type: "eli5",           label: "Simple Explain", icon: "smile",        color: ORANGE, desc: "Simplified explanation, easy to grasp" },
-  { type: "pros_cons",      label: "Pros & Cons",    icon: "bar-chart-2",  color: GREEN,  desc: "Balanced analysis of key tradeoffs" },
-  { type: "interview_qa",   label: "Interview Prep", icon: "user-check",   color: PINK,   desc: "10 Q&A pairs for interviews" },
-  { type: "action_plan",    label: "Action Plan",    icon: "target",       color: GREEN,  desc: "30-60-90 day implementation plan" },
-  { type: "deep_dive",      label: "Deep Dive",      icon: "search",       color: PURPLE, desc: "In-depth analysis with examples" },
-  { type: "podcast_script", label: "Podcast Script", icon: "mic",          color: PINK,   desc: "Conversational host + guest script" },
-  { type: "tweet_thread",   label: "Tweet Thread",   icon: "twitter",      color: BLUE,   desc: "Shareable 10-tweet thread" },
-  { type: "blog_article",   label: "Blog Article",   icon: "edit",         color: ORANGE, desc: "700-900 word blog post" },
-  { type: "vocabulary",     label: "Vocabulary",     icon: "book",         color: CYAN,   desc: "Key terms and definitions" },
-  { type: "executive_brief",label: "Exec Brief",     icon: "briefcase",    color: PINK,   desc: "2-minute executive summary" },
-  { type: "ppt_outline",    label: "PPT Outline",    icon: "monitor",      color: PURPLE, desc: "8-12 slide deck structure" },
+  {
+    type: "summary",
+    label: "Summary",
+    icon: "file-text",
+    color: CYAN,
+    desc: "Concise overview of the video content",
+  },
+  {
+    type: "key_insights",
+    label: "Key Insights",
+    icon: "zap",
+    color: ORANGE,
+    desc: "Most important takeaways",
+  },
+  {
+    type: "mcq",
+    label: "Quiz (MCQ)",
+    icon: "check-circle",
+    color: GREEN,
+    desc: "Test your knowledge with 10 MCQs",
+  },
+  {
+    type: "flashcards",
+    label: "Flashcards",
+    icon: "layers",
+    color: PINK,
+    desc: "15 spaced-repetition cards",
+  },
+  {
+    type: "notes",
+    label: "Study Notes",
+    icon: "book-open",
+    color: PURPLE,
+    desc: "Organised bullet study notes",
+  },
+  {
+    type: "mindmap",
+    label: "Mind Map",
+    icon: "share-2",
+    color: CYAN,
+    desc: "Visual concept tree of key ideas",
+  },
+  {
+    type: "eli5",
+    label: "Simple Explain",
+    icon: "smile",
+    color: ORANGE,
+    desc: "Simplified explanation, easy to grasp",
+  },
+  {
+    type: "pros_cons",
+    label: "Pros & Cons",
+    icon: "bar-chart-2",
+    color: GREEN,
+    desc: "Balanced analysis of key tradeoffs",
+  },
+  {
+    type: "interview_qa",
+    label: "Interview Prep",
+    icon: "user-check",
+    color: PINK,
+    desc: "10 Q&A pairs for interviews",
+  },
+  {
+    type: "action_plan",
+    label: "Action Plan",
+    icon: "target",
+    color: GREEN,
+    desc: "30-60-90 day implementation plan",
+  },
+  {
+    type: "deep_dive",
+    label: "Deep Dive",
+    icon: "search",
+    color: PURPLE,
+    desc: "In-depth analysis with examples",
+  },
+  {
+    type: "podcast_script",
+    label: "Podcast Script",
+    icon: "mic",
+    color: PINK,
+    desc: "Conversational host + guest script",
+  },
+  {
+    type: "tweet_thread",
+    label: "Tweet Thread",
+    icon: "twitter",
+    color: BLUE,
+    desc: "Shareable 10-tweet thread",
+  },
+  {
+    type: "blog_article",
+    label: "Blog Article",
+    icon: "edit",
+    color: ORANGE,
+    desc: "700-900 word blog post",
+  },
+  {
+    type: "vocabulary",
+    label: "Vocabulary",
+    icon: "book",
+    color: CYAN,
+    desc: "Key terms and definitions",
+  },
+  {
+    type: "executive_brief",
+    label: "Exec Brief",
+    icon: "briefcase",
+    color: PINK,
+    desc: "2-minute executive summary",
+  },
+  {
+    type: "ppt_outline",
+    label: "PPT Outline",
+    icon: "monitor",
+    color: PURPLE,
+    desc: "8-12 slide deck structure",
+  },
 ];
 
 function extractYouTubeId(url: string): string | null {
@@ -109,20 +220,49 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
-
 /* ── Thumbnail Player (web / fallback) ── */
-function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: string | null; ytId?: string | null; onOpenExternal: () => void }) {
-  const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : thumbnail;
+function ThumbnailPlayer({
+  thumbnail,
+  ytId,
+  onOpenExternal,
+}: {
+  thumbnail?: string | null;
+  ytId?: string | null;
+  onOpenExternal: () => void;
+}) {
+  const thumbUrl = ytId
+    ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+    : thumbnail;
   return (
-    <TouchableOpacity onPress={onOpenExternal} activeOpacity={0.93} style={styles.player}>
+    <TouchableOpacity
+      onPress={onOpenExternal}
+      activeOpacity={0.93}
+      style={styles.player}
+    >
       {thumbUrl ? (
-        <Image source={{ uri: thumbUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+        <Image
+          source={{ uri: thumbUrl }}
+          style={StyleSheet.absoluteFillObject}
+          resizeMode="cover"
+        />
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: "#1a1a22", alignItems: "center", justifyContent: "center" }]}>
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor: "#1a1a22",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+          ]}
+        >
           <Feather name="film" size={40} color="rgba(139,92,246,0.3)" />
         </View>
       )}
-      <LinearGradient colors={["transparent", "rgba(0,0,0,0.75)"]} style={StyleSheet.absoluteFillObject} />
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.75)"]}
+        style={StyleSheet.absoluteFillObject}
+      />
       <View style={styles.thumbCenter}>
         <View style={styles.playCircle}>
           <Feather name="play" size={24} color="#fff" />
@@ -137,12 +277,22 @@ function ThumbnailPlayer({ thumbnail, ytId, onOpenExternal }: { thumbnail?: stri
 }
 
 /* ── Quick Action Pill ── */
-function QuickPill({ label, icon, color, onPress }: { label: string; icon: FeatherIconName; color: string; onPress: () => void }) {
+function QuickPill({
+  label,
+  icon,
+  color,
+  onPress,
+}: {
+  label: string;
+  icon: FeatherIconName;
+  color: string;
+  onPress: () => void;
+}) {
   const h = 34;
   const cut = 7;
   const px = 12;
   const iconW = 13;
-  const charW = 9 * 0.60;
+  const charW = 9 * 0.6;
   const btnW = Math.ceil(px * 2 + iconW + label.length * charW);
   const points = `${cut},0 ${btnW},0 ${btnW},${h - cut} ${btnW - cut},${h} 0,${h} 0,${cut}`;
   return (
@@ -151,9 +301,28 @@ function QuickPill({ label, icon, color, onPress }: { label: string; icon: Feath
         <Svg width={btnW} height={h} style={StyleSheet.absoluteFillObject}>
           <Polygon points={points} fill={color} />
         </Svg>
-        <View style={[StyleSheet.absoluteFillObject, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 }]}>
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+            },
+          ]}
+        >
           <Feather name={icon} size={10} color="#fff" />
-          <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.2, color: "#fff" }}>{label}</Text>
+          <Text
+            style={{
+              fontFamily: "Eczar_600SemiBold",
+              fontSize: 9,
+              letterSpacing: 1.2,
+              color: "#fff",
+            }}
+          >
+            {label}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -162,11 +331,19 @@ function QuickPill({ label, icon, color, onPress }: { label: string; icon: Feath
 
 /* ── AI Tool Card (etched-slab, matches web app) ── */
 function AiToolCard({
-  tool, index, existingOutput, onGenerate, isGenerating, onView,
+  tool,
+  index,
+  existingOutput,
+  onGenerate,
+  isGenerating,
+  onView,
 }: {
-  tool: typeof AI_TOOLS[0]; index: number;
-  existingOutput?: AiOutput | null; onGenerate: () => void;
-  isGenerating: boolean; onView: () => void;
+  tool: (typeof AI_TOOLS)[0];
+  index: number;
+  existingOutput?: AiOutput | null;
+  onGenerate: () => void;
+  isGenerating: boolean;
+  onView: () => void;
 }) {
   const done = !!existingOutput;
   const num = String(index + 1).padStart(2, "0");
@@ -178,12 +355,16 @@ function AiToolCard({
         borderColor: isGenerating
           ? tool.color + "55"
           : done
-          ? tool.color + "45"
-          : colors.border,
+            ? tool.color + "45"
+            : colors.border,
         opacity: 1,
       }}
       from={{ opacity: 0 }}
-      transition={isGenerating ? { type: "timing", duration: 900, loop: true } : { type: "timing", duration: 300 }}
+      transition={
+        isGenerating
+          ? { type: "timing", duration: 900, loop: true }
+          : { type: "timing", duration: 300 }
+      }
       style={[
         styles.toolCard,
         {
@@ -197,8 +378,11 @@ function AiToolCard({
         },
       ]}
     >
-      <TouchableOpacity onPress={done ? onView : onGenerate} activeOpacity={0.85} style={styles.toolCardInner}>
-
+      <TouchableOpacity
+        onPress={done ? onView : onGenerate}
+        activeOpacity={0.85}
+        style={styles.toolCardInner}
+      >
         {/* Etch overlay — subtle top highlight, dark mode only */}
         {isDark && (
           <LinearGradient
@@ -213,13 +397,22 @@ function AiToolCard({
         {/* Bottom-right accent glow — visible when done or generating */}
         {(done || isGenerating) && (
           <View style={styles.toolGlowCorner} pointerEvents="none">
-            <View style={[styles.toolGlowCircle, { backgroundColor: tool.color + "28" }]} />
+            <View
+              style={[
+                styles.toolGlowCircle,
+                { backgroundColor: tool.color + "28" },
+              ]}
+            />
           </View>
         )}
 
         {/* Number code (top-left) + bare icon (top-right) — exact web layout */}
         <View style={styles.toolCardTop}>
-          <Text style={[styles.toolNum, { color: colors.mutedForeground + "55" }]}>{num}</Text>
+          <Text
+            style={[styles.toolNum, { color: colors.mutedForeground + "55" }]}
+          >
+            {num}
+          </Text>
           <MotiView
             animate={{ opacity: isGenerating ? 1.0 : done ? 0.85 : 0.4 }}
             transition={{ type: "timing", duration: 400 }}
@@ -239,12 +432,20 @@ function AiToolCard({
         </View>
 
         {/* Tool name — mono, tiny, uppercase, tool color at 60% */}
-        <Text style={[styles.toolLabel, { color: tool.color + "99" }]} numberOfLines={1}>
+        <Text
+          style={[styles.toolLabel, { color: tool.color + "99" }]}
+          numberOfLines={1}
+        >
           {tool.label}
         </Text>
 
         {/* Description — mono, 8px, very muted */}
-        <Text style={[styles.toolDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{tool.desc}</Text>
+        <Text
+          style={[styles.toolDesc, { color: colors.mutedForeground }]}
+          numberOfLines={2}
+        >
+          {tool.desc}
+        </Text>
 
         {/* Footer badge */}
         <View style={styles.toolCardFooter}>
@@ -269,10 +470,15 @@ function AiToolCard({
             from={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 0.6, scale: 1.0 }}
             transition={{ type: "timing", duration: 900, loop: true }}
-            style={[StyleSheet.absoluteFillObject, {
-              borderRadius: 14, borderWidth: 1.5, borderColor: tool.color,
-              pointerEvents: "none",
-            } as any]}
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                borderRadius: 14,
+                borderWidth: 1.5,
+                borderColor: tool.color,
+                pointerEvents: "none",
+              } as any,
+            ]}
           />
         )}
       </TouchableOpacity>
@@ -281,7 +487,17 @@ function AiToolCard({
 }
 
 /* ── Tool Badge (cut-corner style matching AppButton) ── */
-function ToolBadge({ label, icon, color, dimmed }: { label: string; icon: FeatherIconName; color: string; dimmed?: boolean }) {
+function ToolBadge({
+  label,
+  icon,
+  color,
+  dimmed,
+}: {
+  label: string;
+  icon: FeatherIconName;
+  color: string;
+  dimmed?: boolean;
+}) {
   const h = 26;
   const cut = 6;
   const approxW = label.length * 7.2 + 34;
@@ -291,21 +507,55 @@ function ToolBadge({ label, icon, color, dimmed }: { label: string; icon: Feathe
   return (
     <View style={{ width: approxW, height: h }}>
       <Svg width={approxW} height={h} style={StyleSheet.absoluteFillObject}>
-        <Polygon points={pts} fill={fillColor} stroke={strokeColor} strokeWidth={1} />
+        <Polygon
+          points={pts}
+          fill={fillColor}
+          stroke={strokeColor}
+          strokeWidth={1}
+        />
       </Svg>
-      <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4 }}>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+        }}
+      >
         <Feather name={icon} size={8} color={dimmed ? color + "99" : color} />
-        <Text style={{ fontSize: 8, fontFamily: "Eczar_600SemiBold", color: dimmed ? color + "99" : color, letterSpacing: 1 }}>{label}</Text>
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: "Eczar_600SemiBold",
+            color: dimmed ? color + "99" : color,
+            letterSpacing: 1,
+          }}
+        >
+          {label}
+        </Text>
       </View>
     </View>
   );
 }
 
 /* ── AI Output Panel (full-screen) ── */
-function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, onLangChange }: {
-  output: AiOutput; tool: typeof AI_TOOLS[0];
-  videoTitle?: string; onClose: () => void; onRegenerate: () => void;
-  lang: "en" | "hi"; onLangChange: (l: "en" | "hi") => void;
+function AiOutputPanel({
+  output,
+  tool,
+  videoTitle,
+  onClose,
+  onRegenerate,
+  lang,
+  onLangChange,
+}: {
+  output: AiOutput;
+  tool: (typeof AI_TOOLS)[0];
+  videoTitle?: string;
+  onClose: () => void;
+  onRegenerate: () => void;
+  lang: "en" | "hi";
+  onLangChange: (l: "en" | "hi") => void;
 }) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
@@ -316,7 +566,11 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   const cardRef = React.useRef<ShareCardRef>(null);
   const wordCount = output.content.trim().split(/\s+/).filter(Boolean).length;
   const readMins = Math.max(1, Math.round(wordCount / 200));
-  const generatedDate = new Date(output.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const generatedDate = new Date(output.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   const handleCopy = async () => {
     try {
@@ -325,7 +579,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => setCopied(false), 2000);
       setShowExportSheet(false);
-    } catch { }
+    } catch {}
   };
 
   const handleShareText = async () => {
@@ -335,7 +589,7 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
         message: `${videoTitle || "Video"} — ${tool.label}\n\n${output.content}\n\nGenerated by VidVault AI`,
         title: `${tool.label} — ${videoTitle || "Video"}`,
       });
-    } catch { }
+    } catch {}
   };
 
   const handleShareMarkdown = async () => {
@@ -346,16 +600,20 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
         message: md,
         title: `${tool.label}.md`,
       });
-    } catch { }
+    } catch {}
   };
 
   const handleEmail = async () => {
     setShowExportSheet(false);
-    const subject = encodeURIComponent(`${tool.label} — ${videoTitle || "Video"}`);
-    const body = encodeURIComponent(`${tool.label}\n${videoTitle || "Video"}\nGenerated by VidVault AI on ${generatedDate}\n\n${output.content}`);
+    const subject = encodeURIComponent(
+      `${tool.label} — ${videoTitle || "Video"}`,
+    );
+    const body = encodeURIComponent(
+      `${tool.label}\n${videoTitle || "Video"}\nGenerated by VidVault AI on ${generatedDate}\n\n${output.content}`,
+    );
     try {
       await Linking.openURL(`mailto:?subject=${subject}&body=${body}`);
-    } catch { }
+    } catch {}
   };
 
   const templateOpts: TemplateOpts = {
@@ -371,12 +629,17 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   const doSaveHtml = async (html: string, templateName: string) => {
     try {
       const filename = `${(videoTitle || "export").replace(/[^a-z0-9]/gi, "_").slice(0, 30)}_${tool.type}.html`;
-      const dir = FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "";
+      const dir =
+        FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "";
       const path = dir + filename;
       await FileSystem.writeAsStringAsync(path, html, { encoding: "utf8" });
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(path, { mimeType: "text/html", dialogTitle: `Save as HTML · ${templateName}`, UTI: "public.html" });
+        await Sharing.shareAsync(path, {
+          mimeType: "text/html",
+          dialogTitle: `Save as HTML · ${templateName}`,
+          UTI: "public.html",
+        });
       } else {
         Alert.alert("Saved", `HTML file saved to:\n${path}`);
       }
@@ -399,7 +662,11 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       const { uri } = await Print.printToFileAsync({ html, base64: false });
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(uri, { mimeType: "application/pdf", dialogTitle: `Save ${tool.label} as PDF`, UTI: "com.adobe.pdf" });
+        await Sharing.shareAsync(uri, {
+          mimeType: "application/pdf",
+          dialogTitle: `Save ${tool.label} as PDF`,
+          UTI: "com.adobe.pdf",
+        });
       } else {
         Alert.alert("PDF Saved", `File saved to:\n${uri}`);
       }
@@ -414,13 +681,55 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
   };
 
   const EXPORT_OPTIONS = [
-    { icon: "copy" as FeatherIconName,      label: "Copy to Clipboard",  desc: "Paste anywhere instantly",                color: "#22c55e", action: handleCopy },
-    { icon: "share-2" as FeatherIconName,   label: "Share as Text",      desc: "Send via WhatsApp, Messages…",            color: tool.color, action: handleShareText },
-    { icon: "image" as FeatherIconName,     label: "Share as Card",      desc: "Export a visual quote card image",        color: "#ec4899", action: handleShareCard },
-    { icon: "file-text" as FeatherIconName, label: "Share as Markdown",  desc: "Export formatted .md content",            color: "#06b6d4", action: handleShareMarkdown },
-    { icon: "code" as FeatherIconName,      label: "Save as HTML",       desc: "Pick a template, then export",            color: "#8b5cf6", action: handleSaveHtml },
-    { icon: "file" as FeatherIconName,      label: "Save as PDF",        desc: "Print-ready PDF document",                color: "#ec4899", action: handleSavePdf },
-    { icon: "mail" as FeatherIconName,      label: "Send via Email",     desc: "Open mail app with content",              color: "#f59e0b", action: handleEmail },
+    {
+      icon: "copy" as FeatherIconName,
+      label: "Copy to Clipboard",
+      desc: "Paste anywhere instantly",
+      color: "#22c55e",
+      action: handleCopy,
+    },
+    {
+      icon: "share-2" as FeatherIconName,
+      label: "Share as Text",
+      desc: "Send via WhatsApp, Messages…",
+      color: tool.color,
+      action: handleShareText,
+    },
+    {
+      icon: "image" as FeatherIconName,
+      label: "Share as Card",
+      desc: "Export a visual quote card image",
+      color: "#ec4899",
+      action: handleShareCard,
+    },
+    {
+      icon: "file-text" as FeatherIconName,
+      label: "Share as Markdown",
+      desc: "Export formatted .md content",
+      color: "#06b6d4",
+      action: handleShareMarkdown,
+    },
+    {
+      icon: "code" as FeatherIconName,
+      label: "Save as HTML",
+      desc: "Pick a template, then export",
+      color: "#8b5cf6",
+      action: handleSaveHtml,
+    },
+    {
+      icon: "file" as FeatherIconName,
+      label: "Save as PDF",
+      desc: "Print-ready PDF document",
+      color: "#ec4899",
+      action: handleSavePdf,
+    },
+    {
+      icon: "mail" as FeatherIconName,
+      label: "Send via Email",
+      desc: "Open mail app with content",
+      color: "#f59e0b",
+      action: handleEmail,
+    },
   ];
 
   return (
@@ -437,9 +746,36 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
         animationType="fade"
         onRequestClose={() => setShowCardModal(false)}
       >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.88)", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>SHARE CARD PREVIEW</Text>
-          <View style={{ borderRadius: 20, overflow: "hidden", shadowColor: tool.color, shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: 8 } }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.88)",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: "Eczar_400Regular",
+              fontSize: 9,
+              letterSpacing: 2,
+              color: "rgba(255,255,255,0.4)",
+              marginBottom: 16,
+            }}
+          >
+            SHARE CARD PREVIEW
+          </Text>
+          <View
+            style={{
+              borderRadius: 20,
+              overflow: "hidden",
+              shadowColor: tool.color,
+              shadowOpacity: 0.4,
+              shadowRadius: 24,
+              shadowOffset: { width: 0, height: 8 },
+            }}
+          >
             <ShareCard
               ref={cardRef}
               insight={extractInsight(output.content, output.type)}
@@ -451,18 +787,50 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
           <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
             <TouchableOpacity
               onPress={() => setShowCardModal(false)}
-              style={{ paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }}
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 12,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.2)",
+              }}
               activeOpacity={0.75}
             >
-              <Text style={{ color: "rgba(255,255,255,0.7)", fontFamily: "Eczar_400Regular" }}>Close</Text>
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  fontFamily: "Eczar_400Regular",
+                }}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); cardRef.current?.capture(); }}
-              style={{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10, backgroundColor: tool.color, flexDirection: "row", alignItems: "center", gap: 8 }}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                cardRef.current?.capture();
+              }}
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 10,
+                backgroundColor: tool.color,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}
               activeOpacity={0.8}
             >
               <Feather name="share-2" size={14} color="#fff" />
-              <Text style={{ color: "#fff", fontFamily: "AlegreyaSansSC_700Bold", fontSize: 14 }}>Share Card</Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontFamily: "AlegreyaSansSC_700Bold",
+                  fontSize: 14,
+                }}
+              >
+                Share Card
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -480,25 +848,81 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
           activeOpacity={1}
           onPress={() => setShowExportSheet(false)}
         />
-        <View style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          backgroundColor: colors.card,
-          borderTopLeftRadius: 24, borderTopRightRadius: 24,
-          borderTopWidth: 1, borderColor: colors.border,
-          paddingBottom: insets.bottom + 16,
-        }}>
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            borderTopWidth: 1,
+            borderColor: colors.border,
+            paddingBottom: insets.bottom + 16,
+          }}
+        >
           {/* Handle */}
-          <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.mutedForeground + "40" }} />
+          <View
+            style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}
+          >
+            <View
+              style={{
+                width: 36,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: colors.mutedForeground + "40",
+              }}
+            />
           </View>
           {/* Title */}
-          <View style={{ paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: tool.color + "22", borderWidth: 1, borderColor: tool.color + "35", alignItems: "center", justifyContent: "center" }}>
+          <View
+            style={{
+              paddingHorizontal: 20,
+              paddingVertical: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                backgroundColor: tool.color + "22",
+                borderWidth: 1,
+                borderColor: tool.color + "35",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Feather name="download" size={15} color={tool.color} />
             </View>
             <View>
-              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: tool.color }}>Export Options</Text>
-              <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 1 }}>{tool.label} · {wordCount} words</Text>
+              <Text
+                style={{
+                  fontFamily: "Eczar_600SemiBold",
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: tool.color,
+                }}
+              >
+                Export Options
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Eczar_400Regular",
+                  fontSize: 10,
+                  color: colors.mutedForeground,
+                  marginTop: 1,
+                }}
+              >
+                {tool.label} · {wordCount} words
+              </Text>
             </View>
           </View>
           {/* Options */}
@@ -509,21 +933,58 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
                 onPress={opt.action}
                 activeOpacity={0.75}
                 style={{
-                  flexDirection: "row", alignItems: "center", gap: 14,
-                  paddingVertical: 14, paddingHorizontal: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 14,
+                  paddingVertical: 14,
+                  paddingHorizontal: 16,
                   backgroundColor: opt.color + "0d",
                   borderRadius: 14,
-                  borderWidth: 1, borderColor: opt.color + "25",
+                  borderWidth: 1,
+                  borderColor: opt.color + "25",
                 }}
               >
-                <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: opt.color + "18", borderWidth: 1, borderColor: opt.color + "30", alignItems: "center", justifyContent: "center" }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: opt.color + "18",
+                    borderWidth: 1,
+                    borderColor: opt.color + "30",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <Feather name={opt.icon} size={16} color={opt.color} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 13, color: colors.foreground, marginBottom: 1 }}>{opt.label}</Text>
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground, letterSpacing: 0.3 }}>{opt.desc}</Text>
+                  <Text
+                    style={{
+                      fontFamily: "Eczar_600SemiBold",
+                      fontSize: 13,
+                      color: colors.foreground,
+                      marginBottom: 1,
+                    }}
+                  >
+                    {opt.label}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Eczar_400Regular",
+                      fontSize: 10,
+                      color: colors.mutedForeground,
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {opt.desc}
+                  </Text>
                 </View>
-                <Feather name="chevron-right" size={14} color={opt.color + "80"} />
+                <Feather
+                  name="chevron-right"
+                  size={14}
+                  color={opt.color + "80"}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -531,19 +992,52 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       </Modal>
 
       {/* Header bar */}
-      <View style={[styles.outputFullHeader, { paddingTop: insets.top + 10, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={onClose} activeOpacity={0.75} style={styles.outputBackRow} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+      <View
+        style={[
+          styles.outputFullHeader,
+          { paddingTop: insets.top + 10, borderBottomColor: colors.border },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={onClose}
+          activeOpacity={0.75}
+          style={styles.outputBackRow}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Feather name="arrow-left" size={15} color={tool.color} />
-          <Text style={[styles.outputBackLabel, { color: tool.color }]}>TOOLS</Text>
+          <Text style={[styles.outputBackLabel, { color: tool.color }]}>
+            TOOLS
+          </Text>
         </TouchableOpacity>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity onPress={onRegenerate} style={[styles.outputIconBtn, { backgroundColor: colors.card, borderColor: colors.border }]} activeOpacity={0.8} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Feather name="refresh-cw" size={14} color={colors.mutedForeground} />
+          <TouchableOpacity
+            onPress={onRegenerate}
+            style={[
+              styles.outputIconBtn,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+            activeOpacity={0.8}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather
+              name="refresh-cw"
+              size={14}
+              color={colors.mutedForeground}
+            />
           </TouchableOpacity>
           {/* Export button — opens the export sheet */}
           <TouchableOpacity
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowExportSheet(true); }}
-            style={[styles.outputIconBtn, { backgroundColor: tool.color + "18", borderColor: tool.color + "40" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowExportSheet(true);
+            }}
+            style={[
+              styles.outputIconBtn,
+              {
+                backgroundColor: tool.color + "18",
+                borderColor: tool.color + "40",
+              },
+            ]}
             activeOpacity={0.8}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -553,65 +1047,153 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
       </View>
 
       {/* Tool identity + stats */}
-      <View style={[styles.outputToolHeader, { borderBottomColor: colors.border }]}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
-          <View style={[styles.outputToolIcon, { backgroundColor: tool.color + "22", borderColor: tool.color + "30" }]}>
+      <View
+        style={[styles.outputToolHeader, { borderBottomColor: colors.border }]}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            flex: 1,
+          }}
+        >
+          <View
+            style={[
+              styles.outputToolIcon,
+              {
+                backgroundColor: tool.color + "22",
+                borderColor: tool.color + "30",
+              },
+            ]}
+          >
             <Feather name={tool.icon} size={20} color={tool.color} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.outputToolName, { color: colors.foreground }]}>{tool.label}</Text>
-            {videoTitle ? <Text style={[styles.outputToolSub, { color: colors.mutedForeground }]} numberOfLines={1}>{videoTitle}</Text> : null}
+            <Text style={[styles.outputToolName, { color: colors.foreground }]}>
+              {tool.label}
+            </Text>
+            {videoTitle ? (
+              <Text
+                style={[
+                  styles.outputToolSub,
+                  { color: colors.mutedForeground },
+                ]}
+                numberOfLines={1}
+              >
+                {videoTitle}
+              </Text>
+            ) : null}
           </View>
         </View>
         <View style={{ gap: 5, alignItems: "flex-end" }}>
-          <View style={[styles.outputStatChip, { borderColor: tool.color + "35", backgroundColor: tool.color + "10" }]}>
-            <Text style={[styles.outputStatText, { color: tool.color }]}>{wordCount} words</Text>
+          <View
+            style={[
+              styles.outputStatChip,
+              {
+                borderColor: tool.color + "35",
+                backgroundColor: tool.color + "10",
+              },
+            ]}
+          >
+            <Text style={[styles.outputStatText, { color: tool.color }]}>
+              {wordCount} words
+            </Text>
           </View>
           <View style={[styles.outputStatChip, { borderColor: colors.border }]}>
-            <Text style={[styles.outputStatText, { color: colors.mutedForeground }]}>{readMins} min read</Text>
+            <Text
+              style={[styles.outputStatText, { color: colors.mutedForeground }]}
+            >
+              {readMins} min read
+            </Text>
           </View>
         </View>
       </View>
 
       {/* Generated date strip */}
-      <View style={[styles.outputDateStrip, { borderBottomColor: colors.border }]}>
-        <Feather name="calendar" size={9} color={colors.mutedForeground + "80"} />
-        <Text style={[styles.outputDateText, { color: colors.mutedForeground }]}>Generated {generatedDate}</Text>
+      <View
+        style={[styles.outputDateStrip, { borderBottomColor: colors.border }]}
+      >
+        <Feather
+          name="calendar"
+          size={9}
+          color={colors.mutedForeground + "80"}
+        />
+        <Text
+          style={[styles.outputDateText, { color: colors.mutedForeground }]}
+        >
+          Generated {generatedDate}
+        </Text>
       </View>
 
       {/* Content */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 80 }}
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: insets.bottom + 80,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.outputFullText, { color: colors.foreground }]}>{output.content}</Text>
+        <Text style={[styles.outputFullText, { color: colors.foreground }]}>
+          {output.content}
+        </Text>
       </ScrollView>
 
       {/* Bottom bar: language toggle + regenerate hint */}
-      <View style={[styles.outputBottomBar, { paddingBottom: insets.bottom + 12, borderTopColor: colors.border, backgroundColor: colors.card }]}>
+      <View
+        style={[
+          styles.outputBottomBar,
+          {
+            paddingBottom: insets.bottom + 12,
+            borderTopColor: colors.border,
+            backgroundColor: colors.card,
+          },
+        ]}
+      >
         <Feather name="globe" size={10} color={colors.mutedForeground} />
-        <Text style={[styles.outputBottomLabel, { color: colors.mutedForeground }]}>Generate in:</Text>
+        <Text
+          style={[styles.outputBottomLabel, { color: colors.mutedForeground }]}
+        >
+          Generate in:
+        </Text>
         <View style={{ flexDirection: "row", gap: 5 }}>
-          {(["en", "hi"] as const).map(l => (
+          {(["en", "hi"] as const).map((l) => (
             <TouchableOpacity
               key={l}
               onPress={() => onLangChange(l)}
               activeOpacity={0.75}
               style={{
-                flexDirection: "row", alignItems: "center", gap: 4,
-                paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                paddingHorizontal: 9,
+                paddingVertical: 5,
+                borderRadius: 20,
+                borderWidth: 1,
                 borderColor: lang === l ? tool.color + "88" : colors.border,
-                backgroundColor: lang === l ? tool.color + "18" : colors.secondary,
+                backgroundColor:
+                  lang === l ? tool.color + "18" : colors.secondary,
               }}
             >
-              <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? tool.color : colors.mutedForeground }}>
+              <Text
+                style={{
+                  fontFamily: "Eczar_600SemiBold",
+                  fontSize: 9,
+                  letterSpacing: 1.1,
+                  color: lang === l ? tool.color : colors.mutedForeground,
+                }}
+              >
                 {l === "en" ? "EN" : "हिं"}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity onPress={onRegenerate} activeOpacity={0.8} style={styles.regenBottomBtn}>
+        <TouchableOpacity
+          onPress={onRegenerate}
+          activeOpacity={0.8}
+          style={styles.regenBottomBtn}
+        >
           <Feather name="refresh-cw" size={12} color="#a78bfa" />
           <Text style={styles.regenBottomText}>Regenerate</Text>
         </TouchableOpacity>
@@ -632,71 +1214,145 @@ function AiOutputPanel({ output, tool, videoTitle, onClose, onRegenerate, lang, 
 }
 
 /* ── Note Item ── */
-function NoteItem({ note, onDelete, onUpdate }: {
-  note: Note; onDelete: () => void; onUpdate: (content: string, ts?: number | null) => void;
+function NoteItem({
+  note,
+  onDelete,
+  onUpdate,
+}: {
+  note: Note;
+  onDelete: () => void;
+  onUpdate: (content: string, ts?: number | null) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
   const [editTs, setEditTs] = useState(
     note.timestamp != null
       ? `${Math.floor(note.timestamp / 60)}:${(note.timestamp % 60).toString().padStart(2, "0")}`
-      : ""
+      : "",
   );
   const { colors } = useTheme();
   const parseTs = (t: string): number | undefined => {
     const parts = t.split(":").map(Number);
-    if (parts.length === 2 && !parts.some(isNaN)) return parts[0] * 60 + parts[1];
+    if (parts.length === 2 && !parts.some(isNaN))
+      return parts[0] * 60 + parts[1];
     return undefined;
   };
 
   return (
-    <View style={[styles.noteCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View
+      style={[
+        styles.noteCard,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
       {!editing && note.timestamp != null && (
         <View style={styles.noteTsBadge}>
           <Feather name="clock" size={9} color={PURPLE} />
           <Text style={styles.noteTsText}>
-            {Math.floor(note.timestamp / 60)}:{(note.timestamp % 60).toString().padStart(2, "0")}
+            {Math.floor(note.timestamp / 60)}:
+            {(note.timestamp % 60).toString().padStart(2, "0")}
           </Text>
         </View>
       )}
       {editing ? (
         <View style={{ gap: 8 }}>
           <TextInput
-            value={editContent} onChangeText={setEditContent}
-            style={[styles.noteEditInput, { color: colors.foreground, backgroundColor: colors.secondary, borderColor: colors.border }]}
-            multiline autoFocus
+            value={editContent}
+            onChangeText={setEditContent}
+            style={[
+              styles.noteEditInput,
+              {
+                color: colors.foreground,
+                backgroundColor: colors.secondary,
+                borderColor: colors.border,
+              },
+            ]}
+            multiline
+            autoFocus
             placeholderTextColor={colors.mutedForeground}
           />
           <TextInput
-            value={editTs} onChangeText={setEditTs}
-            placeholder="Timestamp (1:30)" placeholderTextColor={colors.mutedForeground}
-            style={[styles.tsInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.secondary }]}
+            value={editTs}
+            onChangeText={setEditTs}
+            placeholder="Timestamp (1:30)"
+            placeholderTextColor={colors.mutedForeground}
+            style={[
+              styles.tsInput,
+              {
+                color: colors.foreground,
+                borderColor: colors.border,
+                backgroundColor: colors.secondary,
+              },
+            ]}
           />
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
-              onPress={() => { onUpdate(editContent.trim(), editTs.trim() ? parseTs(editTs) : null); setEditing(false); }}
+              onPress={() => {
+                onUpdate(
+                  editContent.trim(),
+                  editTs.trim() ? parseTs(editTs) : null,
+                );
+                setEditing(false);
+              }}
               style={[styles.noteActionBtn, { backgroundColor: PURPLE }]}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "Eczar_600SemiBold" }}>Save</Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 12,
+                  fontFamily: "Eczar_600SemiBold",
+                }}
+              >
+                Save
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setEditing(false)}
-              style={[styles.noteActionBtn, { backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }]}
+              style={[
+                styles.noteActionBtn,
+                {
+                  backgroundColor: colors.secondary,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                },
+              ]}
             >
-              <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Eczar_500Medium" }}>Cancel</Text>
+              <Text
+                style={{
+                  color: colors.mutedForeground,
+                  fontSize: 12,
+                  fontFamily: "Eczar_500Medium",
+                }}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
         <>
-          <Text style={[styles.noteContent, { color: colors.foreground }]}>{note.content}</Text>
+          <Text style={[styles.noteContent, { color: colors.foreground }]}>
+            {note.content}
+          </Text>
           <View style={styles.noteFooter}>
-            <Text style={[styles.noteDate, { color: colors.mutedForeground }]}>{new Date(note.createdAt).toLocaleDateString()}</Text>
+            <Text style={[styles.noteDate, { color: colors.mutedForeground }]}>
+              {new Date(note.createdAt).toLocaleDateString()}
+            </Text>
             <View style={{ flexDirection: "row", gap: 14 }}>
-              <TouchableOpacity onPress={() => setEditing(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Feather name="edit-2" size={13} color={colors.mutedForeground} />
+              <TouchableOpacity
+                onPress={() => setEditing(true)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather
+                  name="edit-2"
+                  size={13}
+                  color={colors.mutedForeground}
+                />
               </TouchableOpacity>
-              <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity
+                onPress={onDelete}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Feather name="trash-2" size={13} color="#ef4444" />
               </TouchableOpacity>
             </View>
@@ -716,10 +1372,17 @@ export default function VideoDetailScreen() {
   const qc = useQueryClient();
   const colors = useColors();
 
-  const [activeTab, setActiveTab] = useState<"ai" | "notes" | "chat" | "transcript">("ai");
+  const [activeTab, setActiveTab] = useState<
+    "ai" | "notes" | "chat" | "transcript"
+  >("ai");
   const [transcriptEnabled, setTranscriptEnabled] = useState(false);
 
-  const { data: transcriptData, isLoading: transcriptLoading, error: transcriptError, refetch: fetchTranscript } = useQuery({
+  const {
+    data: transcriptData,
+    isLoading: transcriptLoading,
+    error: transcriptError,
+    refetch: fetchTranscript,
+  } = useQuery({
     queryKey: ["transcript", id],
     queryFn: () => api.getTranscript(id!),
     enabled: transcriptEnabled && !!id,
@@ -727,11 +1390,18 @@ export default function VideoDetailScreen() {
     staleTime: 60 * 60 * 1000,
   });
   const [generatingType, setGeneratingType] = useState<string | null>(null);
-  const [viewingOutput, setViewingOutput] = useState<{ output: AiOutput; tool: typeof AI_TOOLS[0] } | null>(null);
+  const [viewingOutput, setViewingOutput] = useState<{
+    output: AiOutput;
+    tool: (typeof AI_TOOLS)[0];
+  } | null>(null);
   const [lang, setLang] = useState<"en" | "hi">("en");
 
   useEffect(() => {
-    AsyncStorage.getItem("vv_ai_language").then(v => { if (v === "hi" || v === "en") setLang(v); }).catch(() => {});
+    AsyncStorage.getItem("vv_ai_language")
+      .then((v) => {
+        if (v === "hi" || v === "en") setLang(v);
+      })
+      .catch(() => {});
   }, []);
   const changeLang = (l: "en" | "hi") => {
     setLang(l);
@@ -745,10 +1415,17 @@ export default function VideoDetailScreen() {
   const [titleValue, setTitleValue] = useState("");
 
   /* Chat state */
-  const [chatMessages, setChatMessages] = useState<Array<{ role: "user" | "assistant"; content: string; id: string }>>([]);
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ role: "user" | "assistant"; content: string; id: string }>
+  >([]);
   const [chatInput, setChatInput] = useState("");
 
-  const { data: video, isLoading, isError, refetch: refetchVideo } = useQuery<Video>({
+  const {
+    data: video,
+    isLoading,
+    isError,
+    refetch: refetchVideo,
+  } = useQuery<Video>({
     queryKey: ["video", id],
     queryFn: () => api.getVideo(id!),
     enabled: !!id,
@@ -765,7 +1442,8 @@ export default function VideoDetailScreen() {
     queryKey: ["folders"],
     queryFn: () => api.listFolders(),
   });
-  const folders: Array<{ id: string; name: string; color?: string | null }> = foldersData?.folders ?? [];
+  const folders: Array<{ id: string; name: string; color?: string | null }> =
+    foldersData?.folders ?? [];
 
   const { data: allTagsData } = useQuery({
     queryKey: ["tags"],
@@ -803,12 +1481,16 @@ export default function VideoDetailScreen() {
     },
     onError: (err: any) => {
       setGeneratingType(null);
-      Alert.alert("Generation Failed", err.message || "Could not generate content.");
+      Alert.alert(
+        "Generation Failed",
+        err.message || "Could not generate content.",
+      );
     },
   });
 
   const updateVideoMutation = useMutation({
-    mutationFn: (data: { folderId?: string | null; title?: string }) => api.updateVideo(id!, data),
+    mutationFn: (data: { folderId?: string | null; title?: string }) =>
+      api.updateVideo(id!, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["video", id] });
       qc.invalidateQueries({ queryKey: ["videos"] });
@@ -816,17 +1498,24 @@ export default function VideoDetailScreen() {
       setEditingTitle(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
-    onError: (err: any) => Alert.alert("Error", err.message || "Could not update video."),
+    onError: (err: any) =>
+      Alert.alert("Error", err.message || "Could not update video."),
   });
 
   const addTagMutation = useMutation({
     mutationFn: (tagId: string) => api.addTagToVideo(id!, tagId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["video", id] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["video", id] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
   });
 
   const removeTagMutation = useMutation({
     mutationFn: (tagId: string) => api.removeTagFromVideo(id!, tagId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["video", id] }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["video", id] });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
   });
 
   const deleteVideoMutation = useMutation({
@@ -836,7 +1525,8 @@ export default function VideoDetailScreen() {
       qc.invalidateQueries({ queryKey: ["stats"] });
       router.back();
     },
-    onError: (err: any) => Alert.alert("Error", err.message || "Could not delete video."),
+    onError: (err: any) =>
+      Alert.alert("Error", err.message || "Could not delete video."),
   });
 
   const handleDeleteVideo = () => {
@@ -845,24 +1535,43 @@ export default function VideoDetailScreen() {
       "Remove this video from your vault permanently?",
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => deleteVideoMutation.mutate() },
-      ]
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteVideoMutation.mutate(),
+        },
+      ],
     );
   };
 
   const handleMoreOptions = () => {
     Alert.alert("Video Options", "", [
-      { text: "Edit Title", onPress: () => { setTitleValue(video?.title ?? ""); setEditingTitle(true); } },
+      {
+        text: "Edit Title",
+        onPress: () => {
+          setTitleValue(video?.title ?? "");
+          setEditingTitle(true);
+        },
+      },
       { text: "Manage Tags", onPress: () => setShowTagPicker(true) },
       { text: "Move to Folder", onPress: () => setShowFolderPicker(true) },
-      { text: "Delete Video", style: "destructive", onPress: handleDeleteVideo },
+      {
+        text: "Delete Video",
+        style: "destructive",
+        onPress: handleDeleteVideo,
+      },
       { text: "Cancel", style: "cancel" },
     ]);
   };
 
   const addNoteMutation = useMutation({
-    mutationFn: ({ content, timestamp }: { content: string; timestamp?: number }) =>
-      api.createNote(id!, content, timestamp),
+    mutationFn: ({
+      content,
+      timestamp,
+    }: {
+      content: string;
+      timestamp?: number;
+    }) => api.createNote(id!, content, timestamp),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["video", id] });
       setNewNote("");
@@ -876,8 +1585,15 @@ export default function VideoDetailScreen() {
   });
 
   const updateNoteMutation = useMutation({
-    mutationFn: ({ noteId, content, timestamp }: { noteId: string; content: string; timestamp?: number | null }) =>
-      api.updateNote(noteId, content, timestamp),
+    mutationFn: ({
+      noteId,
+      content,
+      timestamp,
+    }: {
+      noteId: string;
+      content: string;
+      timestamp?: number | null;
+    }) => api.updateNote(noteId, content, timestamp),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["video", id] }),
   });
 
@@ -887,24 +1603,47 @@ export default function VideoDetailScreen() {
       refetchOutputs();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
-    onError: (err: any) => Alert.alert("Analysis Failed", err.message || "Could not analyse video."),
+    onError: (err: any) =>
+      Alert.alert("Analysis Failed", err.message || "Could not analyse video."),
   });
 
   const chatMutation = useMutation({
     mutationFn: (message: string) =>
-      api.videoChat(message, id!, chatMessages.map((m) => ({ role: m.role, content: m.content }))),
+      api.videoChat(
+        message,
+        id!,
+        chatMessages.map((m) => ({ role: m.role, content: m.content })),
+      ),
     onMutate: (message: string) => {
-      const userMsg = { role: "user" as const, content: message, id: Date.now().toString() };
+      const userMsg = {
+        role: "user" as const,
+        content: message,
+        id: Date.now().toString(),
+      };
       setChatMessages((prev) => [...prev, userMsg]);
       setChatInput("");
     },
     onSuccess: (data: any) => {
       const reply = data?.message || "Sorry, I couldn't generate a response.";
-      setChatMessages((prev) => [...prev, { role: "assistant", content: reply, id: Date.now().toString() + "_ai" }]);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: reply,
+          id: Date.now().toString() + "_ai",
+        },
+      ]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
     onError: () => {
-      setChatMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I couldn't connect to AI right now.", id: Date.now().toString() + "_err" }]);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, I couldn't connect to AI right now.",
+          id: Date.now().toString() + "_err",
+        },
+      ]);
     },
   });
 
@@ -916,16 +1655,23 @@ export default function VideoDetailScreen() {
   const handleAddNote = () => {
     if (!newNote.trim()) return;
     const parts = noteTs.trim().split(":").map(Number);
-    const ts = parts.length === 2 && !parts.some(isNaN) ? parts[0] * 60 + parts[1] : undefined;
+    const ts =
+      parts.length === 2 && !parts.some(isNaN)
+        ? parts[0] * 60 + parts[1]
+        : undefined;
     addNoteMutation.mutate({ content: newNote.trim(), timestamp: ts });
   };
 
-  const handleOpenYouTube = () => { if (video?.url) Linking.openURL(video.url); };
+  const handleOpenYouTube = () => {
+    if (video?.url) Linking.openURL(video.url);
+  };
 
   const botInset = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   const aiOutputMap: Record<string, AiOutput> = Object.fromEntries(
-    ((aiOutputsData as any)?.outputs || video?.aiOutputs || []).map((o: AiOutput) => [o.type, o])
+    ((aiOutputsData as any)?.outputs || video?.aiOutputs || []).map(
+      (o: AiOutput) => [o.type, o],
+    ),
   );
   const aiCount = Object.keys(aiOutputMap).length;
 
@@ -942,27 +1688,56 @@ export default function VideoDetailScreen() {
           from={{ opacity: 0.4 }}
           animate={{ opacity: 1 }}
           transition={{ type: "timing", duration: 900, loop: true }}
-          style={{ aspectRatio: 16 / 9, backgroundColor: colors.card, marginHorizontal: 0 }}
+          style={{
+            aspectRatio: 16 / 9,
+            backgroundColor: colors.card,
+            marginHorizontal: 0,
+          }}
         />
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 12 }} scrollEnabled={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 16, gap: 12 }}
+          scrollEnabled={false}
+        >
           {/* Title + meta */}
           <Skeleton height={24} width="85%" borderRadius={6} />
-          <Skeleton height={14} width="50%" borderRadius={4} style={{ marginTop: 2 }} />
+          <Skeleton
+            height={14}
+            width="50%"
+            borderRadius={4}
+            style={{ marginTop: 2 }}
+          />
           {/* Quick action pills skeleton */}
           <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
-            {[1, 2, 3].map((i) => <Skeleton key={i} height={28} width={72} borderRadius={14} />)}
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} height={28} width={72} borderRadius={14} />
+            ))}
           </View>
           {/* Description skeleton */}
           <Skeleton height={52} borderRadius={8} style={{ marginTop: 4 }} />
           {/* AI tool cards skeleton - 3 columns */}
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton key={i} height={76} width="30%" borderRadius={10} />
             ))}
           </View>
           {/* Notes skeleton */}
-          <Skeleton height={20} width="35%" borderRadius={4} style={{ marginTop: 8 }} />
-          {[1, 2].map((i) => <Skeleton key={i} height={72} borderRadius={8} />)}
+          <Skeleton
+            height={20}
+            width="35%"
+            borderRadius={4}
+            style={{ marginTop: 8 }}
+          />
+          {[1, 2].map((i) => (
+            <Skeleton key={i} height={72} borderRadius={8} />
+          ))}
         </ScrollView>
       </View>
     );
@@ -973,27 +1748,69 @@ export default function VideoDetailScreen() {
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <GridBackground />
         <TopAppBar showBack />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 16 }}>
-          <View style={{
-            width: 64, height: 64, borderRadius: 4, borderWidth: 1,
-            borderColor: colors.border, backgroundColor: colors.card,
-            alignItems: "center", justifyContent: "center",
-          }}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 32,
+            gap: 16,
+          }}
+        >
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 4,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.card,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Feather name="film" size={28} color={colors.mutedForeground} />
           </View>
-          <Text style={{ fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 22, color: colors.foreground, textAlign: "center" }}>
+          <Text
+            style={{
+              fontFamily: "AlegreyaSansSC_800ExtraBold",
+              fontSize: 22,
+              color: colors.foreground,
+              textAlign: "center",
+            }}
+          >
             {isError ? "Failed to load" : "Video not found"}
           </Text>
-          <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 13, color: colors.mutedForeground, textAlign: "center", lineHeight: 20 }}>
+          <Text
+            style={{
+              fontFamily: "Eczar_400Regular",
+              fontSize: 13,
+              color: colors.mutedForeground,
+              textAlign: "center",
+              lineHeight: 20,
+            }}
+          >
             {isError
               ? "Could not fetch this video. Check your connection and try again."
               : "This video may have been deleted or belongs to a different account."}
           </Text>
           <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
             {isError && (
-              <AppButton label="RETRY" icon="refresh-cw" size="sm" variant="primary" onPress={() => refetchVideo()} />
+              <AppButton
+                label="RETRY"
+                icon="refresh-cw"
+                size="sm"
+                variant="primary"
+                onPress={() => refetchVideo()}
+              />
             )}
-            <AppButton label="BACK" icon="arrow-left" size="sm" variant="ghost" onPress={() => router.back()} />
+            <AppButton
+              label="BACK"
+              icon="arrow-left"
+              size="sm"
+              variant="ghost"
+              onPress={() => router.back()}
+            />
           </View>
         </View>
       </View>
@@ -1013,633 +1830,1408 @@ export default function VideoDetailScreen() {
           tool={viewingOutput.tool}
           videoTitle={video?.title}
           onClose={() => setViewingOutput(null)}
-          onRegenerate={() => { setViewingOutput(null); handleGenerate(viewingOutput.tool.type); }}
+          onRegenerate={() => {
+            setViewingOutput(null);
+            handleGenerate(viewingOutput.tool.type);
+          }}
           lang={lang}
           onLangChange={changeLang}
         />
       ) : (
         <>
-
-      {/* Top nav */}
-      <TopAppBar
-        showBack
-        title={video.title}
-        rightAction={
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <AppButton
-              icon="check-circle"
-              size="xs"
-              variant={(video as any).isWatched ? "white" : "ghost"}
-              onPress={() => watchMutation.mutate()}
-            />
-            <AppButton
-              icon="heart"
-              size="xs"
-              variant={video.isFavorite ? "danger" : "ghost"}
-              onPress={() => favMutation.mutate()}
-            />
-            <AppButton
-              icon="more-horizontal"
-              size="xs"
-              variant="ghost"
-              onPress={handleMoreOptions}
-            />
-          </View>
-        }
-      />
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: botInset + 28 }}>
-
-        {/* Player */}
-        {useWebView ? (
-          <YouTubePlayer ytId={ytId!} onOpenExternal={handleOpenYouTube} />
-        ) : (
-          <ThumbnailPlayer thumbnail={video.thumbnail} ytId={ytId} onOpenExternal={handleOpenYouTube} />
-        )}
-
-        {/* Info block */}
-        <View style={[styles.infoBlock, { borderBottomColor: colors.border }]}>
-          {/* Title — tap to edit */}
-          {editingTitle ? (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <TextInput
-                value={titleValue}
-                onChangeText={setTitleValue}
-                style={[styles.titleInput, { color: colors.foreground, borderColor: PURPLE + "60", backgroundColor: colors.card }]}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={() => { if (titleValue.trim()) updateVideoMutation.mutate({ title: titleValue.trim() }); else setEditingTitle(false); }}
-              />
-              <TouchableOpacity onPress={() => { if (titleValue.trim()) updateVideoMutation.mutate({ title: titleValue.trim() }); }} activeOpacity={0.8}>
-                <Feather name="check" size={18} color={PURPLE} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setEditingTitle(false)} activeOpacity={0.8}>
-                <Feather name="x" size={18} color={colors.mutedForeground} />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity onPress={() => { setTitleValue(video.title); setEditingTitle(true); }} activeOpacity={0.8} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-              <Text style={[styles.videoTitle, { color: colors.foreground, flex: 1 }]}>{video.title}</Text>
-              <Feather name="edit-2" size={14} color={colors.mutedForeground + "80"} style={{ marginTop: 4 }} />
-            </TouchableOpacity>
-          )}
-
-          {/* ── Compact meta row: channel · folder · duration · date (all one line) ── */}
-          <ScrollView
-            horizontal showsHorizontalScrollIndicator={false}
-            style={{ marginTop: 8 }}
-            contentContainerStyle={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-          >
-            {/* Channel */}
-            {video.channelName && (
-              <View style={[styles.metaChip, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "28" }]}>
-                <Feather name="youtube" size={12} color={PURPLE} />
-                <Text style={[styles.metaChipText, { color: PURPLE }]} numberOfLines={1}>{video.channelName}</Text>
-              </View>
-            )}
-
-            {/* Folder */}
-            <TouchableOpacity
-              onPress={() => setShowFolderPicker(true)}
-              style={[styles.metaChip, video.folderName
-                ? { backgroundColor: ORANGE + "10", borderColor: ORANGE + "35" }
-                : { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed" }
-              ]}
-              activeOpacity={0.75}
-            >
-              <Feather name={video.folderName ? "folder" : "folder-plus"} size={12} color={video.folderName ? ORANGE : colors.mutedForeground} />
-              <Text style={[styles.metaChipText, { color: video.folderName ? ORANGE : colors.mutedForeground }]}>
-                {video.folderName ?? "Folder"}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Duration */}
-            {video.duration && (
-              <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Feather name="clock" size={12} color={colors.mutedForeground} />
-                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>{video.duration}</Text>
-              </View>
-            )}
-
-            {/* Saved date */}
-            {video.createdAt && (
-              <View style={[styles.metaChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Feather name="calendar" size={12} color={colors.mutedForeground} />
-                <Text style={[styles.metaChipText, { color: colors.mutedForeground }]}>
-                  {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                </Text>
-              </View>
-            )}
-
-            {/* Watched status */}
-            {(video as any).isWatched && (
-              <View style={[styles.metaChip, { backgroundColor: GREEN + "10", borderColor: GREEN + "30" }]}>
-                <Feather name="check-circle" size={12} color={GREEN} />
-                <Text style={[styles.metaChipText, { color: GREEN }]}>Watched</Text>
-              </View>
-            )}
-          </ScrollView>
-
-          {/* ── Tags row + Add Tag (second line, compact) ── */}
-          <ScrollView
-            horizontal showsHorizontalScrollIndicator={false}
-            style={{ marginTop: 6 }}
-            contentContainerStyle={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-          >
-            {(video.tags ?? []).map((tag: Tag) => (
-              <TouchableOpacity
-                key={tag.id}
-                onPress={() => Alert.alert(`Remove tag "${tag.name}"?`, "", [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Remove", style: "destructive", onPress: () => removeTagMutation.mutate(tag.id) },
-                ])}
-                style={[styles.tagPill, { backgroundColor: (tag.color || PURPLE) + "18", borderColor: (tag.color || PURPLE) + "35" }]}
-                activeOpacity={0.75}
-              >
-                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: tag.color || PURPLE }} />
-                <Text style={[styles.tagPillText, { color: tag.color || PURPLE }]}>{tag.name}</Text>
-                <Feather name="x" size={9} color={(tag.color || PURPLE) + "99"} />
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              onPress={() => setShowTagPicker(true)}
-              style={[styles.tagPill, { backgroundColor: colors.card, borderColor: colors.border, borderStyle: "dashed" }]}
-              activeOpacity={0.75}
-            >
-              <Feather name="tag" size={10} color={colors.mutedForeground} />
-              <Text style={[styles.tagPillText, { color: colors.mutedForeground }]}>Add Tag</Text>
-            </TouchableOpacity>
-          </ScrollView>
-
-          {/* Quick action pills — show shortcuts to already-generated outputs */}
-          {quickPills.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }} contentContainerStyle={{ gap: 8 }}>
-              {quickPills.map((tool) => (
-                <QuickPill
-                  key={tool.type}
-                  label={tool.label.toUpperCase()}
-                  icon={tool.icon}
-                  color={tool.color}
-                  onPress={() => {
-                    const out = aiOutputMap[tool.type];
-                    if (out) { setViewingOutput({ output: out, tool }); setActiveTab("ai"); }
-                  }}
-                />
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        {/* ── Video Stats Strip ── */}
-        <View style={[styles.statsStrip, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {[
-            { icon: "cpu" as FeatherIconName,      label: "AI",       value: aiCount,                       color: PURPLE },
-            { icon: "edit-3" as FeatherIconName,   label: "Notes",    value: video.notes?.length ?? 0,      color: CYAN   },
-            { icon: "heart" as FeatherIconName,    label: "Favorite", value: video.isFavorite ? "Yes" : "No", color: PINK },
-            { icon: "check" as FeatherIconName,    label: "Watched",  value: (video as any).isWatched ? "Yes" : "No", color: GREEN },
-            { icon: "tag" as FeatherIconName,      label: "Tags",     value: video.tags?.length ?? 0,       color: ORANGE },
-          ].map((s, i, arr) => (
-            <React.Fragment key={s.label}>
-              <View style={styles.statItem}>
-                <View style={[styles.statIconBadge, { backgroundColor: s.color + "16", borderColor: s.color + "30" }]}>
-                  <Feather name={s.icon} size={13} color={s.color} />
-                </View>
-                <Text style={[styles.statVal, { color: colors.foreground }]}>{s.value}</Text>
-                <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
-              </View>
-              {i < arr.length - 1 && <View style={[styles.statDivider, { backgroundColor: colors.border }]} />}
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Study Timer */}
-        <StudyTimer />
-
-        {/* Tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={[styles.tabRow, { borderBottomColor: colors.border }]}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-        >
-          {([
-            { key: "ai",         label: `AI${aiCount > 0 ? ` (${aiCount})` : ""}`, icon: "cpu"            },
-            { key: "chat",       label: "CHAT",         icon: "message-circle"  },
-            { key: "notes",      label: `NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`, icon: "edit-3" },
-            { key: "transcript", label: "TRANSCRIPT",   icon: "align-left"      },
-          ] as const).map(({ key, label, icon }) => (
-            <TouchableOpacity
-              key={key}
-              onPress={() => {
-                setActiveTab(key);
-                if (key === "transcript" && !transcriptEnabled) setTranscriptEnabled(true);
-              }}
-              style={[styles.tabBtn, {
-                backgroundColor: activeTab === key ? PURPLE + "18" : colors.card,
-                borderColor: activeTab === key ? PURPLE + "40" : colors.border,
-              }]}
-              activeOpacity={0.75}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                <Feather name={icon} size={13} color={activeTab === key ? PURPLE : colors.mutedForeground} />
-                <Text style={[styles.tabBtnText, { color: activeTab === key ? PURPLE : colors.mutedForeground }]}>
-                  {label}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* ── AI Tab ── */}
-        {activeTab === "ai" && (
-          <View style={styles.section}>
-            <>
-                {/* Quick Analyze Banner */}
-                {aiCount === 0 && (
-                  <TouchableOpacity
-                    onPress={() => quickAnalyzeMutation.mutate()}
-                    disabled={quickAnalyzeMutation.isPending}
-                    activeOpacity={0.85}
-                    style={[styles.quickAnalyzeBtn, { borderColor: CYAN + "45", backgroundColor: CYAN + "0f" }]}
-                  >
-                    <LinearGradient
-                      colors={["rgba(6,182,212,0.08)", "transparent"]}
-                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                      style={StyleSheet.absoluteFillObject}
-                      pointerEvents="none"
-                    />
-                    {quickAnalyzeMutation.isPending ? (
-                      <MotiView from={{ rotate: "0deg" }} animate={{ rotate: "360deg" }} transition={{ type: "timing", duration: 1200, loop: true }}>
-                        <Feather name="cpu" size={16} color={CYAN} />
-                      </MotiView>
-                    ) : (
-                      <Feather name="zap" size={16} color={CYAN} />
-                    )}
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.quickAnalyzeTitle, { color: CYAN }]}>
-                        {quickAnalyzeMutation.isPending ? "Analysing with AI…" : "Quick Analyse"}
-                      </Text>
-                      <Text style={[styles.quickAnalyzeSub, { color: colors.mutedForeground }]}>
-                        Generate Summary + Key Insights instantly
-                      </Text>
-                    </View>
-                    {!quickAnalyzeMutation.isPending && <Feather name="chevron-right" size={14} color={CYAN + "80"} />}
-                  </TouchableOpacity>
-                )}
-
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-                  <View>
-                    <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Tools</Text>
-                    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                      {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
-                    </Text>
-                  </View>
-                  {/* Language toggle — matches QuickPill style */}
-                  <View style={{ flexDirection: "row", gap: 5 }}>
-                    {(["en", "hi"] as const).map(l => (
-                      <TouchableOpacity
-                        key={l}
-                        onPress={() => changeLang(l)}
-                        activeOpacity={0.75}
-                        style={{
-                          flexDirection: "row", alignItems: "center", gap: 4,
-                          paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, borderWidth: 1,
-                          borderColor: lang === l ? PURPLE + "88" : colors.border,
-                          backgroundColor: lang === l ? PURPLE + "18" : colors.secondary,
-                        }}
-                      >
-                        <Feather name="globe" size={8} color={lang === l ? PURPLE : colors.mutedForeground} />
-                        <Text style={{ fontFamily: "Eczar_600SemiBold", fontSize: 9, letterSpacing: 1.1, color: lang === l ? PURPLE : colors.mutedForeground }}>
-                          {l === "en" ? "EN" : "हिं"}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.toolGrid}>
-                  {Array.from({ length: Math.ceil(AI_TOOLS.length / 2) }, (_, rowIdx) => rowIdx * 2).map((rowStart) => (
-                    <View key={rowStart} style={styles.toolRow}>
-                      {AI_TOOLS.slice(rowStart, rowStart + 2).map((tool, i) => (
-                        <View key={tool.type} style={{ flex: 1 }}>
-                          <AiToolCard
-                            tool={tool}
-                            index={rowStart + i}
-                            existingOutput={aiOutputMap[tool.type]}
-                            isGenerating={generatingType === tool.type}
-                            onGenerate={() => handleGenerate(tool.type)}
-                            onView={() => {
-                              const out = aiOutputMap[tool.type];
-                              if (out) setViewingOutput({ output: out, tool });
-                            }}
-                          />
-                        </View>
-                      ))}
-                      {rowStart + 1 >= AI_TOOLS.length && AI_TOOLS.length % 2 !== 0 && <View style={{ flex: 1 }} />}
-                    </View>
-                  ))}
-                </View>
-                {generatingType && (
-                  <MotiView
-                    from={{ opacity: 0, translateY: 6 }}
-                    animate={{ opacity: 1, translateY: 0 }}
-                    transition={{ type: "timing", duration: 300 }}
-                    style={styles.generatingBanner}
-                  >
-                    <MotiView
-                      from={{ rotate: "0deg" }}
-                      animate={{ rotate: "360deg" }}
-                      transition={{ type: "timing", duration: 1400, loop: true }}
-                    >
-                      <Feather name="cpu" size={14} color={PURPLE} />
-                    </MotiView>
-                    <Text style={styles.generatingText}>AI is generating your content…</Text>
-                  </MotiView>
-                )}
-              </>
-          </View>
-        )}
-
-        {/* ── Chat Tab ── */}
-        {activeTab === "chat" && (
-          <View style={[styles.section, { minHeight: 400 }]}>
-            <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>AI Chat</Text>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Chat About This Video</Text>
-
-            {/* Chat messages */}
-            <View style={{ gap: 10, marginBottom: 12 }}>
-              {chatMessages.length === 0 && (
-                <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Feather name="message-circle" size={24} color={PURPLE + "60"} />
-                  <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>Ask anything about this video</Text>
-                  <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>AI has context about the video title, channel, and description</Text>
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4, justifyContent: "center" }}>
-                    {["Summarise this video", "What are the key takeaways?", "Who is this video for?"].map((q) => (
-                      <TouchableOpacity
-                        key={q}
-                        onPress={() => { setChatInput(q); }}
-                        style={[styles.chatSuggestion, { backgroundColor: PURPLE + "12", borderColor: PURPLE + "30" }]}
-                        activeOpacity={0.75}
-                      >
-                        <Text style={{ color: PURPLE, fontSize: 11, fontFamily: "Eczar_500Medium" }}>{q}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {chatMessages.map((msg) => (
-                <View
-                  key={msg.id}
-                  style={[
-                    styles.chatBubble,
-                    msg.role === "user"
-                      ? { alignSelf: "flex-end", backgroundColor: PURPLE, borderBottomRightRadius: 4 }
-                      : { alignSelf: "flex-start", backgroundColor: colors.card, borderColor: colors.border, borderBottomLeftRadius: 4 },
-                  ]}
-                >
-                  {msg.role === "assistant" && (
-                    <View style={styles.chatAiLabel}>
-                      <Feather name="cpu" size={9} color={CYAN} />
-                      <Text style={{ color: CYAN, fontSize: 8, fontFamily: "Eczar_400Regular", letterSpacing: 1 }}>GEMINI</Text>
-                    </View>
-                  )}
-                  <Text style={[styles.chatBubbleText, { color: msg.role === "user" ? "#fff" : colors.foreground }]}>
-                    {msg.content}
-                  </Text>
-                </View>
-              ))}
-              {chatMutation.isPending && (
-                <MotiView
-                  from={{ opacity: 0.4 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ type: "timing", duration: 600, loop: true }}
-                  style={[styles.chatBubble, { alignSelf: "flex-start", backgroundColor: colors.card, borderColor: PURPLE + "30" }]}
-                >
-                  <Feather name="cpu" size={12} color={PURPLE} />
-                  <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "Eczar_400Regular" }}>Thinking…</Text>
-                </MotiView>
-              )}
-            </View>
-
-            {/* Input */}
-            <View style={[styles.chatInputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <TextInput
-                value={chatInput}
-                onChangeText={setChatInput}
-                placeholder="Ask about this video…"
-                placeholderTextColor={colors.mutedForeground}
-                style={[styles.chatInput, { color: colors.foreground }]}
-                multiline
-                maxLength={500}
-              />
-              <TouchableOpacity
-                onPress={() => { if (chatInput.trim()) chatMutation.mutate(chatInput.trim()); }}
-                disabled={!chatInput.trim() || chatMutation.isPending}
-                style={[styles.chatSendBtn, { backgroundColor: chatInput.trim() ? PURPLE : colors.border }]}
-                activeOpacity={0.8}
-              >
-                <Feather name="send" size={14} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* ── Transcript Tab ── */}
-        {activeTab === "transcript" && (
-          <View style={styles.section}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <View>
-                <Text style={[styles.sectionEyebrow, { color: colors.mutedForeground }]}>Read-Along</Text>
-                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Transcript</Text>
-              </View>
-              {transcriptError && (
-                <TouchableOpacity
-                  onPress={() => fetchTranscript()}
-                  style={[styles.tabBtn, { borderColor: CYAN + "40", backgroundColor: CYAN + "10", paddingHorizontal: 10 }]}
-                  activeOpacity={0.8}
-                >
-                  <Feather name="refresh-cw" size={12} color={CYAN} />
-                  <Text style={[styles.tabBtnText, { color: CYAN }]}>RETRY</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {transcriptLoading ? (
-              <View style={{ gap: 8 }}>
-                {[1,2,3,4,5].map(i => (
-                  <View key={i} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
-                    <MotiView from={{ opacity: 0.3 }} animate={{ opacity: 1 }} transition={{ type: "timing", duration: 800, loop: true }}>
-                      <View style={{ width: 42, height: 14, borderRadius: 4, backgroundColor: colors.card }} />
-                    </MotiView>
-                    <MotiView from={{ opacity: 0.3 }} animate={{ opacity: 1 }} transition={{ type: "timing", duration: 800, loop: true, delay: 80 }}>
-                      <View style={{ height: 14, width: 240, borderRadius: 4, backgroundColor: colors.card }} />
-                    </MotiView>
-                  </View>
-                ))}
-                <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 11, color: colors.mutedForeground, textAlign: "center", marginTop: 10 }}>
-                  Fetching transcript…
-                </Text>
-              </View>
-            ) : transcriptError ? (
-              <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Feather name="alert-circle" size={24} color={colors.mutedForeground + "60"} />
-                <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>No Transcript Available</Text>
-                <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>
-                  {(transcriptError as any)?.message || "This video may not have captions enabled."}
-                </Text>
-                <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 11, color: colors.mutedForeground, textAlign: "center", marginTop: 4 }}>
-                  Try videos with auto-generated captions on YouTube.
-                </Text>
-              </View>
-            ) : !transcriptData ? (
-              <View style={[styles.chatEmptyCard, { backgroundColor: colors.card, borderColor: CYAN + "25" }]}>
-                <LinearGradient colors={[CYAN + "0a", "transparent"]} style={StyleSheet.absoluteFill} />
-                <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: CYAN + "14", borderWidth: 1, borderColor: CYAN + "25", alignItems: "center", justifyContent: "center" }}>
-                  <Feather name="align-left" size={22} color={CYAN + "80"} />
-                </View>
-                <Text style={[styles.chatEmptyTitle, { color: colors.foreground }]}>Read the Transcript</Text>
-                <Text style={[styles.chatEmptySub, { color: colors.mutedForeground }]}>
-                  Tap below to load the video transcript. Tap any line to seek to that timestamp on YouTube.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setTranscriptEnabled(true)}
-                  style={[styles.tabBtn, { borderColor: CYAN + "45", backgroundColor: CYAN + "12", paddingHorizontal: 18, paddingVertical: 10, marginTop: 4 }]}
-                  activeOpacity={0.8}
-                >
-                  <Feather name="download" size={13} color={CYAN} />
-                  <Text style={[styles.tabBtnText, { color: CYAN }]}>LOAD TRANSCRIPT</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={{ gap: 2 }}>
-                <View style={[{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8, paddingHorizontal: 4 }]}>
-                  <Feather name="info" size={11} color={colors.mutedForeground} />
-                  <Text style={{ fontFamily: "Eczar_400Regular", fontSize: 10, color: colors.mutedForeground }}>
-                    {transcriptData.lines.length} lines · Tap a line to open at that timestamp
-                  </Text>
-                </View>
-                {transcriptData.lines.map((line, idx) => {
-                  const mins  = Math.floor(line.start / 60);
-                  const secs  = Math.floor(line.start % 60);
-                  const tsStr = `${mins}:${secs.toString().padStart(2, "0")}`;
-                  const seekUrl = video?.url
-                    ? video.url.replace(/[&?]t=\d+/g, "") + (video.url.includes("?") ? "&" : "?") + `t=${Math.floor(line.start)}`
-                    : null;
-                  return (
-                    <TouchableOpacity
-                      key={idx}
-                      onPress={() => { if (seekUrl) Linking.openURL(seekUrl); }}
-                      activeOpacity={0.7}
-                      style={[styles.transcriptRow, { borderBottomColor: colors.border }]}
-                    >
-                      <View style={[styles.transcriptTs, { backgroundColor: CYAN + "14", borderColor: CYAN + "25" }]}>
-                        <Text style={[styles.transcriptTsText, { color: CYAN }]}>{tsStr}</Text>
-                      </View>
-                      <Text style={[styles.transcriptText, { color: colors.foreground }]}>{line.text}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* ── Notes Tab ── */}
-        {activeTab === "notes" && (
-          <View style={styles.section}>
-            <View style={[styles.noteInputCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <TextInput
-                value={newNote} onChangeText={setNewNote}
-                placeholder="Add a note about this video…"
-                placeholderTextColor={colors.mutedForeground}
-                multiline style={[styles.noteInput, { color: colors.foreground }]}
-              />
-              <View style={styles.noteInputFooter}>
-                <TextInput
-                  value={noteTs} onChangeText={setNoteTs}
-                  placeholder="Timestamp (1:30)"
-                  placeholderTextColor={colors.mutedForeground}
-                  style={[styles.tsInput, { backgroundColor: colors.secondary, borderColor: colors.border, color: colors.foreground }]}
-                  keyboardType="numbers-and-punctuation"
+          {/* Top nav */}
+          <TopAppBar
+            showBack
+            title={video.title}
+            rightAction={
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <AppButton
+                  icon="check-circle"
+                  size="xs"
+                  variant={(video as any).isWatched ? "white" : "ghost"}
+                  onPress={() => watchMutation.mutate()}
                 />
                 <AppButton
-                  icon="plus"
+                  icon="heart"
                   size="xs"
-                  variant={newNote.trim() ? "primary" : "ghost"}
-                  onPress={handleAddNote}
-                  disabled={!newNote.trim()}
+                  variant={video.isFavorite ? "danger" : "ghost"}
+                  onPress={() => favMutation.mutate()}
+                />
+                <AppButton
+                  icon="more-horizontal"
+                  size="xs"
+                  variant="ghost"
+                  onPress={handleMoreOptions}
                 />
               </View>
-            </View>
+            }
+          />
 
-            {(!video.notes || video.notes.length === 0) ? (
-              <View style={{ alignItems: "center", paddingVertical: 36 }}>
-                <View style={[styles.emptyNoteIcon, { backgroundColor: PURPLE + "10", borderColor: PURPLE + "20" }]}>
-                  <Feather name="edit-3" size={22} color={PURPLE + "80"} />
-                </View>
-                <Text style={[styles.emptyNoteText, { color: colors.mutedForeground }]}>No notes yet</Text>
-                <Text style={[styles.emptyNoteSub, { color: colors.mutedForeground + "80" }]}>Capture your thoughts above</Text>
-              </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: botInset + 28 }}
+          >
+            {/* Player */}
+            {useWebView ? (
+              <YouTubePlayer ytId={ytId!} onOpenExternal={handleOpenYouTube} />
             ) : (
-              <View style={{ gap: 10 }}>
-                {video.notes.map((note: Note) => (
-                  <NoteItem
-                    key={note.id}
-                    note={note}
-                    onUpdate={(content, timestamp) => updateNoteMutation.mutate({ noteId: note.id, content, timestamp })}
-                    onDelete={() =>
-                      Alert.alert("Delete Note", "Delete this note?", [
+              <ThumbnailPlayer
+                thumbnail={video.thumbnail}
+                ytId={ytId}
+                onOpenExternal={handleOpenYouTube}
+              />
+            )}
+
+            {/* Info block */}
+            <View
+              style={[styles.infoBlock, { borderBottomColor: colors.border }]}
+            >
+              {/* Title — tap to edit */}
+              {editingTitle ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 4,
+                  }}
+                >
+                  <TextInput
+                    value={titleValue}
+                    onChangeText={setTitleValue}
+                    style={[
+                      styles.titleInput,
+                      {
+                        color: colors.foreground,
+                        borderColor: PURPLE + "60",
+                        backgroundColor: colors.card,
+                      },
+                    ]}
+                    autoFocus
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                      if (titleValue.trim())
+                        updateVideoMutation.mutate({
+                          title: titleValue.trim(),
+                        });
+                      else setEditingTitle(false);
+                    }}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (titleValue.trim())
+                        updateVideoMutation.mutate({
+                          title: titleValue.trim(),
+                        });
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Feather name="check" size={18} color={PURPLE} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setEditingTitle(false)}
+                    activeOpacity={0.8}
+                  >
+                    <Feather
+                      name="x"
+                      size={18}
+                      color={colors.mutedForeground}
+                    />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    setTitleValue(video.title);
+                    setEditingTitle(true);
+                  }}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: 8,
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.videoTitle,
+                      { color: colors.foreground, flex: 1 },
+                    ]}
+                  >
+                    {video.title}
+                  </Text>
+                  <Feather
+                    name="edit-2"
+                    size={14}
+                    color={colors.mutedForeground + "80"}
+                    style={{ marginTop: 4 }}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {/* ── Compact meta row: channel · folder · duration · date (all one line) ── */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginTop: 8 }}
+                contentContainerStyle={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {/* Channel */}
+                {video.channelName && (
+                  <View
+                    style={[
+                      styles.metaChip,
+                      {
+                        backgroundColor: PURPLE + "10",
+                        borderColor: PURPLE + "28",
+                      },
+                    ]}
+                  >
+                    <Feather name="youtube" size={12} color={PURPLE} />
+                    <Text
+                      style={[styles.metaChipText, { color: PURPLE }]}
+                      numberOfLines={1}
+                    >
+                      {video.channelName}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Folder */}
+                <TouchableOpacity
+                  onPress={() => setShowFolderPicker(true)}
+                  style={[
+                    styles.metaChip,
+                    video.folderName
+                      ? {
+                          backgroundColor: ORANGE + "10",
+                          borderColor: ORANGE + "35",
+                        }
+                      : {
+                          backgroundColor: colors.card,
+                          borderColor: colors.border,
+                          borderStyle: "dashed",
+                        },
+                  ]}
+                  activeOpacity={0.75}
+                >
+                  <Feather
+                    name={video.folderName ? "folder" : "folder-plus"}
+                    size={12}
+                    color={video.folderName ? ORANGE : colors.mutedForeground}
+                  />
+                  <Text
+                    style={[
+                      styles.metaChipText,
+                      {
+                        color: video.folderName
+                          ? ORANGE
+                          : colors.mutedForeground,
+                      },
+                    ]}
+                  >
+                    {video.folderName ?? "Folder"}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Duration */}
+                {video.duration && (
+                  <View
+                    style={[
+                      styles.metaChip,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name="clock"
+                      size={12}
+                      color={colors.mutedForeground}
+                    />
+                    <Text
+                      style={[
+                        styles.metaChipText,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      {video.duration}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Saved date */}
+                {video.createdAt && (
+                  <View
+                    style={[
+                      styles.metaChip,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name="calendar"
+                      size={12}
+                      color={colors.mutedForeground}
+                    />
+                    <Text
+                      style={[
+                        styles.metaChipText,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      {new Date(video.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Watched status */}
+                {(video as any).isWatched && (
+                  <View
+                    style={[
+                      styles.metaChip,
+                      {
+                        backgroundColor: GREEN + "10",
+                        borderColor: GREEN + "30",
+                      },
+                    ]}
+                  >
+                    <Feather name="check-circle" size={12} color={GREEN} />
+                    <Text style={[styles.metaChipText, { color: GREEN }]}>
+                      Watched
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+
+              {/* ── Tags row + Add Tag (second line, compact) ── */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginTop: 6 }}
+                contentContainerStyle={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {(video.tags ?? []).map((tag: Tag) => (
+                  <TouchableOpacity
+                    key={tag.id}
+                    onPress={() =>
+                      Alert.alert(`Remove tag "${tag.name}"?`, "", [
                         { text: "Cancel", style: "cancel" },
-                        { text: "Delete", style: "destructive", onPress: () => deleteNoteMutation.mutate(note.id) },
+                        {
+                          text: "Remove",
+                          style: "destructive",
+                          onPress: () => removeTagMutation.mutate(tag.id),
+                        },
                       ])
                     }
-                  />
+                    style={[
+                      styles.tagPill,
+                      {
+                        backgroundColor: (tag.color || PURPLE) + "18",
+                        borderColor: (tag.color || PURPLE) + "35",
+                      },
+                    ]}
+                    activeOpacity={0.75}
+                  >
+                    <View
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: 4,
+                        backgroundColor: tag.color || PURPLE,
+                      }}
+                    />
+                    <Text
+                      style={[
+                        styles.tagPillText,
+                        { color: tag.color || PURPLE },
+                      ]}
+                    >
+                      {tag.name}
+                    </Text>
+                    <Feather
+                      name="x"
+                      size={9}
+                      color={(tag.color || PURPLE) + "99"}
+                    />
+                  </TouchableOpacity>
                 ))}
+                <TouchableOpacity
+                  onPress={() => setShowTagPicker(true)}
+                  style={[
+                    styles.tagPill,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                      borderStyle: "dashed",
+                    },
+                  ]}
+                  activeOpacity={0.75}
+                >
+                  <Feather
+                    name="tag"
+                    size={10}
+                    color={colors.mutedForeground}
+                  />
+                  <Text
+                    style={[
+                      styles.tagPillText,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    Add Tag
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+
+              {/* Quick action pills — show shortcuts to already-generated outputs */}
+              {quickPills.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginTop: 10 }}
+                  contentContainerStyle={{ gap: 8 }}
+                >
+                  {quickPills.map((tool) => (
+                    <QuickPill
+                      key={tool.type}
+                      label={tool.label.toUpperCase()}
+                      icon={tool.icon}
+                      color={tool.color}
+                      onPress={() => {
+                        const out = aiOutputMap[tool.type];
+                        if (out) {
+                          setViewingOutput({ output: out, tool });
+                          setActiveTab("ai");
+                        }
+                      }}
+                    />
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+
+            {/* Study Timer */}
+            <StudyTimer />
+
+            {/* Tabs */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={[styles.tabRow, { borderBottomColor: colors.border }]}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+            >
+              {(
+                [
+                  {
+                    key: "ai",
+                    label: `AI${aiCount > 0 ? ` (${aiCount})` : ""}`,
+                    icon: "cpu",
+                  },
+                  { key: "chat", label: "CHAT", icon: "message-circle" },
+                  {
+                    key: "notes",
+                    label: `NOTES${video.notes?.length ? ` (${video.notes.length})` : ""}`,
+                    icon: "edit-3",
+                  },
+                  {
+                    key: "transcript",
+                    label: "TRANSCRIPT",
+                    icon: "align-left",
+                  },
+                ] as const
+              ).map(({ key, label, icon }) => (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => {
+                    setActiveTab(key);
+                    if (key === "transcript" && !transcriptEnabled)
+                      setTranscriptEnabled(true);
+                  }}
+                  style={[
+                    styles.tabBtn,
+                    {
+                      backgroundColor:
+                        activeTab === key ? PURPLE + "18" : colors.card,
+                      borderColor:
+                        activeTab === key ? PURPLE + "40" : colors.border,
+                    },
+                  ]}
+                  activeOpacity={0.75}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 5,
+                    }}
+                  >
+                    <Feather
+                      name={icon}
+                      size={13}
+                      color={
+                        activeTab === key ? PURPLE : colors.mutedForeground
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.tabBtnText,
+                        {
+                          color:
+                            activeTab === key ? PURPLE : colors.mutedForeground,
+                        },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* ── AI Tab ── */}
+            {activeTab === "ai" && (
+              <View style={styles.section}>
+                <>
+                  {/* Quick Analyze Banner */}
+                  {aiCount === 0 && (
+                    <TouchableOpacity
+                      onPress={() => quickAnalyzeMutation.mutate()}
+                      disabled={quickAnalyzeMutation.isPending}
+                      activeOpacity={0.85}
+                      style={[
+                        styles.quickAnalyzeBtn,
+                        {
+                          borderColor: CYAN + "45",
+                          backgroundColor: CYAN + "0f",
+                        },
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={["rgba(6,182,212,0.08)", "transparent"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                      />
+                      {quickAnalyzeMutation.isPending ? (
+                        <MotiView
+                          from={{ rotate: "0deg" }}
+                          animate={{ rotate: "360deg" }}
+                          transition={{
+                            type: "timing",
+                            duration: 1200,
+                            loop: true,
+                          }}
+                        >
+                          <Feather name="cpu" size={16} color={CYAN} />
+                        </MotiView>
+                      ) : (
+                        <Feather name="zap" size={16} color={CYAN} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[styles.quickAnalyzeTitle, { color: CYAN }]}
+                        >
+                          {quickAnalyzeMutation.isPending
+                            ? "Analysing with AI…"
+                            : "Quick Analyse"}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.quickAnalyzeSub,
+                            { color: colors.mutedForeground },
+                          ]}
+                        >
+                          Generate Summary + Key Insights instantly
+                        </Text>
+                      </View>
+                      {!quickAnalyzeMutation.isPending && (
+                        <Feather
+                          name="chevron-right"
+                          size={14}
+                          color={CYAN + "80"}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )}
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 2,
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={[
+                          styles.sectionEyebrow,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        AI Tools
+                      </Text>
+                      <Text
+                        style={[
+                          styles.sectionTitle,
+                          { color: colors.foreground },
+                        ]}
+                      >
+                        {aiCount > 0 ? `${aiCount} Generated` : "Choose a Tool"}
+                      </Text>
+                    </View>
+                    {/* Language toggle — matches QuickPill style */}
+                    <View style={{ flexDirection: "row", gap: 5 }}>
+                      {(["en", "hi"] as const).map((l) => (
+                        <TouchableOpacity
+                          key={l}
+                          onPress={() => changeLang(l)}
+                          activeOpacity={0.75}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 4,
+                            paddingHorizontal: 9,
+                            paddingVertical: 5,
+                            borderRadius: 20,
+                            borderWidth: 1,
+                            borderColor:
+                              lang === l ? PURPLE + "88" : colors.border,
+                            backgroundColor:
+                              lang === l ? PURPLE + "18" : colors.secondary,
+                          }}
+                        >
+                          <Feather
+                            name="globe"
+                            size={8}
+                            color={lang === l ? PURPLE : colors.mutedForeground}
+                          />
+                          <Text
+                            style={{
+                              fontFamily: "Eczar_600SemiBold",
+                              fontSize: 9,
+                              letterSpacing: 1.1,
+                              color:
+                                lang === l ? PURPLE : colors.mutedForeground,
+                            }}
+                          >
+                            {l === "en" ? "EN" : "हिं"}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                  <View style={styles.toolGrid}>
+                    {Array.from(
+                      { length: Math.ceil(AI_TOOLS.length / 2) },
+                      (_, rowIdx) => rowIdx * 2,
+                    ).map((rowStart) => (
+                      <View key={rowStart} style={styles.toolRow}>
+                        {AI_TOOLS.slice(rowStart, rowStart + 2).map(
+                          (tool, i) => (
+                            <View key={tool.type} style={{ flex: 1 }}>
+                              <AiToolCard
+                                tool={tool}
+                                index={rowStart + i}
+                                existingOutput={aiOutputMap[tool.type]}
+                                isGenerating={generatingType === tool.type}
+                                onGenerate={() => handleGenerate(tool.type)}
+                                onView={() => {
+                                  const out = aiOutputMap[tool.type];
+                                  if (out)
+                                    setViewingOutput({ output: out, tool });
+                                }}
+                              />
+                            </View>
+                          ),
+                        )}
+                        {rowStart + 1 >= AI_TOOLS.length &&
+                          AI_TOOLS.length % 2 !== 0 && (
+                            <View style={{ flex: 1 }} />
+                          )}
+                      </View>
+                    ))}
+                  </View>
+                  {generatingType && (
+                    <MotiView
+                      from={{ opacity: 0, translateY: 6 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      transition={{ type: "timing", duration: 300 }}
+                      style={styles.generatingBanner}
+                    >
+                      <MotiView
+                        from={{ rotate: "0deg" }}
+                        animate={{ rotate: "360deg" }}
+                        transition={{
+                          type: "timing",
+                          duration: 1400,
+                          loop: true,
+                        }}
+                      >
+                        <Feather name="cpu" size={14} color={PURPLE} />
+                      </MotiView>
+                      <Text style={styles.generatingText}>
+                        AI is generating your content…
+                      </Text>
+                    </MotiView>
+                  )}
+                </>
               </View>
             )}
-          </View>
-        )}
-      </ScrollView>
+
+            {/* ── Chat Tab ── */}
+            {activeTab === "chat" && (
+              <View style={[styles.section, { minHeight: 400 }]}>
+                <Text
+                  style={[
+                    styles.sectionEyebrow,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  AI Chat
+                </Text>
+                <Text
+                  style={[styles.sectionTitle, { color: colors.foreground }]}
+                >
+                  Chat About This Video
+                </Text>
+
+                {/* Chat messages */}
+                <View style={{ gap: 10, marginBottom: 12 }}>
+                  {chatMessages.length === 0 && (
+                    <View
+                      style={[
+                        styles.chatEmptyCard,
+                        {
+                          backgroundColor: colors.card,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="message-circle"
+                        size={24}
+                        color={PURPLE + "60"}
+                      />
+                      <Text
+                        style={[
+                          styles.chatEmptyTitle,
+                          { color: colors.foreground },
+                        ]}
+                      >
+                        Ask anything about this video
+                      </Text>
+                      <Text
+                        style={[
+                          styles.chatEmptySub,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        AI has context about the video title, channel, and
+                        description
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          flexWrap: "wrap",
+                          gap: 8,
+                          marginTop: 4,
+                          justifyContent: "center",
+                        }}
+                      >
+                        {[
+                          "Summarise this video",
+                          "What are the key takeaways?",
+                          "Who is this video for?",
+                        ].map((q) => (
+                          <TouchableOpacity
+                            key={q}
+                            onPress={() => {
+                              setChatInput(q);
+                            }}
+                            style={[
+                              styles.chatSuggestion,
+                              {
+                                backgroundColor: PURPLE + "12",
+                                borderColor: PURPLE + "30",
+                              },
+                            ]}
+                            activeOpacity={0.75}
+                          >
+                            <Text
+                              style={{
+                                color: PURPLE,
+                                fontSize: 11,
+                                fontFamily: "Eczar_500Medium",
+                              }}
+                            >
+                              {q}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                  {chatMessages.map((msg) => (
+                    <View
+                      key={msg.id}
+                      style={[
+                        styles.chatBubble,
+                        msg.role === "user"
+                          ? {
+                              alignSelf: "flex-end",
+                              backgroundColor: PURPLE,
+                              borderBottomRightRadius: 4,
+                            }
+                          : {
+                              alignSelf: "flex-start",
+                              backgroundColor: colors.card,
+                              borderColor: colors.border,
+                              borderBottomLeftRadius: 4,
+                            },
+                      ]}
+                    >
+                      {msg.role === "assistant" && (
+                        <View style={styles.chatAiLabel}>
+                          <Feather name="cpu" size={9} color={CYAN} />
+                          <Text
+                            style={{
+                              color: CYAN,
+                              fontSize: 8,
+                              fontFamily: "Eczar_400Regular",
+                              letterSpacing: 1,
+                            }}
+                          >
+                            GEMINI
+                          </Text>
+                        </View>
+                      )}
+                      <Text
+                        style={[
+                          styles.chatBubbleText,
+                          {
+                            color:
+                              msg.role === "user" ? "#fff" : colors.foreground,
+                          },
+                        ]}
+                      >
+                        {msg.content}
+                      </Text>
+                    </View>
+                  ))}
+                  {chatMutation.isPending && (
+                    <MotiView
+                      from={{ opacity: 0.4 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ type: "timing", duration: 600, loop: true }}
+                      style={[
+                        styles.chatBubble,
+                        {
+                          alignSelf: "flex-start",
+                          backgroundColor: colors.card,
+                          borderColor: PURPLE + "30",
+                        },
+                      ]}
+                    >
+                      <Feather name="cpu" size={12} color={PURPLE} />
+                      <Text
+                        style={{
+                          color: colors.mutedForeground,
+                          fontSize: 12,
+                          fontFamily: "Eczar_400Regular",
+                        }}
+                      >
+                        Thinking…
+                      </Text>
+                    </MotiView>
+                  )}
+                </View>
+
+                {/* Input */}
+                <View
+                  style={[
+                    styles.chatInputRow,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    placeholder="Ask about this video…"
+                    placeholderTextColor={colors.mutedForeground}
+                    style={[styles.chatInput, { color: colors.foreground }]}
+                    multiline
+                    maxLength={500}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (chatInput.trim())
+                        chatMutation.mutate(chatInput.trim());
+                    }}
+                    disabled={!chatInput.trim() || chatMutation.isPending}
+                    style={[
+                      styles.chatSendBtn,
+                      {
+                        backgroundColor: chatInput.trim()
+                          ? PURPLE
+                          : colors.border,
+                      },
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Feather name="send" size={14} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* ── Transcript Tab ── */}
+            {activeTab === "transcript" && (
+              <View style={styles.section}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={[
+                        styles.sectionEyebrow,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      Read-Along
+                    </Text>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      Transcript
+                    </Text>
+                  </View>
+                  {transcriptError && (
+                    <TouchableOpacity
+                      onPress={() => fetchTranscript()}
+                      style={[
+                        styles.tabBtn,
+                        {
+                          borderColor: CYAN + "40",
+                          backgroundColor: CYAN + "10",
+                          paddingHorizontal: 10,
+                        },
+                      ]}
+                      activeOpacity={0.8}
+                    >
+                      <Feather name="refresh-cw" size={12} color={CYAN} />
+                      <Text style={[styles.tabBtnText, { color: CYAN }]}>
+                        RETRY
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {transcriptLoading ? (
+                  <View style={{ gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <View
+                        key={i}
+                        style={{
+                          flexDirection: "row",
+                          gap: 10,
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <MotiView
+                          from={{ opacity: 0.3 }}
+                          animate={{ opacity: 1 }}
+                          transition={{
+                            type: "timing",
+                            duration: 800,
+                            loop: true,
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 42,
+                              height: 14,
+                              borderRadius: 4,
+                              backgroundColor: colors.card,
+                            }}
+                          />
+                        </MotiView>
+                        <MotiView
+                          from={{ opacity: 0.3 }}
+                          animate={{ opacity: 1 }}
+                          transition={{
+                            type: "timing",
+                            duration: 800,
+                            loop: true,
+                            delay: 80,
+                          }}
+                        >
+                          <View
+                            style={{
+                              height: 14,
+                              width: 240,
+                              borderRadius: 4,
+                              backgroundColor: colors.card,
+                            }}
+                          />
+                        </MotiView>
+                      </View>
+                    ))}
+                    <Text
+                      style={{
+                        fontFamily: "Eczar_400Regular",
+                        fontSize: 11,
+                        color: colors.mutedForeground,
+                        textAlign: "center",
+                        marginTop: 10,
+                      }}
+                    >
+                      Fetching transcript…
+                    </Text>
+                  </View>
+                ) : transcriptError ? (
+                  <View
+                    style={[
+                      styles.chatEmptyCard,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name="alert-circle"
+                      size={24}
+                      color={colors.mutedForeground + "60"}
+                    />
+                    <Text
+                      style={[
+                        styles.chatEmptyTitle,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      No Transcript Available
+                    </Text>
+                    <Text
+                      style={[
+                        styles.chatEmptySub,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      {(transcriptError as any)?.message ||
+                        "This video may not have captions enabled."}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Eczar_400Regular",
+                        fontSize: 11,
+                        color: colors.mutedForeground,
+                        textAlign: "center",
+                        marginTop: 4,
+                      }}
+                    >
+                      Try videos with auto-generated captions on YouTube.
+                    </Text>
+                  </View>
+                ) : !transcriptData ? (
+                  <View
+                    style={[
+                      styles.chatEmptyCard,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: CYAN + "25",
+                      },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={[CYAN + "0a", "transparent"]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <View
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 14,
+                        backgroundColor: CYAN + "14",
+                        borderWidth: 1,
+                        borderColor: CYAN + "25",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Feather
+                        name="align-left"
+                        size={22}
+                        color={CYAN + "80"}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.chatEmptyTitle,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      Read the Transcript
+                    </Text>
+                    <Text
+                      style={[
+                        styles.chatEmptySub,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      Tap below to load the video transcript. Tap any line to
+                      seek to that timestamp on YouTube.
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setTranscriptEnabled(true)}
+                      style={[
+                        styles.tabBtn,
+                        {
+                          borderColor: CYAN + "45",
+                          backgroundColor: CYAN + "12",
+                          paddingHorizontal: 18,
+                          paddingVertical: 10,
+                          marginTop: 4,
+                        },
+                      ]}
+                      activeOpacity={0.8}
+                    >
+                      <Feather name="download" size={13} color={CYAN} />
+                      <Text style={[styles.tabBtnText, { color: CYAN }]}>
+                        LOAD TRANSCRIPT
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={{ gap: 2 }}>
+                    <View
+                      style={[
+                        {
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 8,
+                          paddingHorizontal: 4,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name="info"
+                        size={11}
+                        color={colors.mutedForeground}
+                      />
+                      <Text
+                        style={{
+                          fontFamily: "Eczar_400Regular",
+                          fontSize: 10,
+                          color: colors.mutedForeground,
+                        }}
+                      >
+                        {transcriptData.lines.length} lines · Tap a line to open
+                        at that timestamp
+                      </Text>
+                    </View>
+                    {transcriptData.lines.map((line, idx) => {
+                      const mins = Math.floor(line.start / 60);
+                      const secs = Math.floor(line.start % 60);
+                      const tsStr = `${mins}:${secs.toString().padStart(2, "0")}`;
+                      const seekUrl = video?.url
+                        ? video.url.replace(/[&?]t=\d+/g, "") +
+                          (video.url.includes("?") ? "&" : "?") +
+                          `t=${Math.floor(line.start)}`
+                        : null;
+                      return (
+                        <TouchableOpacity
+                          key={idx}
+                          onPress={() => {
+                            if (seekUrl) Linking.openURL(seekUrl);
+                          }}
+                          activeOpacity={0.7}
+                          style={[
+                            styles.transcriptRow,
+                            { borderBottomColor: colors.border },
+                          ]}
+                        >
+                          <View
+                            style={[
+                              styles.transcriptTs,
+                              {
+                                backgroundColor: CYAN + "14",
+                                borderColor: CYAN + "25",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[styles.transcriptTsText, { color: CYAN }]}
+                            >
+                              {tsStr}
+                            </Text>
+                          </View>
+                          <Text
+                            style={[
+                              styles.transcriptText,
+                              { color: colors.foreground },
+                            ]}
+                          >
+                            {line.text}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* ── Notes Tab ── */}
+            {activeTab === "notes" && (
+              <View style={styles.section}>
+                <View
+                  style={[
+                    styles.noteInputCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    value={newNote}
+                    onChangeText={setNewNote}
+                    placeholder="Add a note about this video…"
+                    placeholderTextColor={colors.mutedForeground}
+                    multiline
+                    style={[styles.noteInput, { color: colors.foreground }]}
+                  />
+                  <View style={styles.noteInputFooter}>
+                    <TextInput
+                      value={noteTs}
+                      onChangeText={setNoteTs}
+                      placeholder="Timestamp (1:30)"
+                      placeholderTextColor={colors.mutedForeground}
+                      style={[
+                        styles.tsInput,
+                        {
+                          backgroundColor: colors.secondary,
+                          borderColor: colors.border,
+                          color: colors.foreground,
+                        },
+                      ]}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                    <AppButton
+                      icon="plus"
+                      size="xs"
+                      variant={newNote.trim() ? "primary" : "ghost"}
+                      onPress={handleAddNote}
+                      disabled={!newNote.trim()}
+                    />
+                  </View>
+                </View>
+
+                {!video.notes || video.notes.length === 0 ? (
+                  <View style={{ alignItems: "center", paddingVertical: 36 }}>
+                    <View
+                      style={[
+                        styles.emptyNoteIcon,
+                        {
+                          backgroundColor: PURPLE + "10",
+                          borderColor: PURPLE + "20",
+                        },
+                      ]}
+                    >
+                      <Feather name="edit-3" size={22} color={PURPLE + "80"} />
+                    </View>
+                    <Text
+                      style={[
+                        styles.emptyNoteText,
+                        { color: colors.mutedForeground },
+                      ]}
+                    >
+                      No notes yet
+                    </Text>
+                    <Text
+                      style={[
+                        styles.emptyNoteSub,
+                        { color: colors.mutedForeground + "80" },
+                      ]}
+                    >
+                      Capture your thoughts above
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{ gap: 10 }}>
+                    {video.notes.map((note: Note) => (
+                      <NoteItem
+                        key={note.id}
+                        note={note}
+                        onUpdate={(content, timestamp) =>
+                          updateNoteMutation.mutate({
+                            noteId: note.id,
+                            content,
+                            timestamp,
+                          })
+                        }
+                        onDelete={() =>
+                          Alert.alert("Delete Note", "Delete this note?", [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                              text: "Delete",
+                              style: "destructive",
+                              onPress: () => deleteNoteMutation.mutate(note.id),
+                            },
+                          ])
+                        }
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+          </ScrollView>
         </>
       )}
 
       {/* ── Manage Tags — premium centered modal ── */}
-      <Modal visible={showTagPicker} transparent animationType="fade" onRequestClose={() => setShowTagPicker(false)}>
+      <Modal
+        visible={showTagPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTagPicker(false)}
+      >
         <View style={styles.modalBackdrop}>
-          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowTagPicker(false)} />
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowTagPicker(false)}
+          />
           <MotiView
             from={{ scale: 0.93, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.93, opacity: 0 }}
             transition={{ type: "timing", duration: 220 }}
-            style={[styles.premiumModal, { backgroundColor: colors.background, borderColor: PURPLE + "35" }]}
+            style={[
+              styles.premiumModal,
+              {
+                backgroundColor: colors.background,
+                borderColor: PURPLE + "35",
+              },
+            ]}
           >
-            <LinearGradient colors={[PURPLE + "16", "transparent"]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            <LinearGradient
+              colors={[PURPLE + "16", "transparent"]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
             {/* Accent bar */}
-            <View style={{ height: 3, backgroundColor: PURPLE, width: "22%", borderRadius: 2, alignSelf: "center", marginTop: 16, marginBottom: 18 }} />
+            <View
+              style={{
+                height: 3,
+                backgroundColor: PURPLE,
+                width: "22%",
+                borderRadius: 2,
+                alignSelf: "center",
+                marginTop: 16,
+                marginBottom: 18,
+              }}
+            />
             {/* Header */}
             <View style={styles.premiumModalHeader}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.premiumModalIcon, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "35" }]}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+              >
+                <View
+                  style={[
+                    styles.premiumModalIcon,
+                    {
+                      backgroundColor: PURPLE + "18",
+                      borderColor: PURPLE + "35",
+                    },
+                  ]}
+                >
                   <Feather name="tag" size={16} color={PURPLE} />
                 </View>
                 <View>
-                  <Text style={[styles.premiumModalMicro, { color: colors.mutedForeground }]}>VIDEO</Text>
-                  <Text style={[styles.premiumModalTitle, { color: colors.foreground }]}>Manage Tags</Text>
+                  <Text
+                    style={[
+                      styles.premiumModalMicro,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    VIDEO
+                  </Text>
+                  <Text
+                    style={[
+                      styles.premiumModalTitle,
+                      { color: colors.foreground },
+                    ]}
+                  >
+                    Manage Tags
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity
                 onPress={() => setShowTagPicker(false)}
-                style={[styles.premiumModalClose, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[
+                  styles.premiumModalClose,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
               >
                 <Feather name="x" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <View style={[styles.premiumModalDivider, { backgroundColor: colors.border }]} />
-            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+            <View
+              style={[
+                styles.premiumModalDivider,
+                { backgroundColor: colors.border },
+              ]}
+            />
+            <ScrollView
+              style={{ maxHeight: 300 }}
+              showsVerticalScrollIndicator={false}
+            >
               {allTags.length === 0 ? (
                 <View style={{ padding: 28, alignItems: "center", gap: 8 }}>
-                  <Feather name="tag" size={28} color={colors.mutedForeground + "50"} />
-                  <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No tags yet. Create tags in the Profile tab.</Text>
+                  <Feather
+                    name="tag"
+                    size={28}
+                    color={colors.mutedForeground + "50"}
+                  />
+                  <Text
+                    style={[
+                      styles.folderPickerEmpty,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    No tags yet. Create tags in the Profile tab.
+                  </Text>
                 </View>
               ) : (
                 allTags.map((tag) => {
@@ -1649,17 +3241,49 @@ export default function VideoDetailScreen() {
                   return (
                     <TouchableOpacity
                       key={tag.id}
-                      onPress={() => isAttached ? removeTagMutation.mutate(tag.id) : addTagMutation.mutate(tag.id)}
-                      style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
+                      onPress={() =>
+                        isAttached
+                          ? removeTagMutation.mutate(tag.id)
+                          : addTagMutation.mutate(tag.id)
+                      }
+                      style={[
+                        styles.premiumPickerItem,
+                        { borderBottomColor: colors.border },
+                      ]}
                       activeOpacity={0.75}
                     >
-                      <View style={[styles.premiumColorDot, { backgroundColor: dotColor }]} />
-                      <Text style={[styles.premiumPickerItemText, { color: colors.foreground }]}>{tag.name}</Text>
-                      <View style={[styles.premiumPickerCheck, {
-                        backgroundColor: isAttached ? PURPLE + "18" : "transparent",
-                        borderColor: isAttached ? PURPLE + "50" : colors.border,
-                      }]}>
-                        <Feather name={isAttached ? "check" : "plus"} size={13} color={isAttached ? PURPLE : colors.mutedForeground} />
+                      <View
+                        style={[
+                          styles.premiumColorDot,
+                          { backgroundColor: dotColor },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.premiumPickerItemText,
+                          { color: colors.foreground },
+                        ]}
+                      >
+                        {tag.name}
+                      </Text>
+                      <View
+                        style={[
+                          styles.premiumPickerCheck,
+                          {
+                            backgroundColor: isAttached
+                              ? PURPLE + "18"
+                              : "transparent",
+                            borderColor: isAttached
+                              ? PURPLE + "50"
+                              : colors.border,
+                          },
+                        ]}
+                      >
+                        <Feather
+                          name={isAttached ? "check" : "plus"}
+                          size={13}
+                          color={isAttached ? PURPLE : colors.mutedForeground}
+                        />
                       </View>
                     </TouchableOpacity>
                   );
@@ -1671,49 +3295,135 @@ export default function VideoDetailScreen() {
       </Modal>
 
       {/* ── Move to Folder — premium centered modal ── */}
-      <Modal visible={showFolderPicker} transparent animationType="fade" onRequestClose={() => setShowFolderPicker(false)}>
+      <Modal
+        visible={showFolderPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFolderPicker(false)}
+      >
         <View style={styles.modalBackdrop}>
-          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowFolderPicker(false)} />
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowFolderPicker(false)}
+          />
           <MotiView
             from={{ scale: 0.93, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.93, opacity: 0 }}
             transition={{ type: "timing", duration: 220 }}
-            style={[styles.premiumModal, { backgroundColor: colors.background, borderColor: ORANGE + "35" }]}
+            style={[
+              styles.premiumModal,
+              {
+                backgroundColor: colors.background,
+                borderColor: ORANGE + "35",
+              },
+            ]}
           >
-            <LinearGradient colors={[ORANGE + "16", "transparent"]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+            <LinearGradient
+              colors={[ORANGE + "16", "transparent"]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
             {/* Accent bar */}
-            <View style={{ height: 3, backgroundColor: ORANGE, width: "22%", borderRadius: 2, alignSelf: "center", marginTop: 16, marginBottom: 18 }} />
+            <View
+              style={{
+                height: 3,
+                backgroundColor: ORANGE,
+                width: "22%",
+                borderRadius: 2,
+                alignSelf: "center",
+                marginTop: 16,
+                marginBottom: 18,
+              }}
+            />
             {/* Header */}
             <View style={styles.premiumModalHeader}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View style={[styles.premiumModalIcon, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "35" }]}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+              >
+                <View
+                  style={[
+                    styles.premiumModalIcon,
+                    {
+                      backgroundColor: ORANGE + "18",
+                      borderColor: ORANGE + "35",
+                    },
+                  ]}
+                >
                   <Feather name="folder" size={16} color={ORANGE} />
                 </View>
                 <View>
-                  <Text style={[styles.premiumModalMicro, { color: colors.mutedForeground }]}>VIDEO</Text>
-                  <Text style={[styles.premiumModalTitle, { color: colors.foreground }]}>Move to Folder</Text>
+                  <Text
+                    style={[
+                      styles.premiumModalMicro,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    VIDEO
+                  </Text>
+                  <Text
+                    style={[
+                      styles.premiumModalTitle,
+                      { color: colors.foreground },
+                    ]}
+                  >
+                    Move to Folder
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity
                 onPress={() => setShowFolderPicker(false)}
-                style={[styles.premiumModalClose, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[
+                  styles.premiumModalClose,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
               >
                 <Feather name="x" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <View style={[styles.premiumModalDivider, { backgroundColor: colors.border }]} />
-            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+            <View
+              style={[
+                styles.premiumModalDivider,
+                { backgroundColor: colors.border },
+              ]}
+            />
+            <ScrollView
+              style={{ maxHeight: 300 }}
+              showsVerticalScrollIndicator={false}
+            >
               {/* Remove from folder option */}
               <TouchableOpacity
                 onPress={() => updateVideoMutation.mutate({ folderId: null })}
-                style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
+                style={[
+                  styles.premiumPickerItem,
+                  { borderBottomColor: colors.border },
+                ]}
                 activeOpacity={0.75}
               >
-                <Feather name="x-circle" size={16} color={colors.mutedForeground} />
-                <Text style={[styles.premiumPickerItemText, { color: colors.mutedForeground }]}>Remove from folder</Text>
+                <Feather
+                  name="x-circle"
+                  size={16}
+                  color={colors.mutedForeground}
+                />
+                <Text
+                  style={[
+                    styles.premiumPickerItemText,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  Remove from folder
+                </Text>
                 {!video.folderName && (
-                  <View style={[styles.premiumPickerCheck, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "50" }]}>
+                  <View
+                    style={[
+                      styles.premiumPickerCheck,
+                      {
+                        backgroundColor: ORANGE + "18",
+                        borderColor: ORANGE + "50",
+                      },
+                    ]}
+                  >
                     <Feather name="check" size={13} color={ORANGE} />
                   </View>
                 )}
@@ -1724,14 +3434,39 @@ export default function VideoDetailScreen() {
                 return (
                   <TouchableOpacity
                     key={f.id}
-                    onPress={() => updateVideoMutation.mutate({ folderId: f.id })}
-                    style={[styles.premiumPickerItem, { borderBottomColor: colors.border }]}
+                    onPress={() =>
+                      updateVideoMutation.mutate({ folderId: f.id })
+                    }
+                    style={[
+                      styles.premiumPickerItem,
+                      { borderBottomColor: colors.border },
+                    ]}
                     activeOpacity={0.75}
                   >
-                    <View style={[styles.premiumColorDot, { backgroundColor: dotColor }]} />
-                    <Text style={[styles.premiumPickerItemText, { color: colors.foreground }]}>{f.name}</Text>
+                    <View
+                      style={[
+                        styles.premiumColorDot,
+                        { backgroundColor: dotColor },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.premiumPickerItemText,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      {f.name}
+                    </Text>
                     {isCurrent && (
-                      <View style={[styles.premiumPickerCheck, { backgroundColor: ORANGE + "18", borderColor: ORANGE + "50" }]}>
+                      <View
+                        style={[
+                          styles.premiumPickerCheck,
+                          {
+                            backgroundColor: ORANGE + "18",
+                            borderColor: ORANGE + "50",
+                          },
+                        ]}
+                      >
                         <Feather name="check" size={13} color={ORANGE} />
                       </View>
                     )}
@@ -1740,8 +3475,19 @@ export default function VideoDetailScreen() {
               })}
               {folders.length === 0 && (
                 <View style={{ padding: 28, alignItems: "center", gap: 8 }}>
-                  <Feather name="folder" size={28} color={colors.mutedForeground + "50"} />
-                  <Text style={[styles.folderPickerEmpty, { color: colors.mutedForeground }]}>No folders yet. Create one in the Folders tab.</Text>
+                  <Feather
+                    name="folder"
+                    size={28}
+                    color={colors.mutedForeground + "50"}
+                  />
+                  <Text
+                    style={[
+                      styles.folderPickerEmpty,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    No folders yet. Create one in the Folders tab.
+                  </Text>
                 </View>
               )}
             </ScrollView>
@@ -1758,96 +3504,248 @@ const styles = StyleSheet.create({
 
   /* Nav */
   nav: {
-    flexDirection: "row", alignItems: "center",
-    paddingHorizontal: 8, paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   navBtn: { padding: 10, width: 44, alignItems: "center" },
   navTitle: {
-    flex: 1, fontSize: 15, fontFamily: "Eczar_600SemiBold",
-    textAlign: "center", letterSpacing: -0.2,
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Eczar_600SemiBold",
+    textAlign: "center",
+    letterSpacing: -0.2,
   },
 
   /* Player */
-  player: { width: "100%", aspectRatio: 16 / 9, backgroundColor: "#000", position: "relative" },
-  ytExtBtn: {
-    position: "absolute", bottom: 10, right: 10,
-    flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: "rgba(0,0,0,0.72)",
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+  player: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    backgroundColor: "#000",
+    position: "relative",
   },
-  ytExtText: { color: "rgba(255,255,255,0.9)", fontSize: 10, fontFamily: "Eczar_600SemiBold" },
-  thumbCenter: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" },
+  ytExtBtn: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  ytExtText: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 10,
+    fontFamily: "Eczar_600SemiBold",
+  },
+  thumbCenter: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   playCircle: {
-    width: 60, height: 60, borderRadius: 30, backgroundColor: "rgba(139,92,246,0.85)",
-    alignItems: "center", justifyContent: "center",
-    shadowColor: PURPLE, shadowOpacity: 0.5, shadowRadius: 12, elevation: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "rgba(139,92,246,0.85)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: PURPLE,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
   watchOnYtRow: {
-    position: "absolute", bottom: 10, right: 10,
-    flexDirection: "row", alignItems: "center", gap: 5,
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     backgroundColor: "rgba(0,0,0,0.65)",
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
   },
-  watchOnYtText: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontFamily: "Eczar_600SemiBold" },
-  embedErrTitle: { color: "#fff", fontSize: 14, fontFamily: "Eczar_600SemiBold" },
-  embedErrSub: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Eczar_400Regular", textAlign: "center", marginTop: 4 },
+  watchOnYtText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 10,
+    fontFamily: "Eczar_600SemiBold",
+  },
+  embedErrTitle: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Eczar_600SemiBold",
+  },
+  embedErrSub: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 11,
+    fontFamily: "Eczar_400Regular",
+    textAlign: "center",
+    marginTop: 4,
+  },
   embedErrBtn: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#ef4444",
-    borderRadius: 6, marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: "#ef4444",
+    borderRadius: 6,
+    marginTop: 12,
   },
-  embedErrBtnText: { color: "#fff", fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 1.2 },
+  embedErrBtnText: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 1.2,
+  },
 
   /* Info */
-  infoBlock: { padding: 16, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  videoTitle: { fontSize: 17, fontFamily: "AlegreyaSansSC_700Bold", lineHeight: 26, letterSpacing: -0.3 },
+  infoBlock: {
+    padding: 16,
+    gap: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  videoTitle: {
+    fontSize: 17,
+    fontFamily: "AlegreyaSansSC_700Bold",
+    lineHeight: 26,
+    letterSpacing: -0.3,
+  },
   titleInput: {
-    flex: 1, fontSize: 16, fontFamily: "AlegreyaSansSC_700Bold",
-    lineHeight: 24, letterSpacing: -0.3,
-    paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1.5, borderRadius: 6,
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "AlegreyaSansSC_700Bold",
+    lineHeight: 24,
+    letterSpacing: -0.3,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1.5,
+    borderRadius: 6,
   },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metaChip: {
-    flexDirection: "row", alignItems: "center", gap: 5,
-    paddingHorizontal: 10, paddingVertical: 5,
-    borderRadius: 6, borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
   },
-  metaChipText: { fontSize: 10, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
+  metaChipText: {
+    fontSize: 10,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 0.5,
+  },
   tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tagPill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 5, borderWidth: 1 },
-  tagPillText: { fontSize: 10, fontFamily: "Eczar_500Medium", letterSpacing: 0.3 },
+  tagPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  tagPillText: {
+    fontSize: 10,
+    fontFamily: "Eczar_500Medium",
+    letterSpacing: 0.3,
+  },
 
   /* Quick pills */
   quickPill: {
-    flexDirection: "row", alignItems: "center", gap: 5,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
   },
-  quickPillText: { fontSize: 9, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.2 },
+  quickPillText: {
+    fontSize: 9,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: 1.2,
+  },
 
   /* Tabs */
   tabRow: {
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  tabBtn: { paddingVertical: 10, paddingHorizontal: 14, alignItems: "center", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 5 },
-  tabBtnText: { fontSize: 10, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.1 },
+  tabBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 5,
+  },
+  tabBtnText: {
+    fontSize: 10,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: 1.1,
+  },
 
   /* Transcript */
-  transcriptRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth },
-  transcriptTs:  { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, borderWidth: 1, minWidth: 40, alignItems: "center" },
-  transcriptTsText: { fontFamily: "Eczar_600SemiBold", fontSize: 10, letterSpacing: 0.5 },
-  transcriptText: { fontFamily: "Eczar_400Regular", fontSize: 13, lineHeight: 20, flex: 1 },
+  transcriptRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    paddingVertical: 9,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  transcriptTs: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    minWidth: 40,
+    alignItems: "center",
+  },
+  transcriptTsText: {
+    fontFamily: "Eczar_600SemiBold",
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  transcriptText: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 13,
+    lineHeight: 20,
+    flex: 1,
+  },
 
   /* Section */
   section: { padding: 16, gap: 12 },
-  sectionEyebrow: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 2.5 },
+  sectionEyebrow: {
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 2.5,
+  },
   sectionTitle: {
-    fontSize: 14, fontFamily: "AlegreyaSansSC_800ExtraBold",
-    letterSpacing: 0.5, textTransform: "uppercase", marginTop: 2, marginBottom: 8,
+    fontSize: 14,
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginTop: 2,
+    marginBottom: 8,
   },
 
   /* Tool grid — exact etched-slab from web CSS */
@@ -1866,251 +3764,595 @@ const styles = StyleSheet.create({
   },
   toolCardInner: { flex: 1, padding: 14, justifyContent: "space-between" },
   toolCardTop: {
-    flexDirection: "row", alignItems: "flex-start",
-    justifyContent: "space-between", marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   toolNum: {
-    fontSize: 9, fontFamily: "Eczar_400Regular",
-    letterSpacing: 1.5, color: "rgba(255,255,255,0.2)",
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 1.5,
+    color: "rgba(255,255,255,0.2)",
   },
   toolLabel: {
-    fontSize: 11, fontFamily: "Eczar_600SemiBold",
-    letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 5,
+    fontSize: 11,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 5,
   },
   toolDesc: {
-    fontSize: 9, fontFamily: "Eczar_400Regular",
-    color: "#505060", lineHeight: 14, letterSpacing: 0.2,
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    color: "#505060",
+    lineHeight: 14,
+    letterSpacing: 0.2,
   },
   toolCardFooter: { paddingTop: 8 },
 
   /* Glow corner (web etched-slab radial gradient effect) */
   toolGlowCorner: {
-    position: "absolute", bottom: 0, right: 0,
-    width: 72, height: 72,
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 72,
+    height: 72,
   },
   toolGlowCircle: {
-    width: 72, height: 72, borderRadius: 36,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     transform: [{ translateX: 16 }, { translateY: 16 }],
   },
   generatingPill: {
-    alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4,
-    borderRadius: 6, borderWidth: 1,
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
   },
-  generatingPillText: { fontSize: 9, fontFamily: "Eczar_400Regular", letterSpacing: 0.5 },
+  generatingPillText: {
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 0.5,
+  },
   viewBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
-    paddingHorizontal: 10, paddingVertical: 5,
-    backgroundColor: PURPLE + "18", borderRadius: 6, borderWidth: 1, borderColor: PURPLE + "30",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: PURPLE + "18",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: PURPLE + "30",
   },
   viewBtnText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: PURPLE },
   genBtn: {
-    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
-    paddingHorizontal: 10, paddingVertical: 5, backgroundColor: PURPLE, borderRadius: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: PURPLE,
+    borderRadius: 6,
   },
   genBtnText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "#fff" },
 
   /* Generating banner */
   generatingBanner: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: PURPLE + "12", borderWidth: 1, borderColor: PURPLE + "30",
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: PURPLE + "12",
+    borderWidth: 1,
+    borderColor: PURPLE + "30",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  generatingText: { fontSize: 12, fontFamily: "Eczar_500Medium", color: PURPLE },
+  generatingText: {
+    fontSize: 12,
+    fontFamily: "Eczar_500Medium",
+    color: PURPLE,
+  },
 
   /* Output Panel — full-screen */
   outputFullHeader: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 18, paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.07)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(255,255,255,0.07)",
   },
   outputBackRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  outputBackLabel: { fontSize: 10, fontFamily: "Eczar_600SemiBold", letterSpacing: 1.5 },
+  outputBackLabel: {
+    fontSize: 10,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: 1.5,
+  },
   outputIconBtn: {
-    width: 34, height: 34, borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.09)",
-    alignItems: "center", justifyContent: "center",
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.09)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   outputToolHeader: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 20, paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   outputToolIcon: {
-    width: 44, height: 44, borderRadius: 12,
-    alignItems: "center", justifyContent: "center", borderWidth: 1,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
   },
-  outputToolName: { fontSize: 17, fontFamily: "Eczar_600SemiBold", color: "#fff" },
-  outputToolSub: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.3)", marginTop: 2 },
+  outputToolName: {
+    fontSize: 17,
+    fontFamily: "Eczar_600SemiBold",
+    color: "#fff",
+  },
+  outputToolSub: {
+    fontSize: 10,
+    fontFamily: "Eczar_400Regular",
+    color: "rgba(255,255,255,0.3)",
+    marginTop: 2,
+  },
   outputStatChip: {
-    borderWidth: 1, borderRadius: 5,
-    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
-  outputStatText: { fontSize: 9, fontFamily: "Eczar_600SemiBold", letterSpacing: 0.5 },
+  outputStatText: {
+    fontSize: 9,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: 0.5,
+  },
   outputDateStrip: {
-    flexDirection: "row", alignItems: "center", gap: 6,
-    paddingHorizontal: 20, paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.04)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(255,255,255,0.04)",
   },
-  outputDateText: { fontSize: 9, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.22)", letterSpacing: 0.4 },
-  outputFullText: { fontSize: 13.5, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.84)", lineHeight: 23, letterSpacing: 0.2 },
+  outputDateText: {
+    fontSize: 9,
+    fontFamily: "Eczar_400Regular",
+    color: "rgba(255,255,255,0.22)",
+    letterSpacing: 0.4,
+  },
+  outputFullText: {
+    fontSize: 13.5,
+    fontFamily: "Eczar_400Regular",
+    color: "rgba(255,255,255,0.84)",
+    lineHeight: 23,
+    letterSpacing: 0.2,
+  },
 
   outputBottomBar: {
-    borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)",
-    backgroundColor: "#0d0d12", paddingHorizontal: 16, paddingTop: 12,
-    flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "#0d0d12",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
   },
-  outputBottomLabel: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.3)", textTransform: "uppercase" },
-  langToggleRow: { flexDirection: "row", gap: 2, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 6, padding: 2, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" },
+  outputBottomLabel: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: "rgba(255,255,255,0.3)",
+    textTransform: "uppercase",
+  },
+  langToggleRow: {
+    flexDirection: "row",
+    gap: 2,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 6,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
   langBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
   langBtnActive: { backgroundColor: "#6366f1" },
-  langBtnText: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "rgba(255,255,255,0.4)" },
+  langBtnText: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: "rgba(255,255,255,0.4)",
+  },
   langBtnTextActive: { color: "#fff" },
-  regenBottomBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, backgroundColor: "rgba(167,139,250,0.08)", borderWidth: 1, borderColor: "rgba(167,139,250,0.2)", marginLeft: "auto" as any },
-  regenBottomText: { fontFamily: "Eczar_400Regular", fontSize: 9, letterSpacing: 0.3, color: "#a78bfa", textTransform: "uppercase" as any },
+  regenBottomBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: "rgba(167,139,250,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.2)",
+    marginLeft: "auto" as any,
+  },
+  regenBottomText: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: "#a78bfa",
+    textTransform: "uppercase" as any,
+  },
 
   /* Notes */
   noteInputCard: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
-  noteInput: { fontFamily: "Eczar_400Regular", fontSize: 14, lineHeight: 21, minHeight: 56, textAlignVertical: "top" },
+  noteInput: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 14,
+    lineHeight: 21,
+    minHeight: 56,
+    textAlignVertical: "top",
+  },
   noteInputFooter: { flexDirection: "row", alignItems: "center", gap: 10 },
   tsInput: {
-    flex: 1, borderRadius: 8, borderWidth: 1,
-    paddingHorizontal: 10, paddingVertical: 8,
-    fontSize: 12, fontFamily: "Eczar_400Regular",
+    flex: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 12,
+    fontFamily: "Eczar_400Regular",
   },
-  noteAddBtn: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  noteAddBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   noteCard: {
-    backgroundColor: "#13131a", borderRadius: 12,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.07)",
-    padding: 14, gap: 8,
+    backgroundColor: "#13131a",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.07)",
+    padding: 14,
+    gap: 8,
   },
   noteTsBadge: {
-    flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start",
-    backgroundColor: PURPLE + "15", borderRadius: 5,
-    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: PURPLE + "25",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    alignSelf: "flex-start",
+    backgroundColor: PURPLE + "15",
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: PURPLE + "25",
   },
   noteTsText: { fontSize: 10, fontFamily: "Eczar_400Regular", color: PURPLE },
-  noteContent: { fontSize: 13, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.8)", lineHeight: 20 },
-  noteFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
-  noteDate: { fontSize: 10, fontFamily: "Eczar_400Regular", color: "rgba(255,255,255,0.25)" },
-  noteEditInput: {
-    color: "#fff", fontFamily: "Eczar_400Regular", fontSize: 13,
-    backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, padding: 10,
-    minHeight: 60, textAlignVertical: "top", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+  noteContent: {
+    fontSize: 13,
+    fontFamily: "Eczar_400Regular",
+    color: "rgba(255,255,255,0.8)",
+    lineHeight: 20,
   },
-  noteActionBtn: { flex: 1, paddingVertical: 9, borderRadius: 8, alignItems: "center" },
+  noteFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
+  noteDate: {
+    fontSize: 10,
+    fontFamily: "Eczar_400Regular",
+    color: "rgba(255,255,255,0.25)",
+  },
+  noteEditInput: {
+    color: "#fff",
+    fontFamily: "Eczar_400Regular",
+    fontSize: 13,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 60,
+    textAlignVertical: "top",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  noteActionBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 8,
+    alignItems: "center",
+  },
 
   emptyNoteIcon: {
-    width: 52, height: 52, borderRadius: 26, borderWidth: 1,
-    alignItems: "center", justifyContent: "center", marginBottom: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
   },
   emptyNoteText: { fontSize: 14, fontFamily: "Eczar_600SemiBold" },
   emptyNoteSub: { fontSize: 11, fontFamily: "Eczar_400Regular", marginTop: 4 },
 
   iconActionBtn: {
-    width: 34, height: 34, borderRadius: 6,
-    borderWidth: 1, alignItems: "center", justifyContent: "center",
+    width: 34,
+    height: 34,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   quickAnalyzeBtn: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    borderWidth: 1, borderRadius: 12, padding: 14,
-    marginBottom: 14, overflow: "hidden",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    overflow: "hidden",
   },
-  quickAnalyzeTitle: { fontSize: 13, fontFamily: "Eczar_600SemiBold", letterSpacing: -0.2 },
-  quickAnalyzeSub: { fontSize: 11, fontFamily: "Eczar_400Regular", marginTop: 1 },
+  quickAnalyzeTitle: {
+    fontSize: 13,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: -0.2,
+  },
+  quickAnalyzeSub: {
+    fontSize: 11,
+    fontFamily: "Eczar_400Regular",
+    marginTop: 1,
+  },
 
   chatEmptyCard: {
-    borderRadius: 14, borderWidth: 1, padding: 24,
-    alignItems: "center", gap: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 24,
+    alignItems: "center",
+    gap: 8,
   },
-  chatEmptyTitle: { fontSize: 14, fontFamily: "Eczar_600SemiBold", textAlign: "center" },
-  chatEmptySub: { fontSize: 11, fontFamily: "Eczar_400Regular", textAlign: "center", lineHeight: 17 },
+  chatEmptyTitle: {
+    fontSize: 14,
+    fontFamily: "Eczar_600SemiBold",
+    textAlign: "center",
+  },
+  chatEmptySub: {
+    fontSize: 11,
+    fontFamily: "Eczar_400Regular",
+    textAlign: "center",
+    lineHeight: 17,
+  },
   chatSuggestion: {
-    borderRadius: 20, borderWidth: 1,
-    paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   chatBubble: {
-    maxWidth: "85%", borderRadius: 14, padding: 12, gap: 4,
-    borderWidth: 1, borderColor: "transparent",
+    maxWidth: "85%",
+    borderRadius: 14,
+    padding: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "transparent",
   },
-  chatAiLabel: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 2 },
-  chatBubbleText: { fontSize: 13, fontFamily: "Eczar_400Regular", lineHeight: 20 },
+  chatAiLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 2,
+  },
+  chatBubbleText: {
+    fontSize: 13,
+    fontFamily: "Eczar_400Regular",
+    lineHeight: 20,
+  },
   chatInputRow: {
-    flexDirection: "row", alignItems: "flex-end", gap: 10,
-    borderRadius: 14, borderWidth: 1, padding: 10,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 10,
   },
-  chatInput: { flex: 1, fontSize: 13, fontFamily: "Eczar_400Regular", maxHeight: 120, lineHeight: 20 },
+  chatInput: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: "Eczar_400Regular",
+    maxHeight: 120,
+    lineHeight: 20,
+  },
   chatSendBtn: {
-    width: 34, height: 34, borderRadius: 10,
-    alignItems: "center", justifyContent: "center",
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   modalBackdrop: {
-    flex: 1, backgroundColor: "rgba(0,0,0,0.72)",
-    alignItems: "center", justifyContent: "center", padding: 24,
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
   },
   folderPickerBox: {
-    width: "100%", maxWidth: 420, borderRadius: 14,
-    borderWidth: 1, overflow: "hidden",
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
   },
   folderPickerHeader: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
   },
   folderPickerIcon: {
-    width: 32, height: 32, borderRadius: 8, borderWidth: 1,
-    alignItems: "center", justifyContent: "center",
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  folderPickerTitle: { fontSize: 14, fontFamily: "Eczar_600SemiBold", letterSpacing: -0.2 },
+  folderPickerTitle: {
+    fontSize: 14,
+    fontFamily: "Eczar_600SemiBold",
+    letterSpacing: -0.2,
+  },
   folderPickerItem: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  folderPickerItemText: { fontSize: 14, fontFamily: "Eczar_500Medium", flex: 1 },
+  folderPickerItemText: {
+    fontSize: 14,
+    fontFamily: "Eczar_500Medium",
+    flex: 1,
+  },
   folderColorDot: { width: 10, height: 10, borderRadius: 5 },
-  folderPickerEmpty: { fontSize: 13, fontFamily: "Eczar_400Regular", textAlign: "center", lineHeight: 20 },
+  folderPickerEmpty: {
+    fontSize: 13,
+    fontFamily: "Eczar_400Regular",
+    textAlign: "center",
+    lineHeight: 20,
+  },
 
   /* Premium centered modals (folder + tag) */
   premiumModal: {
-    width: "100%", maxWidth: 420, borderRadius: 20,
-    borderWidth: 1.5, overflow: "hidden",
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    overflow: "hidden",
   },
   premiumModalHeader: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 14,
   },
   premiumModalIcon: {
-    width: 38, height: 38, borderRadius: 11, borderWidth: 1,
-    alignItems: "center", justifyContent: "center",
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  premiumModalMicro: { fontFamily: "Eczar_400Regular", fontSize: 8, letterSpacing: 2, marginBottom: 1 },
-  premiumModalTitle: { fontFamily: "AlegreyaSansSC_800ExtraBold", fontSize: 18, letterSpacing: -0.3 },
+  premiumModalMicro: {
+    fontFamily: "Eczar_400Regular",
+    fontSize: 8,
+    letterSpacing: 2,
+    marginBottom: 1,
+  },
+  premiumModalTitle: {
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
+    fontSize: 18,
+    letterSpacing: -0.3,
+  },
   premiumModalClose: {
-    width: 30, height: 30, borderRadius: 8, borderWidth: 1,
-    alignItems: "center", justifyContent: "center",
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  premiumModalDivider: { height: StyleSheet.hairlineWidth, marginHorizontal: 0, marginBottom: 4 },
+  premiumModalDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: 0,
+    marginBottom: 4,
+  },
   premiumPickerItem: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  premiumPickerItemText: { fontSize: 14, fontFamily: "Eczar_500Medium", flex: 1 },
+  premiumPickerItemText: {
+    fontSize: 14,
+    fontFamily: "Eczar_500Medium",
+    flex: 1,
+  },
   premiumColorDot: { width: 11, height: 11, borderRadius: 6 },
   premiumPickerCheck: {
-    width: 26, height: 26, borderRadius: 8, borderWidth: 1,
-    alignItems: "center", justifyContent: "center",
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   /* Stats strip */
   statsStrip: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    marginHorizontal: 16, marginTop: 18, marginBottom: 4, borderRadius: 14, borderWidth: 1,
-    paddingVertical: 12, paddingHorizontal: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    marginHorizontal: 16,
+    marginTop: 18,
+    marginBottom: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
   },
-  statItem:     { flex: 1, alignItems: "center", gap: 4 },
-  statIconBadge:{ width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  statVal:      { fontSize: 13, fontFamily: "AlegreyaSansSC_800ExtraBold", letterSpacing: -0.3 },
-  statLbl:      { fontSize: 7.5, fontFamily: "Eczar_400Regular", letterSpacing: 1, textTransform: "uppercase" },
-  statDivider:  { width: 1, height: 32, borderRadius: 1 },
+  statItem: { flex: 1, alignItems: "center", gap: 4 },
+  statIconBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statVal: {
+    fontSize: 13,
+    fontFamily: "AlegreyaSansSC_800ExtraBold",
+    letterSpacing: -0.3,
+  },
+  statLbl: {
+    fontSize: 7.5,
+    fontFamily: "Eczar_400Regular",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  statDivider: { width: 1, height: 32, borderRadius: 1 },
 });
