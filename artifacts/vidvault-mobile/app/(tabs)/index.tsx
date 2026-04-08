@@ -1262,6 +1262,7 @@ export default function HomeScreen() {
       <TopAppBar
         showImport
         showTools
+        loading={isLoading}
         rightAction={
           <AppButton
             label="SAVE"
@@ -1462,12 +1463,12 @@ export default function HomeScreen() {
           >
             {[
               { icon: "plus-circle" as FeatherIconName, label: "Save Video",    sublabel: "Add to vault",   accent: PURPLE, onPress: () => setShowSaveModal(true) },
-              { icon: "cpu"         as FeatherIconName, label: "AI Studio",     sublabel: "Generate AI",    accent: CYAN,   onPress: () => router.push("/(tabs)/ai-studio") },
+              { icon: "cpu"         as FeatherIconName, label: "AI Studio",     sublabel: "Generate AI",    accent: CYAN,   onPress: () => router.navigate("/(tabs)/ai-studio") },
               { icon: "bookmark"    as FeatherIconName, label: "Watch Later",   sublabel: "Queue videos",   accent: "#06b6d4", onPress: () => router.push("/watch-later") },
               { icon: "search"      as FeatherIconName, label: "Search",        sublabel: "Find anything",  accent: GREEN,  onPress: () => router.push("/search") },
               { icon: "layers"      as FeatherIconName, label: "SR Review",     sublabel: "Flashcards",     accent: PINK,   onPress: () => router.push("/review") },
-              { icon: "folder"      as FeatherIconName, label: "Folders",       sublabel: "Organize",       accent: AMBER,  onPress: () => router.push("/(tabs)/folders") },
-              { icon: "compass"     as FeatherIconName, label: "Discover",      sublabel: "All tools",      accent: GREEN,  onPress: () => router.push("/(tabs)/discover") },
+              { icon: "folder"      as FeatherIconName, label: "Folders",       sublabel: "Organize",       accent: AMBER,  onPress: () => router.navigate("/(tabs)/folders") },
+              { icon: "compass"     as FeatherIconName, label: "Discover",      sublabel: "All tools",      accent: GREEN,  onPress: () => router.navigate("/(tabs)/discover") },
             ].map((qa, i) => (
               <QuickAction key={qa.label} {...qa} delay={60 + i * 50} />
             ))}
@@ -1502,12 +1503,12 @@ export default function HomeScreen() {
             <View style={styles.statsGrid}>
               {STAT_CONFIG.map((cfg, i) => {
                 const statRoutes: Record<string, (() => void) | undefined> = {
-                  "01": () => router.push("/(tabs)/videos"),
-                  "02": () => router.push("/(tabs)/folders"),
-                  "03": () => router.push("/(tabs)/videos"),
-                  "04": () => router.push("/(tabs)/ai-studio"),
-                  "05": () => router.push("/(tabs)/videos"),
-                  "06": () => router.push("/(tabs)/videos"),
+                  "01": () => router.navigate("/(tabs)/videos"),
+                  "02": () => router.navigate("/(tabs)/folders"),
+                  "03": () => router.navigate("/(tabs)/videos"),
+                  "04": () => router.navigate("/(tabs)/ai-studio"),
+                  "05": () => router.navigate("/(tabs)/videos"),
+                  "06": () => router.navigate("/(tabs)/videos"),
                 };
                 return (
                   <View key={cfg.code} style={{ width: (screenWidth - 50) / 2 }}>

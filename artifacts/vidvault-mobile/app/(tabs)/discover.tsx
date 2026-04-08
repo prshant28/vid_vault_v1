@@ -239,7 +239,7 @@ export default function DiscoverScreen() {
   const handleToolPress = (tool: typeof TOOLS[0]) => {
     if (tool.action === "templates")   { setShowTemplates(true); return; }
     if (tool.action === "coming-soon") { Alert.alert("Coming Soon", `${tool.label} is in development and will be available in a future update.`); return; }
-    if (tool.route) router.push(tool.route as any);
+    if (tool.route) router.navigate(tool.route as any);
   };
 
   const statItems: Array<{ label: string; value: number; color: string; icon: FeatherIconName }> = [
@@ -267,7 +267,7 @@ export default function DiscoverScreen() {
         />
       </MotiView>
 
-      <TopAppBar showImport showTools />
+      <TopAppBar showImport showTools loading={!stats} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

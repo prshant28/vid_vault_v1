@@ -461,6 +461,7 @@ export default function FoldersScreen() {
       <TopAppBar
         showImport
         showTools
+        loading={isLoading}
         rightAction={
           <AppButton
             label="NEW"

@@ -406,6 +406,7 @@ export default function VideosScreen() {
       <TopAppBar
         showImport
         showTools
+        loading={isLoading}
         rightAction={
           <AppButton label="SAVE" icon="plus" size="sm" variant="primary" onPress={() => setShowSaveModal(true)} />
         }

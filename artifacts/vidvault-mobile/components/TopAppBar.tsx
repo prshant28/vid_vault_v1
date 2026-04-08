@@ -16,6 +16,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { VidVaultLogo } from "@/components/VidVaultLogo";
 import { UniversalImportModal } from "@/components/UniversalImportModal";
 import { ToolsMenu } from "@/components/ToolsMenu";
+import { PageLoadingBar } from "@/components/PageLoadingBar";
 
 const PURPLE = "#6366f1";
 const CYAN   = "#06b6d4";
@@ -27,6 +28,7 @@ interface TopAppBarProps {
   transparent?: boolean;
   showImport?: boolean;
   showTools?: boolean;
+  loading?: boolean;
 }
 
 export function TopAppBar({
@@ -36,6 +38,7 @@ export function TopAppBar({
   transparent = false,
   showImport = false,
   showTools = false,
+  loading = false,
 }: TopAppBarProps) {
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -155,6 +158,9 @@ export function TopAppBar({
             </View>
           )}
         </View>
+
+        {/* Page loading bar at bottom of app bar */}
+        <PageLoadingBar loading={loading} />
       </View>
 
       {/* Import Modal */}

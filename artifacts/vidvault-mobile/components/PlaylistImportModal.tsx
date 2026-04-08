@@ -79,7 +79,7 @@ export function PlaylistImportModal({ visible, onClose }: PlaylistImportModalPro
   function handleViewFolder() {
     if (!result) return;
     handleClose();
-    router.push(`/folder/${result.folderId}?name=${encodeURIComponent(result.folderName)}`);
+    router.navigate("/(tabs)/folders");
   }
 
   const btnW = Math.min(width - 88, 432);

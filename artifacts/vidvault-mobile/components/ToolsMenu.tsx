@@ -165,22 +165,32 @@ export function ToolsMenu({ visible, onClose, onImportPress }: Props) {
         {/* Divider */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        {/* Tool grid — 3 exact columns */}
+        {/* Tool grid — explicit 3-column rows */}
         <View style={styles.toolGrid}>
-          {ALL_TOOLS.map((tool) => (
-            <TouchableOpacity
-              key={tool.id}
-              onPress={() => handleTool(tool)}
-              style={[styles.toolCell, { width: cellWidth, backgroundColor: tool.color + "0e", borderColor: tool.color + "25" }]}
-              activeOpacity={0.72}
-            >
-              <View style={[styles.toolCellIcon, { backgroundColor: tool.color + "18" }]}>
-                <Feather name={tool.icon as any} size={15} color={tool.color} />
-              </View>
-              <Text style={[styles.toolCellLabel, { color: colors.foreground }]} numberOfLines={1}>
-                {tool.label}
-              </Text>
-            </TouchableOpacity>
+          {Array.from({ length: Math.ceil(ALL_TOOLS.length / 3) }, (_, rowIdx) =>
+            ALL_TOOLS.slice(rowIdx * 3, rowIdx * 3 + 3)
+          ).map((row, rowIdx) => (
+            <View key={rowIdx} style={styles.toolRow}>
+              {row.map((tool) => (
+                <TouchableOpacity
+                  key={tool.id}
+                  onPress={() => handleTool(tool)}
+                  style={[styles.toolCell, { width: cellWidth, backgroundColor: tool.color + "0e", borderColor: tool.color + "25" }]}
+                  activeOpacity={0.72}
+                >
+                  <View style={[styles.toolCellIcon, { backgroundColor: tool.color + "18" }]}>
+                    <Feather name={tool.icon as any} size={15} color={tool.color} />
+                  </View>
+                  <Text style={[styles.toolCellLabel, { color: colors.foreground }]} numberOfLines={1}>
+                    {tool.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              {/* Fill empty slots in last row so alignment stays */}
+              {row.length < 3 && Array.from({ length: 3 - row.length }, (_, k) => (
+                <View key={`empty-${k}`} style={{ width: cellWidth }} />
+              ))}
+            </View>
           ))}
         </View>
       </Animated.View>
@@ -228,8 +238,10 @@ const styles = StyleSheet.create({
   importShortcutSub: { fontFamily: "Eczar_400Regular", fontSize: 10, lineHeight: 14, marginTop: 1 },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 12, marginBottom: 10 },
   toolGrid: {
-    flexDirection: "row", flexWrap: "wrap",
     paddingHorizontal: 10, paddingBottom: 14, gap: 8,
+  },
+  toolRow: {
+    flexDirection: "row", gap: 8,
   },
   toolCell: {
     borderRadius: 12, borderWidth: 1,

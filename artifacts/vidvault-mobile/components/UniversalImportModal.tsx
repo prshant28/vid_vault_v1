@@ -385,11 +385,7 @@ export function UniversalImportModal({ visible, onClose }: Props) {
           </View>
 
           {/* ── Mode switcher ── */}
-          <ScrollView
-            horizontal showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.modeTabs}
-            style={{ flexShrink: 0 }}
-          >
+          <View style={styles.modeTabs}>
             {MODES.map((m) => {
               const active = m.id === mode;
               return (
@@ -404,7 +400,7 @@ export function UniversalImportModal({ visible, onClose }: Props) {
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
 
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -661,12 +657,16 @@ const styles = StyleSheet.create({
     width: 34, height: 34, borderRadius: 10, alignItems: "center",
     justifyContent: "center", borderWidth: 1,
   },
-  modeTabs: { paddingHorizontal: 20, paddingBottom: 12, gap: 8, flexDirection: "row" },
-  modeTab: {
-    flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 20,
-    paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1,
+  modeTabs: {
+    flexDirection: "row", paddingHorizontal: 20, paddingBottom: 12,
+    gap: 8, flexWrap: "wrap",
   },
-  modeTabText: { fontFamily: "Eczar_600SemiBold", fontSize: 11 },
+  modeTab: {
+    flexDirection: "row", alignItems: "center", borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1,
+    gap: 5,
+  },
+  modeTabText: { fontFamily: "Eczar_600SemiBold", fontSize: 11, flexShrink: 0 },
   inputWrap: {
     flexDirection: "row", alignItems: "center", borderRadius: 14,
     borderWidth: 1, paddingHorizontal: 14, paddingVertical: 11,
